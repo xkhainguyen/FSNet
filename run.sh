@@ -9,6 +9,76 @@
 # done
 
 # # print
-# echo "All experiments completed."
+# 
 
-python main.py --method FSNet --prob_type nonsmooth_nonconvex --prob_name socp --dropout 0.1 --seed 0
+
+# change results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_20.pt to model_{$ckpt}
+
+
+# for ckpt in 20 100 200 600; do
+#     python main.py \
+#         --method FSNet \
+#         --prob_type nonsmooth_nonconvex \
+#         --prob_name socp \
+#         --dropout 0.1 \
+#         --seed 0 \
+#         --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_${ckpt}.pt"
+# done
+
+python main.py \
+    --method S3Net \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --dropout 0.1 \
+    --seed 1\
+    --en_subopt True
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 0 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_200.pt"
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 1 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_200.pt"
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 2 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_200.pt"
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 0 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_900.pt"
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 1 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_900.pt"
+
+# python main.py \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --dropout 0.1 \
+#     --seed 2 \
+#     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251006-074528_MLP_sup_pen_seed0_dropout0.1/model_900.pt"
+
+echo "All experiments completed."

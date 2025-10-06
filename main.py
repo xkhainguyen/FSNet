@@ -28,6 +28,7 @@ def create_parser():
     parser.add_argument('--seed', type=int, default=2025, help='Random seed for reproducibility')
     parser.add_argument('--ablation', type=bool, default=False)
     parser.add_argument('--checkpoint', type=str, default=None, help='Path to model checkpoint')
+    parser.add_argument('--en_subopt', type=bool, default=False, help='Enable suboptimality in training')
 
     # Dataset parameters
     parser.add_argument('--batch_size', type=int, help='Batch size for training')
@@ -70,6 +71,7 @@ def create_parser():
         config['network'] = args.network
 
     config['checkpoint'] = args.checkpoint
+    config['en_subopt'] = args.en_subopt
 
     # Override dataset parameters
     if args.batch_size:

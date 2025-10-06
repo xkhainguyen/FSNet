@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import ipdb
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
@@ -84,6 +85,11 @@ def load_instance(config):
     else:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         result_save_dir = os.path.join('results', prob_type, prob_name, str(data), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_dropout' + str(config['dropout']))
+        if config['checkpoint']:
+            # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
+            ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
+            ckpt_number = config['checkpoint'].split('_')[-1].split('.')[0]
+            result_save_dir += f"_finetune_{ckpt_date}_model_{ckpt_number}"
 
     if not os.path.exists(result_save_dir):
         os.makedirs(result_save_dir)
@@ -334,8 +340,8 @@ class Trainer:
 
         self.en_penalty = True
         if self.en_penalty:
-            if pre_eq_violation.mean() >= 5e0 or pre_ineq_violation.mean() >= 2e0:              
-                loss += loss_eq_term + loss_ineq_term
+            # if pre_eq_violation.mean() >= 5e0 or pre_ineq_violation.mean() >= 2e0:              
+            loss += 2*(loss_eq_term + loss_ineq_term)
             
         
         metrics.update({
@@ -353,15 +359,16 @@ class Trainer:
         pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
         pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
-        # if epoch_metrics['epoch'] > -5:#0.1 * self.config['num_epochs']:
-        #     if self.en_penalty == False:
-        #         print("Enabling penalty terms")
-        #     self.en_penalty = True
+        if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
+            if self.en_penalty == False:
+                print("Enabling penalty terms")
+            self.en_penalty = True
 
-        # if epoch_metrics['epoch'] > 10:#0.2 * self.config['num_epochs']:
-        #     if self.en_feasibility == False:
-        #         print("Enabling feasibility seeking")
-        #     self.en_feasibility = True
+        if epoch_metrics['epoch'] > 3:#0.2 * self.config['num_epochs']:
+            if self.en_feasibility == False:
+                print("Enabling feasibility seeking")
+            self.en_feasibility = True
+            # self.en_penalty = True
 
         if self.en_feasibility:
             # Feasibility refinement using hybrid L-BFGS
@@ -400,10 +407,14 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
+        sup_weight = 1.0
+
         # sup_weight = 1.0 - self.en_penalty * 1.0
 
         # curriculum for sup_weight such that it quickly drops to 0
-        # sup_weight = 10*max(0.0, 1.0 - self.en_penalty * (epoch_metrics['epoch'] - 0.1 * self.config['num_epochs']) / (0.2 * self.config['num_epochs']))
+        # sup_weight = 1*max(0.0, 1.0 - self.en_penalty * (epoch_metrics['epoch'] - 0.1 * self.config['num_epochs']) / (0.2 * self.config['num_epochs']))
+        if self.en_penalty:
+            sup_weight *= 0.5
         # print(sup_weight)
 
         # per-sample robust supervised loss
@@ -411,7 +422,7 @@ class Trainer:
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
         # loss = sup_weight * ((Y_final - Y_true) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
-        loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
+        loss = sup_weight * huber(Y_final - Y_true).mean(dim=1)  # [B]
         # loss = sup_weight * ((Y_final - Y_true).abs()).mean(dim=1)  # [B]
 
         loss_obj_term = self.config_method['obj_weight'] * obj 
@@ -422,7 +433,7 @@ class Trainer:
         # import ipdb; ipdb.set_trace()
 
         if self.en_penalty:
-            if pre_eq_violation.mean() >= 1e1 or pre_ineq_violation.mean() >= 1e1:              
+            if pre_eq_violation.mean() >= 1e3 or pre_ineq_violation.mean() >= 1e3:              
                 loss += loss_obj_term + loss_dist_term + loss_eq_term + loss_ineq_term
             else:
                 loss += loss_obj_term + loss_dist_term
@@ -549,6 +560,37 @@ class Trainer:
  
     def train(self):
         """Main training loop with detailed results collection."""
+
+        # Prepare data loaders with optional suboptimality noise
+        if self.config['en_subopt']:
+            print("Adding suboptimality noise to training targets")
+            self.config['subopt_noise_level'] = 0.05
+
+            # unwrap the underlying dataset if it's a Subset
+            if isinstance(self.data.train_dataset, torch.utils.data.Subset):
+                base_dataset = self.data.train_dataset.dataset
+                indices = self.data.train_dataset.indices
+                xs = []
+                ys = []
+                for i in indices:
+                    x, y = base_dataset[i]
+                    noise = torch.randn_like(y) * self.config['subopt_noise_level']
+                    xs.append(x)
+                    ys.append(y + noise)
+                # rebuild dataset with noisy targets
+                self.data.train_dataset = torch.utils.data.TensorDataset(
+                    torch.stack(xs), torch.stack(ys)
+                )
+            else:
+                xs, ys = [], []
+                for x, y in self.data.train_dataset:
+                    noise = torch.randn_like(y) * self.config['subopt_noise_level']
+                    xs.append(x)
+                    ys.append(y + noise)
+                self.data.train_dataset = torch.utils.data.TensorDataset(
+                    torch.stack(xs), torch.stack(ys)
+                )
+
         train_loader = DataLoader(
             self.data.train_dataset, 
             batch_size=self.config['batch_size'], 
