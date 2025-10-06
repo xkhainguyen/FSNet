@@ -2,7 +2,7 @@ import yaml
 import torch
 import time
 import argparse
-from utils.trainer import load_instance, Trainer
+from utils.trainer_old import load_instance, Trainer
 
 # Define available problem types and problems
 PROBLEM_TYPES = ['convex', 'nonconvex', 'nonsmooth_nonconvex']
@@ -16,7 +16,7 @@ def create_parser():
     parser.add_argument('--config', type=str, default='configs/default.yaml',
                         help='Path to YAML configuration file')
     parser.add_argument('--method', type=str, 
-                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection, sup, sup_pen, S3Net)')
+                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection)')
     parser.add_argument('--prob_type', type=str, choices=PROBLEM_TYPES,
                         help='Problem type (convex, nonconvex, nonsmooth_nonconvex)')
     parser.add_argument('--prob_name', type=str, choices=PROBLEM_NAMES,
@@ -27,7 +27,6 @@ def create_parser():
                         help='Type of neural network to use')
     parser.add_argument('--seed', type=int, default=2025, help='Random seed for reproducibility')
     parser.add_argument('--ablation', type=bool, default=False)
-    parser.add_argument('--checkpoint', type=str, default=None, help='Path to model checkpoint')
 
     # Dataset parameters
     parser.add_argument('--batch_size', type=int, help='Batch size for training')
@@ -68,9 +67,7 @@ def create_parser():
         config['prob_size'] = args.prob_size
     if args.network:
         config['network'] = args.network
-
-    config['checkpoint'] = args.checkpoint
-
+    
     # Override dataset parameters
     if args.batch_size:
         config['batch_size'] = args.batch_size
@@ -98,13 +95,10 @@ def create_parser():
     # Feasibility seeking parameters
     if args.scale:
         config['FSNet']['scale'] = args.scale
-        config['S3Net']['scale'] = args.scale
     if args.dist_weight is not None:
         config['FSNet']['dist_weight'] = args.dist_weight
-        config['S3Net']['dist_weight'] = args.dist_weight
     if args.max_diff_iter is not None:
         config['FSNet']['max_diff_iter'] = args.max_diff_iter
-        config['S3Net']['max_diff_iter'] = args.max_diff_iter
 
     # Ablation study flag
     config['ablation'] = args.ablation

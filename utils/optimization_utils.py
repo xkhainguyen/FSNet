@@ -28,8 +28,7 @@ class BaseProblem:
         total_size = self.X.shape[0]
         train_size = int(total_size  - val_size - test_size)
         full_dataset = TensorDataset(self.X, self.Y)
-        self.train_dataset, self.val_dataset, self.test_dataset = random_split(full_dataset, [train_size, val_size, test_size],
-                                                                                generator=torch.Generator().manual_seed(seed))
+        self.train_dataset, self.val_dataset, self.test_dataset = random_split(full_dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(seed))
         
     def eq_grad(self, X, Y):
         # Create a copy of Y that requires gradients for the whole batch
@@ -107,7 +106,7 @@ class QPProblem(BaseProblem):
         minimize_y 1/2 * y^T Q y + p^Ty
         s.t.       Ay =  x
                    Gy <= h
-                   L<= x <=U
+                   L<= y <=U
     """
 
     def __init__(self, dataset, val_size, test_size, seed):
