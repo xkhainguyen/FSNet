@@ -62,8 +62,11 @@ def load_instance(config):
         prob_name,
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
-    
+    if config['en_subopt']:
+        filepath += '_subopt'
+
     # Load dataset
+    print("\nLoading dataset from:", filepath, '\n')
     with open(filepath, 'rb') as f:
         dataset = pickle.load(f)
     
@@ -146,7 +149,7 @@ class Trainer:
         elif self.method == "sup":
             return self._sup_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "sup_pen":
-            return self._sup_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._sup_pen_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "DC3": 
             return self._dc3_loss(X_batch, Y_pred_scaled, metrics)            
         elif self.method == "projection":
@@ -249,8 +252,6 @@ class Trainer:
         return loss, metrics
 
     def _sup_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
-        pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
         Y_final = Y_pred_scaled
             
@@ -276,20 +277,6 @@ class Trainer:
         # loss = sup_weight * ((Y_final - Y_true) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
         loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
         # loss = sup_weight * ((Y_final - Y_true).abs()).mean(dim=1)  # [B]
-
-        loss_obj_term = self.config_method['obj_weight'] * obj 
-        loss_dist_term = self.config_method['dist_weight'] * distance 
-        loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation 
-        loss_ineq_term = self.config_method['ineq_pen_weight'] * pre_ineq_violation
-        
-        # import ipdb; ipdb.set_trace()
-
-        # if self.en_penalty:
-        #     if pre_eq_violation.mean() >= 1e1 or pre_ineq_violation.mean() >= 1e1:              
-        #         loss += loss_obj_term + loss_dist_term + loss_eq_term + loss_ineq_term
-        #     else:
-        #         loss += loss_obj_term + loss_dist_term
-            
         
         metrics.update({
             'obj': obj.mean().item(),
@@ -560,36 +547,6 @@ class Trainer:
  
     def train(self):
         """Main training loop with detailed results collection."""
-
-        # Prepare data loaders with optional suboptimality noise
-        if self.config['en_subopt']:
-            print("Adding suboptimality noise to training targets")
-            self.config['subopt_noise_level'] = 0.05
-
-            # unwrap the underlying dataset if it's a Subset
-            if isinstance(self.data.train_dataset, torch.utils.data.Subset):
-                base_dataset = self.data.train_dataset.dataset
-                indices = self.data.train_dataset.indices
-                xs = []
-                ys = []
-                for i in indices:
-                    x, y = base_dataset[i]
-                    noise = torch.randn_like(y) * self.config['subopt_noise_level']
-                    xs.append(x)
-                    ys.append(y + noise)
-                # rebuild dataset with noisy targets
-                self.data.train_dataset = torch.utils.data.TensorDataset(
-                    torch.stack(xs), torch.stack(ys)
-                )
-            else:
-                xs, ys = [], []
-                for x, y in self.data.train_dataset:
-                    noise = torch.randn_like(y) * self.config['subopt_noise_level']
-                    xs.append(x)
-                    ys.append(y + noise)
-                self.data.train_dataset = torch.utils.data.TensorDataset(
-                    torch.stack(xs), torch.stack(ys)
-                )
 
         train_loader = DataLoader(
             self.data.train_dataset, 
