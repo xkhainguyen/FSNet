@@ -16,7 +16,7 @@ def create_parser():
     parser.add_argument('--config', type=str, default='configs/default.yaml',
                         help='Path to YAML configuration file')
     parser.add_argument('--method', type=str, 
-                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection, sup, sup_pen, S3Net)')
+                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection, sup, sup_pen, semi, S3Net)')
     parser.add_argument('--prob_type', type=str, choices=PROBLEM_TYPES,
                         help='Problem type (convex, nonconvex, nonsmooth_nonconvex)')
     parser.add_argument('--prob_name', type=str, choices=PROBLEM_NAMES,
@@ -101,12 +101,15 @@ def create_parser():
     if args.scale:
         config['FSNet']['scale'] = args.scale
         config['S3Net']['scale'] = args.scale
+        config['semi']['scale'] = args.scale
     if args.dist_weight is not None:
         config['FSNet']['dist_weight'] = args.dist_weight
         config['S3Net']['dist_weight'] = args.dist_weight
+        config['semi']['dist_weight'] = args.dist_weight
     if args.max_diff_iter is not None:
         config['FSNet']['max_diff_iter'] = args.max_diff_iter
         config['S3Net']['max_diff_iter'] = args.max_diff_iter
+        config['semi']['max_diff_iter'] = args.max_diff_iter
 
     # Ablation study flag
     config['ablation'] = args.ablation

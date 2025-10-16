@@ -146,6 +146,8 @@ class Trainer:
             return self._fsnet_loss(X_batch, Y_pred_scaled, metrics)
         elif self.method == "S3Net":            
             return self._s3net_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+        elif self.method == "semi":            
+            return self._semi_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "sup":
             return self._sup_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "sup_pen":
@@ -342,7 +344,6 @@ class Trainer:
         return loss, metrics
     
     def _s3net_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
-        """Computes the FSNet loss."""
         pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
         pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
@@ -436,6 +437,78 @@ class Trainer:
         })
         return loss, metrics
     
+    def _semi_loss(self, X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics):
+        if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
+            if self.en_penalty == False:
+                print("Enabling penalty terms")
+            self.en_penalty = True
+
+        if epoch_metrics['epoch'] > -1:#0.2 * self.config['num_epochs']:
+            if self.en_feasibility == False:
+                print("Enabling feasibility seeking")
+            self.en_feasibility = True
+
+        B = X_batch.shape[0]
+        idx_sup = torch.randperm(B, device=X_batch.device)[:B // 2]
+        idx_unsup = torch.tensor([i for i in range(B) if i not in idx_sup], device=X_batch.device)
+
+        # --- forward feasibility refinement (DC3 / FSNet-like) ---
+        if self.en_feasibility:
+            Y_final = hybrid_lbfgs_solve(
+                X_batch, Y_pred_scaled, self.data,
+                val_tol=self.config_method['val_tol'],
+                memory=self.config_method['memory_size'],
+                max_iter=self.config_method['max_iter'],
+                max_diff_iter=self.config_method['max_diff_iter'],
+                scale=self.config_method['scale'],
+            )
+        else:
+            Y_final = Y_pred_scaled
+
+        # --- compute objectives and constraints ---
+        obj = self.data.obj_fn(Y_final)
+        eq_viol = self.data.eq_resid(X_batch, Y_final)
+        ineq_viol = self.data.ineq_resid(X_batch, Y_final)
+        eq_violation = eq_viol.square().sum(dim=1)
+        ineq_violation = ineq_viol.square().sum(dim=1)
+        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
+
+        # --- supervised subset ---
+        def huber(x, delta=1e-1):
+            ax = x.abs()
+            return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
+
+        # sup_weight = np.exp(-epoch_metrics['epoch'] / (0.3 * self.config['num_epochs']))
+        sup_weight = 1.0
+        loss_sup = torch.zeros(B, device=X_batch.device)
+        loss_sup[idx_sup] = sup_weight * huber(Y_final[idx_sup] - Y_true[idx_sup]).mean(dim=1)
+
+        # --- self-supervised subset ---
+        loss_unsup = (
+            self.config_method['obj_weight'] * obj +
+            self.config_method['dist_weight'] * distance +
+            self.config_method['eq_pen_weight'] * eq_violation +
+            self.config_method['ineq_pen_weight'] * ineq_violation
+        )
+        loss_unsup[idx_sup] = 0.0  # only apply unsupervised terms to unlabeled subset
+
+        # --- total loss ---
+        loss = loss_sup + loss_unsup
+        loss = loss.mean()
+
+        # --- metric logging ---
+        metrics.update({
+            'obj': obj.mean().item(),
+            'eq_violation': eq_violation.mean().item(),
+            'ineq_violation': ineq_violation.mean().item(),
+            'eq_violation_l1': eq_violation_l1.mean().item(),
+            'ineq_violation_l1': ineq_violation_l1.mean().item(),
+            'distance': distance.mean().item(),
+        })
+        return loss, metrics
+            
     def _dc3_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the DC3 loss."""
         Y_completion = self.data.complete_partial(X_batch, Y_pred_scaled)
@@ -527,7 +600,7 @@ class Trainer:
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
         # FSNet tolerance decay
-        if ((self.method == 'FSNet' or self.method == 'S3Net') and (epoch + 1) % self.config_method['decay_tol_step'] == 0):
+        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0):
             self.config_method['val_tol'] = np.clip(
                 self.config_method['val_tol'] / 10, 
                 a_min=1e-9, 
@@ -577,12 +650,25 @@ class Trainer:
             weight_decay=0.001, 
             fused=True
         )
-        self.scheduler = optim.lr_scheduler.StepLR(
-            self.optimizer, 
-            step_size=self.config['lr_decay_step'], 
-            gamma=self.config['lr_decay']
-        )
-        
+
+        def lr_lambda(epoch):
+            # multiply LR by 1.5 only at epoch 5
+            if epoch < 5:
+                return 1.0
+            elif epoch < 20:
+                return 5.0
+            else:
+                return 1.0
+
+        if self.config['checkpoint']:
+            self.scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lr_lambda)
+        else:
+            self.scheduler = optim.lr_scheduler.StepLR(
+                self.optimizer, 
+                step_size=self.config['lr_decay_step'], 
+                gamma=self.config['lr_decay']
+            )
+
         # Training history
         train_history = []
         val_history = []

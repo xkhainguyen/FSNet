@@ -34,7 +34,7 @@ python main.py \
     --en_subopt True
 
 python main.py \
-    --method S3Net \
+    --method semi \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --dropout 0.1 \
@@ -46,8 +46,8 @@ python main.py \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --dropout 0.1 \
-    --lr 0.0001 \
-    --seed 0 \
+    --lr 0.00005 \
+    --seed 1 \
     --num_epochs 200 \
     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251010-085026_MLP_sup_seed1_dropout0.1/model_40.pt"
 

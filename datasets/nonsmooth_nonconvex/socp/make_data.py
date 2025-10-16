@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import casadi as ca
+import time
 
 num_var = 200
 num_ineq = 100
@@ -67,7 +68,9 @@ for n in range(num_examples):
     lbx = np.concatenate([L, [0]])
     ubx = np.concatenate([U, [np.inf]])
     # Solve the NLP
+    start_time = time.time()
     res = solver(lbg=lbg, ubg=ubg, lbx=lbx, ubx=ubx)
+    print("Time for example {}: {:.4f} seconds".format(n, time.time() - start_time))
     # check if the solver converged
     if solver.stats()['success']:
         sol_x = res['x'].full().flatten()
