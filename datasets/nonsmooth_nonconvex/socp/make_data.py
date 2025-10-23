@@ -60,7 +60,7 @@ for n in range(num_examples):
     ineq_constraints = ca.vertcat(*ineq_constraints)
     
     nlp = {'x': ca.vertcat(y, t), 'f': obj_func, 'g': ca.vertcat(eq_constraints, ineq_constraints)}
-    opts = {'ipopt.print_level': 0, 'print_time': 0}
+    opts = {'ipopt.print_level': 0, 'print_time': 0, }
     solver = ca.nlpsol('solver', 'ipopt', nlp, opts)
     # Define bounds for variables and constraints
     lbg = np.concatenate([np.zeros(num_eq), -np.inf * np.ones(num_ineq+1)])

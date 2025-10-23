@@ -305,33 +305,24 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        sup_weight = 1.0
-        # sup_weight = 1.0 - self.en_penalty * 1.0
-
-        # curriculum for sup_weight such that it quickly drops to 0
-        # sup_weight = 10*max(0.0, 1.0 - self.en_penalty * (epoch_metrics['epoch'] - 0.1 * self.config['num_epochs']) / (0.2 * self.config['num_epochs']))
-        # print(sup_weight)
-
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
-        # loss = sup_weight * ((Y_final - Y_true) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
-        loss = sup_weight * huber(Y_final - Y_true).mean(dim=1)  # [B]
-        # loss = sup_weight * ((Y_final - Y_true).abs()).mean(dim=1)  # [B]
 
-        loss_obj_term = self.config_method['obj_weight'] * obj 
-        loss_dist_term = self.config_method['dist_weight'] * distance 
-        loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation 
-        loss_ineq_term = self.config_method['ineq_pen_weight'] * pre_ineq_violation
+        loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
         
-        # import ipdb; ipdb.set_trace()
+        loss = self.config_method['obj_weight'] * loss + \
+               self.adaptive_eq_weight * eq_violation + \
+               self.adaptive_ineq_weight * ineq_violation
 
-        self.en_penalty = True
-        if self.en_penalty:
-            # if pre_eq_violation.mean() >= 5e0 or pre_ineq_violation.mean() >= 2e0:              
-            loss += 2*(loss_eq_term + loss_ineq_term)
-            
+        with torch.no_grad():
+            self.adaptive_eq_weight = torch.clamp(self.adaptive_eq_weight + self.config_method['increasing_rate'] * eq_violation.mean(), min=0.0, max=self.config_method['eq_pen_weight_max'])
+            self.adtaptive_ineq_weight = torch.clamp(self.adaptive_ineq_weight + self.config_method['increasing_rate'] * ineq_violation.mean(), min=0.0, max=self.config_method['ineq_pen_weight_max'])
+            if self.adaptive_eq_weight >= self.config_method['eq_pen_weight_max']:
+                self.adaptive_eq_weight = self.config_method['eq_pen_weight_max']/2
+            if self.adaptive_ineq_weight >= self.config_method['ineq_pen_weight_max']:
+                self.adaptive_ineq_weight = self.config_method['ineq_pen_weight_max']/2
         
         metrics.update({
             'obj': obj.mean().item(),
@@ -593,7 +584,7 @@ class Trainer:
         return epoch_metrics
     
     def _initialize_params(self) -> None:
-        if self.method == 'adaptive_penalty':
+        if self.method == 'adaptive_penalty' or self.method == 'sup_pen':
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
             self.adaptive_ineq_weight = self.config_method['ineq_pen_weight']
            
@@ -651,17 +642,21 @@ class Trainer:
             fused=True
         )
 
-        def lr_lambda(epoch):
-            # multiply LR by 1.5 only at epoch 5
-            if epoch < 5:
-                return 1.0
-            elif epoch < 20:
-                return 5.0
-            else:
-                return 1.0
-
         if self.config['checkpoint']:
-            self.scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lr_lambda)
+            # Phase 1: small LR (×0.1) for 10 epochs
+            adapt = optim.lr_scheduler.ConstantLR(self.optimizer, factor=0.1, total_iters=10)
+
+            # Phase 2: boosted LR (×5) for next 10 epochs
+            boost = optim.lr_scheduler.ConstantLR(self.optimizer, factor=5.0, total_iters=10)
+
+            # Phase 3: normal decay
+            decay = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.config.get('lr_decay_step', 50), gamma=self.config.get('lr_decay', 0.9))
+
+            self.scheduler = optim.lr_scheduler.SequentialLR(
+                self.optimizer,
+                schedulers=[adapt, boost, decay],
+                milestones=[10, 20]
+            )
         else:
             self.scheduler = optim.lr_scheduler.StepLR(
                 self.optimizer, 
