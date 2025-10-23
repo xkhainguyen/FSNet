@@ -305,24 +305,22 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
+        sup_weight = 1.0
+
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
 
-        loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
-        
-        loss = self.config_method['obj_weight'] * loss + \
-               self.adaptive_eq_weight * eq_violation + \
-               self.adaptive_ineq_weight * ineq_violation
+        loss = sup_weight * huber(Y_final - Y_true).mean(dim=1)  # [B]
 
-        with torch.no_grad():
-            self.adaptive_eq_weight = torch.clamp(self.adaptive_eq_weight + self.config_method['increasing_rate'] * eq_violation.mean(), min=0.0, max=self.config_method['eq_pen_weight_max'])
-            self.adtaptive_ineq_weight = torch.clamp(self.adaptive_ineq_weight + self.config_method['increasing_rate'] * ineq_violation.mean(), min=0.0, max=self.config_method['ineq_pen_weight_max'])
-            if self.adaptive_eq_weight >= self.config_method['eq_pen_weight_max']:
-                self.adaptive_eq_weight = self.config_method['eq_pen_weight_max']/2
-            if self.adaptive_ineq_weight >= self.config_method['ineq_pen_weight_max']:
-                self.adaptive_ineq_weight = self.config_method['ineq_pen_weight_max']/2
+        loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation 
+        loss_ineq_term = self.config_method['ineq_pen_weight'] * pre_ineq_violation
+
+        self.en_penalty = True
+        if self.en_penalty:           
+            loss += loss_eq_term + loss_ineq_term
+            
         
         metrics.update({
             'obj': obj.mean().item(),
@@ -644,10 +642,13 @@ class Trainer:
 
         if self.config['checkpoint']:
             # Phase 1: small LR (×0.1) for 10 epochs
-            adapt = optim.lr_scheduler.ConstantLR(self.optimizer, factor=0.1, total_iters=10)
+            adapt = optim.lr_scheduler.ConstantLR(self.optimizer, factor=0.05)
 
             # Phase 2: boosted LR (×5) for next 10 epochs
-            boost = optim.lr_scheduler.ConstantLR(self.optimizer, factor=5.0, total_iters=10)
+            boost = optim.lr_scheduler.LambdaLR(
+                self.optimizer, 
+                lr_lambda=lambda epoch: 1.0
+            )
 
             # Phase 3: normal decay
             decay = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.config.get('lr_decay_step', 50), gamma=self.config.get('lr_decay', 0.9))

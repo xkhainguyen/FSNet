@@ -34,12 +34,11 @@ python main.py \
     --en_subopt True
 
 python main.py \
-    --method semi \
+    --method FSNet \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
-    --dropout 0.1 \
+    --lr 0.0001  \
     --seed 1\
-    --en_subopt True
 
 python main.py \
     --method FSNet \
@@ -47,9 +46,9 @@ python main.py \
     --prob_name socp \
     --dropout 0.1 \
     --lr 0.00005 \
-    --seed 1 \
-    --num_epochs 200 \
-    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251010-085026_MLP_sup_seed1_dropout0.1/model_40.pt"
+    --seed 0 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251023-170626_MLP_sup_seed0_dropout0.1/model_40.pt"
 
 python main.py \
     --method FSNet \
