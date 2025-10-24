@@ -63,7 +63,8 @@ def load_instance(config):
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
     if config['en_subopt']:
-        filepath += '_subopt'
+        filepath += '_subopt_noise0.5_bias0.5'
+        # filepath += '_subopt_noise1.0_bia1.0'
 
     # Load dataset
     print("\nLoading dataset from:", filepath, '\n')

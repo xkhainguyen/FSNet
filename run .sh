@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-for seed in 0 1 2 3
+for seed in 2 3
 do
     python main.py     --method FSNet     --prob_type nonsmooth_nonconvex     --prob_name socp    --seed $seed     --num_epochs 300     --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251023-170626_MLP_sup_seed0_dropout0.1/model_200.pt"
 done
