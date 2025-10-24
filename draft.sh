@@ -26,7 +26,7 @@
 # done
 
 python main.py \
-    --method sup_pen \
+    --method sup \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --dropout 0.1 \

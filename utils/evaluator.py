@@ -95,7 +95,7 @@ class Evaluator:
                 max_iter=self.config_method.get('max_iter', 20),
                 scale=self.config_method.get('scale', 1)
             )
-        elif self.method == "DC3":
+        elif self.method == "DC3" or self.method == "sup_partial":
             Y_completion = self.data.complete_partial(X_batch, Y_pred_scaled)
             return grad_steps(self.data, X_batch, Y_completion, self.config)
         elif self.method == "projection":

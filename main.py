@@ -16,7 +16,7 @@ def create_parser():
     parser.add_argument('--config', type=str, default='configs/default.yaml',
                         help='Path to YAML configuration file')
     parser.add_argument('--method', type=str, 
-                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection, sup, sup_pen, semi, S3Net)')
+                        help='Training method (penalty, adaptive_penalty, FSNet, DC3, projection, sup, sup_partial, sup_pen, semi, S3Net)')
     parser.add_argument('--prob_type', type=str, choices=PROBLEM_TYPES,
                         help='Problem type (convex, nonconvex, nonsmooth_nonconvex)')
     parser.add_argument('--prob_name', type=str, choices=PROBLEM_NAMES,

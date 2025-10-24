@@ -63,8 +63,10 @@ def load_instance(config):
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
     if config['en_subopt']:
-        filepath += '_subopt_noise0.5_bias0.5'
-        # filepath += '_subopt_noise1.0_bia1.0'
+        # filepath += '_subopt_noise0.5_bias0.5'
+        # filepath += '_subopt_noise1.0_bias1.0'
+        # filepath += '_subopt_noise2.0_bias2.0'
+        filepath += '_subopt_noise4.0_bias4.0'
 
     # Load dataset
     print("\nLoading dataset from:", filepath, '\n')
@@ -110,7 +112,7 @@ def create_model(data, method, config):
     dropout = config["dropout"]
 
     if network == 'MLP':
-        if method == "DC3":
+        if method == "DC3" or method == "sup_partial":
             out_dim = data.partial_vars.shape[0]
             model = MLP(data.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
         else:
@@ -151,6 +153,8 @@ class Trainer:
             return self._semi_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "sup":
             return self._sup_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+        elif self.method == "sup_partial":
+            return self._sup_partial_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "sup_pen":
             return self._sup_pen_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
         elif self.method == "DC3": 
@@ -267,20 +271,13 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        # sup_weight = 1.0 - self.en_penalty * 1.0
-
-        # curriculum for sup_weight such that it quickly drops to 0
-        # sup_weight = 10*max(0.0, 1.0 - self.en_penalty * (epoch_metrics['epoch'] - 0.1 * self.config['num_epochs']) / (0.2 * self.config['num_epochs']))
-        # print(sup_weight)
-
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
-        # loss = sup_weight * ((Y_final - Y_true) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
+
         loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
-        # loss = sup_weight * ((Y_final - Y_true).abs()).mean(dim=1)  # [B]
-        
+
         metrics.update({
             'obj': obj.mean().item(),
             'eq_violation': eq_violation.mean().item(),
@@ -291,6 +288,33 @@ class Trainer:
         })
         return loss, metrics
 
+    def _sup_partial_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+        Y_final = Y_pred_scaled
+
+        distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
+        obj = distance
+        eq_violation = distance
+        ineq_violation = distance
+        eq_violation_l1 = distance
+        ineq_violation_l1 = distance
+        
+        # per-sample robust supervised loss
+        def huber(x, delta=1e-1):
+            ax = x.abs()
+            return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
+
+        loss = huber(Y_final - Y_true[:, self.data.partial_vars]).mean(dim=1)  # [B]
+
+        metrics.update({
+            'obj': obj.mean().item(),
+            'eq_violation': eq_violation.mean().item(),
+            'ineq_violation': ineq_violation.mean().item(),
+            'eq_violation_l1': eq_violation_l1.mean().item(),
+            'ineq_violation_l1': ineq_violation_l1.mean().item(),
+            'distance': distance.mean().item(),
+        })
+        return loss, metrics
+    
     def _sup_pen_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
         pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)

@@ -81,6 +81,18 @@ sup:
   max_diff_iter: 30
   scale: 1000
 
+sup_partial:
+  obj_weight: 1.0
+  eq_pen_weight: 10.0
+  ineq_pen_weight: 10.0
+  val_tol: 1.0e-7
+  test_val_tol: 1.0e-9
+  decay_tol_step: 100
+  memory_size: 30   #convex 10 is okay, nonconvex: 20-30
+  max_iter: 50
+  max_diff_iter: 30
+  scale: 1000
+
 sup_pen:
   obj_weight: 1.0
   eq_pen_weight: 20.0
