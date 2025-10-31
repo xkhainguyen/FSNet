@@ -616,6 +616,12 @@ class Trainer:
  
     def train(self):
         """Main training loop with detailed results collection."""
+        if self.config['train_size'] <= 500:
+            self.config['batch_size'] = 64
+        if self.config['train_size'] == 1000:
+            self.config['batch_size'] = 128
+        if self.config['train_size'] == 4000:
+            self.config['batch_size'] = 256        
 
         train_loader = DataLoader(
             self.data.train_dataset, 
