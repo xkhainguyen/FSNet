@@ -29,8 +29,10 @@ def create_parser():
     parser.add_argument('--ablation', type=bool, default=False)
     parser.add_argument('--checkpoint', type=str, default=None, help='Path to model checkpoint')
     parser.add_argument('--en_subopt', type=bool, default=False, help='Enable suboptimality in training')
+    parser.add_argument('--subopt_ratio', type=float, default=0.5, help='Suboptimality ratio if en_subopt is True')
 
     # Dataset parameters
+    parser.add_argument('--train_size', type=int, help='Size of training dataset', default=-1)
     parser.add_argument('--batch_size', type=int, help='Batch size for training')
     parser.add_argument('--val_size', type=int, help='Size of validation dataset')
     parser.add_argument('--test_size', type=int, help='Size of test dataset')
@@ -72,10 +74,13 @@ def create_parser():
 
     config['checkpoint'] = args.checkpoint
     config['en_subopt'] = args.en_subopt
+    config['subopt_ratio'] = args.subopt_ratio
 
     # Override dataset parameters
     if args.batch_size:
         config['batch_size'] = args.batch_size
+    if args.train_size:
+        config['train_size'] = args.train_size
     if args.val_size:
         config['val_size'] = args.val_size
     if args.test_size:

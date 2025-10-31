@@ -15,7 +15,7 @@ torch.set_default_dtype(torch.float64)
 # Base PROBLEM
 ###################################################################
 class BaseProblem:
-    def __init__(self, dataset, val_size, test_size, seed):
+    def __init__(self, dataset, train_size, val_size, test_size, seed, en_subopt=False):
         self.input_L = torch.tensor(dataset['XL'])
         self.input_U = torch.tensor(dataset['XU'])
         self.L = torch.tensor(dataset['YL'])
@@ -26,9 +26,31 @@ class BaseProblem:
         self.device = DEVICE
 
         total_size = self.X.shape[0]
-        train_size = int(total_size  - val_size - test_size)
-        full_dataset = TensorDataset(self.X, self.Y)
-        self.train_dataset, self.val_dataset, self.test_dataset = random_split(full_dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(seed))
+        if train_size + val_size + test_size > total_size:
+            raise ValueError("Sum of train_size, val_size, and test_size exceeds total dataset size.")
+        if train_size == -1:
+            train_size = total_size - val_size - test_size
+
+        # === Split indices first (to apply different Y tensors) ===
+        all_indices = torch.randperm(total_size, generator=torch.Generator().manual_seed(seed))
+        train_idx = all_indices[:train_size]
+        val_idx = all_indices[train_size:train_size + val_size]
+        test_idx = all_indices[train_size + val_size:train_size + val_size + test_size]
+
+        # === Choose Y for each split ===
+        if en_subopt:
+            self.Y_subopt = torch.tensor(dataset['Y_subopt'])
+            train_Y = self.Y_subopt
+        else:
+            train_Y = self.Y
+
+        # === Create dataset splits ===
+        self.train_dataset = TensorDataset(self.X[train_idx], train_Y[train_idx])
+        self.val_dataset = TensorDataset(self.X[val_idx], self.Y[val_idx])
+        self.test_dataset = TensorDataset(self.X[test_idx], self.Y[test_idx])
+
+        # Store flag for reference
+        self.en_subopt = en_subopt
         
     def eq_grad(self, X, Y):
         # Create a copy of Y that requires gradients for the whole batch
@@ -109,17 +131,14 @@ class QPProblem(BaseProblem):
                    L<= y <=U
     """
 
-    def __init__(self, dataset, val_size, test_size, seed):
-        super().__init__(dataset, val_size, test_size, seed)
+    def __init__(self, dataset, train_size, val_size, test_size, seed, en_subopt=False):
+        super().__init__(dataset, train_size, val_size, test_size, seed, en_subopt)
         self.Q = torch.tensor(dataset['Q'])
         self.p = torch.tensor(dataset['p'])
         self.A = torch.tensor(dataset['A'])
         self.G = torch.tensor(dataset['G'])
         self.h = torch.tensor(dataset['h'])
-        self.L = torch.tensor(dataset['YL'])
-        self.U = torch.tensor(dataset['YU'])
-        self.X = torch.tensor(dataset['X'])
-        self.Y = torch.tensor(dataset['Y'])
+
         self.xdim = dataset['X'].shape[1]
         self.ydim = dataset['Q'].shape[0]
         self.neq = dataset['A'].shape[0]
@@ -196,8 +215,8 @@ class QCQPProblem(QPProblem):
                    1/2 * y^T H y + G^T y <= h
                    L<= x <=U
     """
-    def __init__(self, dataset, val_size, test_size, seed):
-        super().__init__(dataset, val_size, test_size, seed)
+    def __init__(self, dataset, train_size, val_size, test_size, seed, en_subopt=False):
+        super().__init__(dataset, train_size, val_size, test_size, seed, en_subopt)
         self.H = torch.tensor(dataset['H'])
 
     def __str__(self):
@@ -227,8 +246,8 @@ class SOCPProblem(QPProblem):
                    L<= x <=U
     """
 
-    def __init__(self, dataset, val_size, test_size, seed):
-        super().__init__(dataset, val_size, test_size, seed)
+    def __init__(self, dataset, train_size, val_size, test_size, seed, en_subopt=False):
+        super().__init__(dataset, train_size, val_size, test_size, seed, en_subopt)
         self.C = torch.tensor(dataset['C'] )
         self.d = torch.tensor(dataset['d'] )
 

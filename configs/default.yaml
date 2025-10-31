@@ -1,6 +1,7 @@
 seed: 2025
 
 #dataset parameters
+train_size: 7000
 test_size: 2000
 val_size: 1000
 batch_size: 512

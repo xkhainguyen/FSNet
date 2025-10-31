@@ -30,8 +30,11 @@ python main.py \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --dropout 0.1 \
-    --seed 1\
-    --en_subopt True
+    --lr 0.0005  \
+    --train_size 7000 \
+    --seed 1 \
+    --en_subopt True \
+    --subopt_ratio 0.5
 
 python main.py \
     --method FSNet \

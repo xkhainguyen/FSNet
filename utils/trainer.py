@@ -25,8 +25,10 @@ def load_instance(config):
     # Load data
     seed = config['seed']
     method = config['method']
+    train_size = config['train_size']
     val_size = config['val_size']
     test_size = config['test_size']
+    en_subopt = config['en_subopt']
     prob_type = config['prob_type']
     prob_name = config['prob_name']
     prob_size = config['prob_size']
@@ -63,10 +65,7 @@ def load_instance(config):
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
     if config['en_subopt']:
-        # filepath += '_subopt_noise0.5_bias0.5'
-        # filepath += '_subopt_noise1.0_bias1.0'
-        # filepath += '_subopt_noise2.0_bias2.0'
-        filepath += '_subopt_noise4.0_bias4.0'
+        filepath += f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
 
     # Load dataset
     print("\nLoading dataset from:", filepath, '\n')
@@ -74,7 +73,7 @@ def load_instance(config):
         dataset = pickle.load(f)
     
     # Create problem instance using the appropriate class
-    data = problem_names[prob_name](dataset, val_size, test_size, seed)
+    data = problem_names[prob_name](dataset, train_size, val_size, test_size, seed, en_subopt)
 
     data.device = DEVICE
     print("Running on: ", DEVICE)
@@ -386,18 +385,6 @@ class Trainer:
                 scale=self.config_method['scale'],
             )
         else:
-            # self.config_method['max_iter'] = 5
-            # Y_final = hybrid_lbfgs_solve(
-            #     X_batch,
-            #     Y_pred_scaled,
-            #     self.data,
-            #     val_tol=self.config_method['val_tol'],
-            #     memory=self.config_method['memory_size'],
-            #     max_iter=self.config_method['max_iter'],
-            #     max_diff_iter=self.config_method['max_diff_iter'],
-            #     scale=self.config_method['scale'],
-            # )
-
             Y_final = Y_pred_scaled
             
         obj = self.data.obj_fn(Y_final)
@@ -411,13 +398,8 @@ class Trainer:
 
         sup_weight = 1.0
 
-        # sup_weight = 1.0 - self.en_penalty * 1.0
-
-        # curriculum for sup_weight such that it quickly drops to 0
-        # sup_weight = 1*max(0.0, 1.0 - self.en_penalty * (epoch_metrics['epoch'] - 0.1 * self.config['num_epochs']) / (0.2 * self.config['num_epochs']))
         if self.en_penalty:
             sup_weight *= 0.5
-        # print(sup_weight)
 
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
