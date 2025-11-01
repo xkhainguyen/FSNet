@@ -5,8 +5,8 @@
 # source ~/.bashrc && conda activate ml4opt
 # cd FSNet/
 
-for ckpt in 100; do
-    for seed in 1 2 3; do
+for ckpt in 200; do
+    for seed in 0 1 2 3; do
         # python main.py \
         #     --method FSNet \
         #     --prob_type nonsmooth_nonconvex \

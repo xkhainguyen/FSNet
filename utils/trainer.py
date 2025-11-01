@@ -585,6 +585,7 @@ class Trainer:
         num_batches = len(train_loader)
         for key in epoch_metrics:
             epoch_metrics[key] /= num_batches
+        # epoch_metrics['epoch'] *= num_batches
             
         return epoch_metrics
     
