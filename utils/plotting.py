@@ -58,8 +58,7 @@ def plot_box_with_points(
     # Overlay seed-level points in matching colors
     sns.stripplot(
         data=df, x="X", y="Value", hue="Metric",
-        dodge=True, palette=colors, size=4, jitter=0.15,
-        edgecolor="auto", linewidth=0.3, ax=ax, legend=False
+        dodge=True, palette=colors, size=4, jitter=0.15, linewidth=0.3, ax=ax, legend=False
     )
 
     # --- Style ---

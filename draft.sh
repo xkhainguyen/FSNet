@@ -34,7 +34,7 @@ python main.py \
     --train_size 7000 \
     --seed 1 \
     --en_subopt True \
-    --subopt_ratio 0.5
+    --subopt_ratio 6.0
 
 python main.py \
     --method FSNet \
