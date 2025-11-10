@@ -618,6 +618,8 @@ class Trainer:
     def train(self):
         """Main training loop with detailed results collection."""
         train_size = len(self.data.train_dataset) 
+        if train_size == 10 or train_size == 50:
+            self.config['batch_size'] = 16
         if train_size == 200 or train_size == 500:
             self.config['batch_size'] = 64
         if train_size == 1000:
@@ -711,7 +713,7 @@ class Trainer:
                 val_history.append({**val_metrics, 'epoch': epoch})
 
                 # Save all results with detailed information
-                if self.save_dir:
+                if self.save_dir and self.config['save_intermediate']:
                     self._save_model(epoch)
         
         train_end = time.time()

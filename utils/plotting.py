@@ -88,6 +88,90 @@ def plot_box_with_points(
 
     plt.show()
 
+    
+def plot_metrics_grid(
+    metrics,
+    checkpoints,
+    *,
+    nrows=2,
+    ncols=3,
+    figsize=(16, 9),
+    x_label="Checkpoint",
+    y_label="Value",
+    font_scale=1.1,
+    style="whitegrid",
+    tight_layout=True,
+    suptitle=None,
+):
+    """
+    Plot multiple metrics (mean/std per checkpoint) as a grid of boxplots with scatter points.
+
+    Args:
+        metrics: list of tuples (metric_data, metric_name, logy, palette)
+            - metric_data: np.ndarray of shape (num_checkpoints, num_seeds)
+            - metric_name: str, title for subplot
+            - logy: bool, whether to use log scale on y-axis
+            - palette: list or str, single color or palette
+        checkpoints: list or np.ndarray of checkpoint x-values
+        nrows, ncols: grid layout
+        figsize: figure size (width, height)
+        x_label, y_label: axis labels
+        font_scale: seaborn font scaling
+        style: seaborn style (e.g., 'whitegrid', 'ticks')
+        tight_layout: whether to apply plt.tight_layout()
+        suptitle: optional figure title
+    """
+
+    sns.set_theme(style=style, font_scale=font_scale, rc={
+        "axes.edgecolor": "0.3",
+        "grid.color": "0.85",
+        "grid.linestyle": "--",
+        "grid.linewidth": 0.7,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    })
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+    axes = axes.flatten()
+
+    for idx, (metric, name, logy, palette) in enumerate(metrics):
+        if idx >= len(axes):  # avoid overflow
+            break
+        ax = axes[idx]
+
+        # flatten metric data into long-form DataFrame
+        data = [(ckpt, val) for i, ckpt in enumerate(checkpoints)
+                for val in np.ravel(metric[i])]
+        df = pd.DataFrame(data, columns=[x_label, y_label])
+
+        # choose color
+        color = palette[0] if isinstance(palette, list) else palette
+
+        sns.boxplot(data=df, x=x_label, y=y_label,
+                    color=color, linewidth=1.0, fliersize=2.5, width=0.8, ax=ax)
+        sns.stripplot(data=df, x=x_label, y=y_label,
+                      color="black", size=4, jitter=0.15, alpha=0.6, ax=ax)
+
+        if logy:
+            ax.set_yscale("log")
+
+        ax.set_title(name, fontsize=11, weight="bold", pad=5)
+        ax.set_xlabel(x_label, fontsize=11 )
+        ax.set_ylabel(y_label, fontsize=11)
+        ax.grid(True, linestyle="--", alpha=0.4)
+        ax.set_facecolor("white")
+
+    # hide unused subplots if any
+    for ax in axes[len(metrics):]:
+        ax.remove()
+
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=14, weight="bold", y=1.02)
+
+    if tight_layout:
+        plt.tight_layout()
+    plt.show()
+    
 
 def plot_metric_over_epochs(
     metric_array,
@@ -95,6 +179,7 @@ def plot_metric_over_epochs(
     *,
     epochs_per_val=20,
     metric_name="Metric",
+    label="Baseline",
     title=None,
     log_scale_y=False,
     log_scale_x=False,
@@ -144,7 +229,7 @@ def plot_metric_over_epochs(
 
         plt.plot(
             epochs, mean_,
-            label=f"Checkpoint {ckpt}",
+            label=f"{label} {ckpt}",
             color=colors[i],
             lw=2.0,
             alpha=1.0,

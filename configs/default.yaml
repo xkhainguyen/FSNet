@@ -47,10 +47,10 @@ FSNet:
 
 DC3:
   obj_weight: 1.0
-  eq_pen_weight: 10.0
-  ineq_pen_weight: 10.0
-  corr_lr: 1.0e-7
-  max_corr_steps: 10
+  eq_pen_weight: 1.0
+  ineq_pen_weight: 100.0
+  corr_lr: 1.0e-6
+  max_corr_steps: 20
   corr_momentum: 0.5
 
 projection:
