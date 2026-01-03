@@ -131,22 +131,22 @@ for seed in 1 2 3; do
 
 done
 
-# for size in 10 50; do
-#     python main.py \
-#         --method sup \
-#         --prob_type nonsmooth_nonconvex \
-#         --prob_name socp \
-#         --dropout 0.1 \
-#         --lr 0.00005  \
-#         --train_size $size \
-#         --seed 1 \
-#         --en_subopt True \
-#         --subopt_ratio  2.0
+for size in 7000; do
+    python main.py \
+        --method sup \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --dropout 0.1 \
+        --lr 0.00005  \
+        --train_size $size \
+        --seed 1 \
+        --en_subopt True \
+        --subopt_ratio  2.0
 
-#     # Draw something funny
-#     echo "============================================================"
-#     echo "==========         =====================         ==========="
-#     echo "==========         =====================         ==========="
-#     echo "==========         =====================         ==========="
-#     echo "============================================================"
-# done
+    # Draw something funny
+    echo "============================================================"
+    echo "==========         =====================         ==========="
+    echo "==========         =====================         ==========="
+    echo "==========         =====================         ==========="
+    echo "============================================================"
+done

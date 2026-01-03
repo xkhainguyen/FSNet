@@ -3,10 +3,10 @@ import pickle
 import casadi as ca
 import time
 
-num_var = 2
-num_ineq = 1
-num_eq = 1
-num_examples = 100
+num_var = 100
+num_ineq = 50
+num_eq = 50
+num_examples = 10000
 seed = 2025
 
 print("Nonsmooth nonconvex SOCP problem with {} variables, {} inequalities, {} equalities and {} examples".format(num_var, num_ineq, num_eq, num_examples))
@@ -60,7 +60,26 @@ for n in range(num_examples):
     ineq_constraints = ca.vertcat(*ineq_constraints)
     
     nlp = {'x': ca.vertcat(y, t), 'f': obj_func, 'g': ca.vertcat(eq_constraints, ineq_constraints)}
-    opts = {'ipopt.print_level': 0, 'print_time': 0, }
+    # Updated options for looser tolerance
+    opts = {
+        "ipopt.print_level": 0,
+        "print_time": 0,
+
+        # ---- VERY LOOSE TOLERANCES ----
+        "ipopt.tol": 1e-1,
+        "ipopt.constr_viol_tol": 1e-1,
+        "ipopt.dual_inf_tol": 1e-1,
+        "ipopt.compl_inf_tol": 1e-1,
+
+        # Accept early termination
+        "ipopt.acceptable_tol": 1e0,
+        "ipopt.acceptable_constr_viol_tol": 1e0,
+        "ipopt.acceptable_dual_inf_tol": 1e0,
+        "ipopt.acceptable_compl_inf_tol": 1e0,
+
+        # Stop as soon as acceptable is reached
+        "ipopt.acceptable_iter": 1,
+    }
     solver = ca.nlpsol('solver', 'ipopt', nlp, opts)
     # Define bounds for variables and constraints
     lbg = np.concatenate([np.zeros(num_eq), -np.inf * np.ones(num_ineq+1)])
@@ -100,7 +119,7 @@ print('best_det', det_min)
 data['best_partial'] = best_partial
 
 
-with open("datasets/nonsmooth_nonconvex/socp/random{}_socp_dataset_var{}_ineq{}_eq{}_ex{}".format(seed, num_var, num_ineq, num_eq, num_examples), 'wb') as f:
+with open("datasets/nonsmooth_nonconvex/socp/random{}_socp_dataset_var{}_ineq{}_eq{}_ex{}_tol1e0".format(seed, num_var, num_ineq, num_eq, num_examples), 'wb') as f:
     pickle.dump(data, f)
 
 print("Finished generating data!")
