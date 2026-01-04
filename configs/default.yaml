@@ -7,12 +7,6 @@ val_size: 1000
 batch_size: 512
 test_batch_size: [256, 512]
 
-# neural network parameters
-lr: 0.0001
-lr_decay: 0.9
-lr_decay_step: 100 #3000
-
-num_epochs: 500
 eval_step: 20
 
 hidden_dim: 1024 
@@ -23,6 +17,10 @@ penalty:
   obj_weight: 1.0
   eq_pen_weight: 50.0
   ineq_pen_weight: 50.0
+  lr: 0.0001
+  lr_decay: 0.9
+  lr_decay_step: 100 #3000
+  num_epochs: 500
 
 adaptive_penalty:
   obj_weight: 1.0
@@ -44,6 +42,10 @@ FSNet:
   max_iter: 50
   max_diff_iter: 30
   scale: 1000
+  lr: 0.0001
+  lr_decay: 0.9
+  lr_decay_step: 100 #3000
+  num_epochs: 500
 
 DC3:
   obj_weight: 1.0
@@ -81,6 +83,10 @@ sup:
   max_iter: 50
   max_diff_iter: 30
   scale: 1000
+  lr: 0.0001
+  lr_decay: 0.9
+  lr_decay_step: 100 #3000
+  num_epochs: 1000
 
 sup_partial:
   obj_weight: 1.0

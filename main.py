@@ -28,12 +28,12 @@ def create_parser():
     parser.add_argument('--seed', type=int, default=2025, help='Random seed for reproducibility')
     parser.add_argument('--ablation', type=bool, default=False)
     parser.add_argument('--checkpoint', type=str, default=None, help='Path to model checkpoint')
-    parser.add_argument('--en_subopt', type=bool, default=False, help='Enable suboptimality in training')
-    parser.add_argument('--subopt_ratio', type=float, default=0.0, help='Suboptimality ratio if en_subopt is True')
+    parser.add_argument('--en_subopt', type=int, default=0, help='Enable suboptimality in training')
+    parser.add_argument('--subopt_ratio', type=float, default=0, help='Suboptimality ratio if en_subopt is True')
     parser.add_argument('--save_intermediate', type=bool, default=False, help='Save intermediate models during training')
 
     # Dataset parameters
-    parser.add_argument('--train_size', type=int, help='Size of training dataset', default=-1)
+    parser.add_argument('--train_size', type=int, help='Size of training dataset', default=7000)
     parser.add_argument('--batch_size', type=int, help='Batch size for training')
     parser.add_argument('--val_size', type=int, help='Size of validation dataset')
     parser.add_argument('--test_size', type=int, help='Size of test dataset')
@@ -90,13 +90,13 @@ def create_parser():
     
     # Override neural network parameters
     if args.lr:
-        config['lr'] = args.lr
+        config[args.method]['lr'] = args.lr
     if args.lr_decay:
-        config['lr_decay'] = args.lr_decay
+        config[args.method]['lr_decay'] = args.lr_decay
     if args.lr_decay_step:
-        config['lr_decay_step'] = args.lr_decay_step
+        config[args.method]['lr_decay_step'] = args.lr_decay_step
     if args.num_epochs:
-        config['num_epochs'] = args.num_epochs
+        config[args.method]['num_epochs'] = args.num_epochs
     if args.hidden_dim:
         config['hidden_dim'] = args.hidden_dim
     if args.num_layers:
@@ -140,14 +140,14 @@ def main():
 
     # Load data 
     print(f"Loading problem instance: {prob_type}/{prob_name} with size {config['prob_size']}")
-    data, result_save_dir = load_instance(config)
+    opt_problem, result_save_dir = load_instance(config)
     
     # Train and test the model
-    print(f"Training model using {config['method']} method with seed {config['seed']} for {config['num_epochs']} epochs")
+    print(f"Training model using {config['method']} method with seed {config['seed']} for {config[config['method']]['num_epochs']} epochs")
     start_time = time.time()
     
     # Instantiate and use the Trainer
-    trainer = Trainer(data=data, config=config, save_dir=result_save_dir)
+    trainer = Trainer(opt_problem = opt_problem, config=config, save_dir=result_save_dir)
     trainer.train() # Assuming train method handles both training and testing/evaluation
     
     training_time = time.time() - start_time

@@ -42,7 +42,7 @@ data = {'Q':Q,
         'YU':U,
         'XL':XL,
         'XU':XU,
-        'Y':[]}
+        'Y_subopt':[]}
 Y = []
 for n in range(num_examples):
     Xi = X[n]
@@ -100,7 +100,7 @@ for n in range(num_examples):
     if n % 1000 == 0:
         print("Example {}: Objective value: {}".format(n, res['f'].full().flatten()[0]))
 
-data['Y'] = np.array(Y)
+data['Y_subopt'] = np.array(Y)
 
 
 i = 0

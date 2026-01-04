@@ -20,34 +20,30 @@ class BaseProblem:
         self.input_U = torch.tensor(dataset['XU'])
         self.L = torch.tensor(dataset['YL'])
         self.U = torch.tensor(dataset['YU'])
-        self.X = torch.tensor(dataset['X'])
-        self.Y = torch.tensor(dataset['Y'])
         self.num = dataset['X'].shape[0]
         self.device = DEVICE
 
-        total_size = self.X.shape[0]
+        total_size = self.num
         if train_size + val_size + test_size > total_size:
             raise ValueError("Sum of train_size, val_size, and test_size exceeds total dataset size.")
-        if train_size == -1:
-            train_size = total_size - val_size - test_size
 
         # === Split indices first (to apply different Y tensors) ===
-        all_indices = torch.randperm(total_size, generator=torch.Generator().manual_seed(seed))
+        all_indices = np.arange(total_size)
         train_idx = all_indices[:train_size]
-        val_idx = all_indices[train_size:train_size + val_size]
-        test_idx = all_indices[train_size + val_size:train_size + val_size + test_size]
+        sample_size = 7000
+        val_idx = all_indices[sample_size:sample_size + val_size]
+        test_idx = all_indices[sample_size + val_size:sample_size + val_size + test_size]
 
         # === Choose Y for each split ===
-        if en_subopt:
-            self.Y_subopt = torch.tensor(dataset['Y_subopt'])
-            train_Y = self.Y_subopt
+        if en_subopt == 0:
+            train_Y = torch.tensor(dataset['Y'])
         else:
-            train_Y = self.Y
+            train_Y =  torch.tensor(dataset['Y_subopt'])
 
         # === Create dataset splits ===
-        self.train_dataset = TensorDataset(self.X[train_idx], train_Y[train_idx])
-        self.val_dataset = TensorDataset(self.X[val_idx], self.Y[val_idx])
-        self.test_dataset = TensorDataset(self.X[test_idx], self.Y[test_idx])
+        self.train_dataset = TensorDataset(torch.tensor(dataset['X'])[train_idx], train_Y[train_idx])
+        self.val_dataset = TensorDataset(torch.tensor(dataset['X'])[val_idx], torch.tensor(dataset['Y'])[val_idx])
+        self.test_dataset = TensorDataset(torch.tensor(dataset['X'])[test_idx], torch.tensor(dataset['Y'])[test_idx])
 
         # Store flag for reference
         self.en_subopt = en_subopt
