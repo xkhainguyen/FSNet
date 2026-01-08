@@ -95,7 +95,11 @@ def load_instance(config):
         result_save_dir = os.path.join('ablation_results', prob_type, prob_name, str(opt_problem), config['network'] + '_' + config['method'], 'dist_'+ str(config['FSNet']['dist_weight']) + '_diff_' + str(config['FSNet']['max_diff_iter']))
     else:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        result_save_dir = os.path.join('results', prob_type, prob_name, str(opt_problem), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_dropout' + str(config['dropout']))
+        result_save_dir = os.path.join('results', prob_type, prob_name, str(opt_problem), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_nepochs' + str(config[config['method']]['num_epochs']) + '_lr' + str(config[config['method']]['lr']) + '_trainsize' + str(train_size))
+
+        if config['en_subopt'] != 0:
+            result_save_dir += f"_subopt_{config['en_subopt']}_{config['subopt_ratio']}"
+
         if config['checkpoint']:
             # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
             ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
@@ -601,7 +605,7 @@ class Trainer:
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
         # FSNet tolerance decay
-        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0):
+        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0) and self.config['checkpoint'] is None:
             self.config_method['val_tol'] = np.clip(
                 self.config_method['val_tol'] / 10, 
                 a_min=1e-9, 
@@ -609,14 +613,14 @@ class Trainer:
             )
         
         # Dropout decay
-        if epoch == 100:
-            for m in self.model.modules():
-                if isinstance(m, nn.Dropout):
-                    m.p = m.p / 2
-        elif epoch == 150:
-            for m in self.model.modules():
-                if isinstance(m, nn.Dropout):
-                    m.p = 0
+        # if epoch == 100:
+        #     for m in self.model.modules():
+        #         if isinstance(m, nn.Dropout):
+        #             m.p = m.p / 2
+        # elif epoch == 150:
+        #     for m in self.model.modules():
+        #         if isinstance(m, nn.Dropout):
+        #             m.p = 0
     
  
     def train(self):
@@ -657,7 +661,7 @@ class Trainer:
             model_save_content['config']['dropout'] = self.config['dropout']  # Ensure dropout is set correctly
             self.model = create_model(self.opt_problem, self.method, model_save_content['config'])
             self.model.load_state_dict(model_save_content['model_state_dict'])
-            self.config_method['lr'] *= 0.1  # Reduce learning rate for fine-tuning
+            self.config_method['val_tol'] = self.config_method['test_val_tol'] 
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
         
@@ -669,18 +673,24 @@ class Trainer:
             fused=True
         )
 
-        if self.config['checkpoint']:
-            warmup_steps = len(train_loader)
-            total_steps = len(train_loader) * self.config_method['num_epochs']
-            s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-            s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
-            self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
-        else:
-            self.scheduler = optim.lr_scheduler.StepLR(
-                self.optimizer, 
-                step_size=self.config_method['lr_decay_step'], 
-                gamma=self.config_method['lr_decay']
-            )
+        # if self.config['checkpoint'] or self.config['method'] in ['sup', 'sup_pen', 'sup_partial']:
+        #     warmup_steps = len(train_loader)
+        #     total_steps = len(train_loader) * self.config_method['num_epochs']
+        #     s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+        #     s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
+        #     self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
+        # else:
+        #     self.scheduler = optim.lr_scheduler.StepLR(
+        #         self.optimizer, 
+        #         step_size=self.config_method['lr_decay_step'], 
+        #         gamma=self.config_method['lr_decay']
+        #     )
+
+        warmup_steps = len(train_loader)
+        total_steps = len(train_loader) * self.config_method['num_epochs']
+        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
+        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
 
         print(f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, num_epochs: {self.config_method['num_epochs']}\n")
 

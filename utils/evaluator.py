@@ -103,6 +103,13 @@ class Evaluator:
         else:
             return Y_pred_scaled
     
+    def _compute_merit(self, obj, eq_vio, ineq_vio):
+        """Compute merit function value."""
+        obj_weight = 1
+        eq_weight = 10
+        ineq_weight = 10
+        return obj_weight * obj + eq_weight * eq_vio + ineq_weight * ineq_vio
+    
     def _compute_batch_metrics(self, X_batch, Y_final, Y_true):
         """Compute comprehensive metrics for a batch."""
         # Objective values
@@ -124,7 +131,10 @@ class Evaluator:
         opt_gap = (obj_pred - obj_true) / obj_true.abs()         
         # Solution distance
         solution_distance = torch.norm(Y_final - Y_true, dim=1).square()
-        
+
+        merit = self._compute_merit(obj_pred, eq_violation_l1, ineq_violation_l1)
+
+        # Merit metrics
         return {
             # Objective metrics
             'objective': obj_pred.mean().item(),
@@ -133,6 +143,11 @@ class Evaluator:
             'opt_gap_std': opt_gap.std().item(),
             'opt_gap_max': opt_gap.max().item(),
             'opt_gap_min': opt_gap.min().item(),
+
+            'merit_mean': merit.mean().item(),
+            'merit_std': merit.std().item(),
+            'merit_max': merit.max().item(),
+            'merit_min': merit.min().item(),
             
             # Constraint violations (L2)
             'eq_violation_l2_mean': eq_violation_l2.mean().item(),
@@ -186,7 +201,9 @@ class Evaluator:
         print(f"Eq Violation l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
         print(f"Ineq Violation l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
         print(f"Solution Distance:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
+        print(f"Merit:             {metrics.get('merit_mean', 0):.6e} ± {metrics.get('merit_std', 0):.6e}")
         print(f"Avg Inference Time:  {metrics.get('avg_inference_time', 0):.4f}s")
+
         print("=" * 50)
     
     def evaluate_multiple_batch_sizes(self, model, dataset, batch_sizes, split_name="test"):

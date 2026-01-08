@@ -29,6 +29,45 @@ python main.py \
     --method sup \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
+    --train_size 7000 \
+    --seed 1 \
+    --en_subopt 2 \
+    --subopt_ratio -10.0 \
+    --save_intermediate True 
+
+python main.py \
+    --method sup \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --train_size 7000 \
+    --seed 1 \
+    --en_subopt 2 \
+    --subopt_ratio 1.0 \
+    --save_intermediate True 
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0001  \
+    --seed 1 \
+    --num_epochs 300
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 1 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260105-234302_MLP_sup_seed1_dropout0.1_subopt_2_-10.0/model_60.pt"
+
+
+
+python main.py \
+    --method sup \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
     --dropout 0.1 \
     --lr 0.0005  \
     --train_size 7000 \
