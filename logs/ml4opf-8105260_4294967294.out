@@ -1,0 +1,904 @@
+==============================================
+ Job started at: 2026-01-15 17:17:32
+ Job ID: 8105260
+ Node: node2804
+==============================================
+
+======= Running for problem: nonsmooth_nonconvex/socp =======
+
+Loading problem instance: nonsmooth_nonconvex/socp with size [100, 50, 50, 10000]
+Loading  dataset from: datasets/nonsmooth_nonconvex/socp/random2025_socp_dataset_var100_ineq50_eq50_ex10000_maxt0.5_ready 
+
+Running on:  cuda
+Training model using sup_pen method with seed 0 for 1000 epochs
+Using batch size: 512
+
+lr: 0.0001, weight_decay: 0.001, num_epochs: 1000
+
+Epoch 1/1000, Loss: 176664.9185, Obj: 0.0530, Eq Viol (l1): 26.732455, Ineq Viol (l1): 888.794400, Epoch time: 0.49s
+
+Running validation at epoch 0...
+
+VALIDATION_EPOCH_0 EVALUATION RESULTS:
+==================================================
+Obj:     5.468442e-02
+Opt Gap:      7.767172e-01 ± 1.311065e-02
+Eq Vio l1:   2.662656e+01 (max: 3.461832e+01)
+Ineq Vio l1: 8.886877e+02 (max: 8.892797e+02)
+Sol Dis:   1.637699e+02 ± 3.901106e-02
+Merit:             9.153198e+03 ± 1.068083e-01
+Avg Inf Time:  0.0003s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_0.pt
+Epoch 2/1000, Loss: 176214.4787, Obj: 0.0774, Eq Viol (l1): 26.751771, Ineq Viol (l1): 887.733731, Epoch time: 0.19s
+Epoch 3/1000, Loss: 174883.4305, Obj: 0.1478, Eq Viol (l1): 26.951706, Ineq Viol (l1): 884.555355, Epoch time: 0.19s
+Epoch 4/1000, Loss: 171652.4312, Obj: 0.3175, Eq Viol (l1): 28.074819, Ineq Viol (l1): 876.598517, Epoch time: 0.19s
+Epoch 5/1000, Loss: 160201.3230, Obj: 0.9106, Eq Viol (l1): 36.557361, Ineq Viol (l1): 846.230213, Epoch time: 0.19s
+Epoch 6/1000, Loss: 102690.0406, Obj: 4.0691, Eq Viol (l1): 90.083260, Ineq Viol (l1): 644.916996, Epoch time: 0.19s
+Epoch 7/1000, Loss: 23775.2972, Obj: 17.9842, Eq Viol (l1): 233.492951, Ineq Viol (l1): 75.378579, Epoch time: 0.19s
+Epoch 8/1000, Loss: 11163.5882, Obj: 19.1086, Eq Viol (l1): 167.059237, Ineq Viol (l1): 40.671878, Epoch time: 0.19s
+Epoch 9/1000, Loss: 4525.9881, Obj: 20.4178, Eq Viol (l1): 107.156049, Ineq Viol (l1): 31.377095, Epoch time: 0.19s
+Epoch 10/1000, Loss: 1749.0669, Obj: 21.9065, Eq Viol (l1): 64.424645, Ineq Viol (l1): 18.205388, Epoch time: 0.19s
+Epoch 11/1000, Loss: 652.2455, Obj: 23.2911, Eq Viol (l1): 38.199084, Ineq Viol (l1): 7.278608, Epoch time: 0.19s
+
+Running validation at epoch 10...
+
+VALIDATION_EPOCH_10 EVALUATION RESULTS:
+==================================================
+Obj:     2.372112e+01
+Opt Gap:      4.191543e+01 ± 1.338690e+01
+Eq Vio l1:   2.774390e+01 (max: 3.674162e+01)
+Ineq Vio l1: 2.548531e+00 (max: 1.173747e+01)
+Sol Dis:   2.371603e+02 ± 1.633932e-01
+Merit:             3.266454e+02 ± 1.177466e+00
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_10.pt
+Epoch 12/1000, Loss: 329.5201, Obj: 24.0807, Eq Viol (l1): 26.772345, Ineq Viol (l1): 2.031368, Epoch time: 0.19s
+Epoch 13/1000, Loss: 277.3481, Obj: 23.4439, Eq Viol (l1): 24.267685, Ineq Viol (l1): 0.571600, Epoch time: 0.19s
+Epoch 14/1000, Loss: 246.4827, Obj: 21.9401, Eq Viol (l1): 22.223800, Ineq Viol (l1): 0.420220, Epoch time: 0.19s
+Epoch 15/1000, Loss: 217.8481, Obj: 21.4141, Eq Viol (l1): 19.837148, Ineq Viol (l1): 0.385779, Epoch time: 0.19s
+Epoch 16/1000, Loss: 191.9000, Obj: 21.3245, Eq Viol (l1): 17.301039, Ineq Viol (l1): 0.351669, Epoch time: 0.19s
+Epoch 17/1000, Loss: 171.0419, Obj: 21.1906, Eq Viol (l1): 15.088652, Ineq Viol (l1): 0.361450, Epoch time: 0.19s
+Epoch 18/1000, Loss: 155.6416, Obj: 21.2314, Eq Viol (l1): 13.346459, Ineq Viol (l1): 0.301661, Epoch time: 0.19s
+Epoch 19/1000, Loss: 143.8140, Obj: 21.0811, Eq Viol (l1): 11.880460, Ineq Viol (l1): 0.305311, Epoch time: 0.19s
+Epoch 20/1000, Loss: 134.7761, Obj: 20.8413, Eq Viol (l1): 10.634889, Ineq Viol (l1): 0.314762, Epoch time: 0.19s
+Epoch 21/1000, Loss: 128.1669, Obj: 20.7380, Eq Viol (l1): 9.590872, Ineq Viol (l1): 0.303548, Epoch time: 0.19s
+
+Running validation at epoch 20...
+
+VALIDATION_EPOCH_20 EVALUATION RESULTS:
+==================================================
+Obj:     2.021510e+01
+Opt Gap:      3.609990e+01 ± 1.164107e+01
+Eq Vio l1:   6.272287e+00 (max: 1.158663e+01)
+Ineq Vio l1: 3.064884e-01 (max: 6.110264e+00)
+Sol Dis:   2.198966e+02 ± 2.875070e-01
+Merit:             8.600286e+01 ± 2.933739e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_20.pt
+Epoch 22/1000, Loss: 123.2550, Obj: 20.5412, Eq Viol (l1): 8.799882, Ineq Viol (l1): 0.312836, Epoch time: 0.19s
+Epoch 23/1000, Loss: 120.1378, Obj: 20.4943, Eq Viol (l1): 8.169996, Ineq Viol (l1): 0.318310, Epoch time: 0.19s
+Epoch 24/1000, Loss: 117.5960, Obj: 20.3970, Eq Viol (l1): 7.713127, Ineq Viol (l1): 0.280220, Epoch time: 0.19s
+Epoch 25/1000, Loss: 115.1283, Obj: 19.9935, Eq Viol (l1): 7.346836, Ineq Viol (l1): 0.308434, Epoch time: 0.19s
+Epoch 26/1000, Loss: 113.8513, Obj: 19.9676, Eq Viol (l1): 7.086252, Ineq Viol (l1): 0.264273, Epoch time: 0.19s
+Epoch 27/1000, Loss: 112.6478, Obj: 19.7599, Eq Viol (l1): 6.842688, Ineq Viol (l1): 0.280659, Epoch time: 0.19s
+Epoch 28/1000, Loss: 111.5942, Obj: 19.5678, Eq Viol (l1): 6.681409, Ineq Viol (l1): 0.273229, Epoch time: 0.19s
+Epoch 29/1000, Loss: 110.9802, Obj: 19.4331, Eq Viol (l1): 6.546778, Ineq Viol (l1): 0.266417, Epoch time: 0.19s
+Epoch 30/1000, Loss: 109.9126, Obj: 19.1830, Eq Viol (l1): 6.420792, Ineq Viol (l1): 0.270818, Epoch time: 0.19s
+Epoch 31/1000, Loss: 109.3214, Obj: 19.0063, Eq Viol (l1): 6.321031, Ineq Viol (l1): 0.281134, Epoch time: 0.19s
+
+Running validation at epoch 30...
+
+VALIDATION_EPOCH_30 EVALUATION RESULTS:
+==================================================
+Obj:     1.907498e+01
+Opt Gap:      3.419843e+01 ± 1.110254e+01
+Eq Vio l1:   2.533925e+00 (max: 4.190662e+00)
+Ineq Vio l1: 5.989322e-02 (max: 1.781219e+00)
+Sol Dis:   2.132338e+02 ± 3.138783e-01
+Merit:             4.501316e+01 ± 1.129947e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_30.pt
+Epoch 32/1000, Loss: 108.9068, Obj: 18.9891, Eq Viol (l1): 6.250181, Ineq Viol (l1): 0.251426, Epoch time: 0.19s
+Epoch 33/1000, Loss: 108.5043, Obj: 18.8809, Eq Viol (l1): 6.170927, Ineq Viol (l1): 0.259486, Epoch time: 0.19s
+Epoch 34/1000, Loss: 107.4523, Obj: 18.6258, Eq Viol (l1): 6.045792, Ineq Viol (l1): 0.276975, Epoch time: 0.19s
+Epoch 35/1000, Loss: 107.0781, Obj: 18.6343, Eq Viol (l1): 5.972538, Ineq Viol (l1): 0.244169, Epoch time: 0.19s
+Epoch 36/1000, Loss: 107.1800, Obj: 18.6278, Eq Viol (l1): 5.923860, Ineq Viol (l1): 0.274885, Epoch time: 0.28s
+Epoch 37/1000, Loss: 106.6221, Obj: 18.5079, Eq Viol (l1): 5.812796, Ineq Viol (l1): 0.296098, Epoch time: 0.19s
+Epoch 38/1000, Loss: 106.2412, Obj: 18.5205, Eq Viol (l1): 5.786354, Ineq Viol (l1): 0.251723, Epoch time: 0.19s
+Epoch 39/1000, Loss: 106.0196, Obj: 18.5236, Eq Viol (l1): 5.730726, Ineq Viol (l1): 0.252719, Epoch time: 0.19s
+Epoch 40/1000, Loss: 105.5882, Obj: 18.4074, Eq Viol (l1): 5.645588, Ineq Viol (l1): 0.279905, Epoch time: 0.19s
+Epoch 41/1000, Loss: 105.0369, Obj: 18.3165, Eq Viol (l1): 5.615958, Ineq Viol (l1): 0.269080, Epoch time: 0.19s
+
+Running validation at epoch 40...
+
+VALIDATION_EPOCH_40 EVALUATION RESULTS:
+==================================================
+Obj:     1.845551e+01
+Opt Gap:      3.253955e+01 ± 1.021463e+01
+Eq Vio l1:   2.392086e+00 (max: 3.688212e+00)
+Ineq Vio l1: 2.463578e-02 (max: 1.584876e+00)
+Sol Dis:   2.095020e+02 ± 2.574064e-01
+Merit:             4.262272e+01 ± 5.309254e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_40.pt
+Epoch 42/1000, Loss: 104.7010, Obj: 18.2681, Eq Viol (l1): 5.546181, Ineq Viol (l1): 0.274921, Epoch time: 0.19s
+Epoch 43/1000, Loss: 104.4492, Obj: 18.2375, Eq Viol (l1): 5.525929, Ineq Viol (l1): 0.265964, Epoch time: 0.19s
+Epoch 44/1000, Loss: 104.3096, Obj: 18.2324, Eq Viol (l1): 5.458427, Ineq Viol (l1): 0.289604, Epoch time: 0.19s
+Epoch 45/1000, Loss: 103.9455, Obj: 18.2217, Eq Viol (l1): 5.431655, Ineq Viol (l1): 0.259048, Epoch time: 0.19s
+Epoch 46/1000, Loss: 103.4636, Obj: 18.1711, Eq Viol (l1): 5.342577, Ineq Viol (l1): 0.259448, Epoch time: 0.19s
+Epoch 47/1000, Loss: 103.6373, Obj: 18.2179, Eq Viol (l1): 5.346953, Ineq Viol (l1): 0.275280, Epoch time: 0.19s
+Epoch 48/1000, Loss: 103.0328, Obj: 18.0963, Eq Viol (l1): 5.288095, Ineq Viol (l1): 0.284658, Epoch time: 0.19s
+Epoch 49/1000, Loss: 102.9455, Obj: 18.1165, Eq Viol (l1): 5.268862, Ineq Viol (l1): 0.264533, Epoch time: 0.19s
+Epoch 50/1000, Loss: 102.3945, Obj: 18.0064, Eq Viol (l1): 5.177385, Ineq Viol (l1): 0.290618, Epoch time: 0.19s
+Epoch 51/1000, Loss: 102.4091, Obj: 18.1213, Eq Viol (l1): 5.179804, Ineq Viol (l1): 0.249000, Epoch time: 0.19s
+
+Running validation at epoch 50...
+
+VALIDATION_EPOCH_50 EVALUATION RESULTS:
+==================================================
+Obj:     1.777558e+01
+Opt Gap:      3.148722e+01 ± 9.867329e+00
+Eq Vio l1:   2.047051e+00 (max: 3.147947e+00)
+Ineq Vio l1: 1.096812e-01 (max: 3.442178e+00)
+Sol Dis:   2.058387e+02 ± 3.918557e-01
+Merit:             3.934291e+01 ± 5.802951e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_50.pt
+Epoch 52/1000, Loss: 102.2694, Obj: 18.0760, Eq Viol (l1): 5.115294, Ineq Viol (l1): 0.271626, Epoch time: 0.19s
+Epoch 53/1000, Loss: 102.0166, Obj: 18.0624, Eq Viol (l1): 5.089564, Ineq Viol (l1): 0.273200, Epoch time: 0.19s
+Epoch 54/1000, Loss: 102.2299, Obj: 18.0979, Eq Viol (l1): 5.069363, Ineq Viol (l1): 0.279084, Epoch time: 0.19s
+Epoch 55/1000, Loss: 101.7795, Obj: 18.1029, Eq Viol (l1): 5.018918, Ineq Viol (l1): 0.253490, Epoch time: 0.19s
+Epoch 56/1000, Loss: 101.6426, Obj: 18.0273, Eq Viol (l1): 5.023314, Ineq Viol (l1): 0.282543, Epoch time: 0.19s
+Epoch 57/1000, Loss: 100.7286, Obj: 17.8625, Eq Viol (l1): 4.961052, Ineq Viol (l1): 0.258644, Epoch time: 0.19s
+Epoch 58/1000, Loss: 100.7291, Obj: 17.8186, Eq Viol (l1): 4.940659, Ineq Viol (l1): 0.300086, Epoch time: 0.19s
+Epoch 59/1000, Loss: 100.4207, Obj: 17.8054, Eq Viol (l1): 4.937152, Ineq Viol (l1): 0.255857, Epoch time: 0.19s
+Epoch 60/1000, Loss: 100.1603, Obj: 17.8105, Eq Viol (l1): 4.891742, Ineq Viol (l1): 0.259971, Epoch time: 0.19s
+Epoch 61/1000, Loss: 99.7239, Obj: 17.7507, Eq Viol (l1): 4.837965, Ineq Viol (l1): 0.270576, Epoch time: 0.19s
+
+Running validation at epoch 60...
+
+VALIDATION_EPOCH_60 EVALUATION RESULTS:
+==================================================
+Obj:     1.763615e+01
+Opt Gap:      3.124258e+01 ± 9.939355e+00
+Eq Vio l1:   1.916785e+00 (max: 3.172962e+00)
+Ineq Vio l1: 5.699139e-02 (max: 2.503541e+00)
+Sol Dis:   2.042340e+02 ± 3.793728e-01
+Merit:             3.737391e+01 ± 2.173504e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_60.pt
+Epoch 62/1000, Loss: 99.6342, Obj: 17.8001, Eq Viol (l1): 4.812344, Ineq Viol (l1): 0.254824, Epoch time: 0.19s
+Epoch 63/1000, Loss: 99.6859, Obj: 17.8462, Eq Viol (l1): 4.792970, Ineq Viol (l1): 0.304384, Epoch time: 0.19s
+Epoch 64/1000, Loss: 99.9293, Obj: 18.0391, Eq Viol (l1): 4.789149, Ineq Viol (l1): 0.275263, Epoch time: 0.19s
+Epoch 65/1000, Loss: 99.5277, Obj: 17.9093, Eq Viol (l1): 4.799283, Ineq Viol (l1): 0.318087, Epoch time: 0.19s
+Epoch 66/1000, Loss: 98.8286, Obj: 17.8980, Eq Viol (l1): 4.733436, Ineq Viol (l1): 0.271963, Epoch time: 0.19s
+Epoch 67/1000, Loss: 99.1029, Obj: 18.0578, Eq Viol (l1): 4.703221, Ineq Viol (l1): 0.270726, Epoch time: 0.19s
+Epoch 68/1000, Loss: 98.7512, Obj: 18.0143, Eq Viol (l1): 4.693572, Ineq Viol (l1): 0.282300, Epoch time: 0.19s
+Epoch 69/1000, Loss: 98.6450, Obj: 18.0705, Eq Viol (l1): 4.655136, Ineq Viol (l1): 0.278589, Epoch time: 0.19s
+Epoch 70/1000, Loss: 98.4437, Obj: 18.1083, Eq Viol (l1): 4.628153, Ineq Viol (l1): 0.288444, Epoch time: 0.19s
+Epoch 71/1000, Loss: 98.5945, Obj: 18.1398, Eq Viol (l1): 4.632324, Ineq Viol (l1): 0.319480, Epoch time: 0.28s
+
+Running validation at epoch 70...
+
+VALIDATION_EPOCH_70 EVALUATION RESULTS:
+==================================================
+Obj:     1.810928e+01
+Opt Gap:      3.224841e+01 ± 1.023797e+01
+Eq Vio l1:   2.157209e+00 (max: 3.112387e+00)
+Ineq Vio l1: 3.885149e-02 (max: 2.849888e+00)
+Sol Dis:   2.045845e+02 ± 3.053894e-01
+Merit:             4.006989e+01 ± 1.085527e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_70.pt
+Epoch 72/1000, Loss: 98.2280, Obj: 18.2088, Eq Viol (l1): 4.629138, Ineq Viol (l1): 0.264600, Epoch time: 0.19s
+Epoch 73/1000, Loss: 98.1565, Obj: 18.2955, Eq Viol (l1): 4.592661, Ineq Viol (l1): 0.266595, Epoch time: 0.19s
+Epoch 74/1000, Loss: 97.7413, Obj: 18.2844, Eq Viol (l1): 4.540655, Ineq Viol (l1): 0.264514, Epoch time: 0.19s
+Epoch 75/1000, Loss: 97.6776, Obj: 18.3321, Eq Viol (l1): 4.536672, Ineq Viol (l1): 0.276357, Epoch time: 0.19s
+Epoch 76/1000, Loss: 97.4209, Obj: 18.3085, Eq Viol (l1): 4.503400, Ineq Viol (l1): 0.295814, Epoch time: 0.19s
+Epoch 77/1000, Loss: 97.5718, Obj: 18.4981, Eq Viol (l1): 4.493527, Ineq Viol (l1): 0.270864, Epoch time: 0.19s
+Epoch 78/1000, Loss: 97.1185, Obj: 18.3922, Eq Viol (l1): 4.449587, Ineq Viol (l1): 0.292204, Epoch time: 0.19s
+Epoch 79/1000, Loss: 97.1620, Obj: 18.5045, Eq Viol (l1): 4.465341, Ineq Viol (l1): 0.277453, Epoch time: 0.19s
+Epoch 80/1000, Loss: 97.1120, Obj: 18.5428, Eq Viol (l1): 4.431315, Ineq Viol (l1): 0.280452, Epoch time: 0.19s
+Epoch 81/1000, Loss: 97.2313, Obj: 18.5952, Eq Viol (l1): 4.432850, Ineq Viol (l1): 0.309097, Epoch time: 0.19s
+
+Running validation at epoch 80...
+
+VALIDATION_EPOCH_80 EVALUATION RESULTS:
+==================================================
+Obj:     1.896842e+01
+Opt Gap:      3.382091e+01 ± 1.095197e+01
+Eq Vio l1:   1.800303e+00 (max: 2.891854e+00)
+Ineq Vio l1: 4.375794e-03 (max: 2.314873e-01)
+Sol Dis:   2.060047e+02 ± 2.138685e-01
+Merit:             3.701520e+01 ± 7.294874e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_80.pt
+Epoch 82/1000, Loss: 96.7110, Obj: 18.5526, Eq Viol (l1): 4.383347, Ineq Viol (l1): 0.278526, Epoch time: 0.19s
+Epoch 83/1000, Loss: 96.6610, Obj: 18.6026, Eq Viol (l1): 4.381367, Ineq Viol (l1): 0.279137, Epoch time: 0.19s
+Epoch 84/1000, Loss: 96.4978, Obj: 18.5892, Eq Viol (l1): 4.363798, Ineq Viol (l1): 0.287188, Epoch time: 0.19s
+Epoch 85/1000, Loss: 96.7118, Obj: 18.6739, Eq Viol (l1): 4.347618, Ineq Viol (l1): 0.299270, Epoch time: 0.19s
+Epoch 86/1000, Loss: 96.2726, Obj: 18.6441, Eq Viol (l1): 4.329549, Ineq Viol (l1): 0.267402, Epoch time: 0.19s
+Epoch 87/1000, Loss: 96.3843, Obj: 18.6670, Eq Viol (l1): 4.316414, Ineq Viol (l1): 0.298839, Epoch time: 0.19s
+Epoch 88/1000, Loss: 95.8070, Obj: 18.6430, Eq Viol (l1): 4.284494, Ineq Viol (l1): 0.240982, Epoch time: 0.19s
+Epoch 89/1000, Loss: 95.7653, Obj: 18.6037, Eq Viol (l1): 4.257966, Ineq Viol (l1): 0.286595, Epoch time: 0.19s
+Epoch 90/1000, Loss: 96.0978, Obj: 18.6783, Eq Viol (l1): 4.263235, Ineq Viol (l1): 0.322830, Epoch time: 0.19s
+Epoch 91/1000, Loss: 95.7190, Obj: 18.7088, Eq Viol (l1): 4.248751, Ineq Viol (l1): 0.258061, Epoch time: 0.19s
+
+Running validation at epoch 90...
+
+VALIDATION_EPOCH_90 EVALUATION RESULTS:
+==================================================
+Obj:     1.882653e+01
+Opt Gap:      3.310294e+01 ± 1.042998e+01
+Eq Vio l1:   1.758415e+00 (max: 2.789627e+00)
+Ineq Vio l1: 1.023747e-02 (max: 4.191273e-01)
+Sol Dis:   2.041925e+02 ± 3.992041e-02
+Merit:             3.651305e+01 ± 1.985733e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_90.pt
+Epoch 92/1000, Loss: 96.1136, Obj: 18.8219, Eq Viol (l1): 4.237726, Ineq Viol (l1): 0.265044, Epoch time: 0.19s
+Epoch 93/1000, Loss: 95.9953, Obj: 18.8173, Eq Viol (l1): 4.210573, Ineq Viol (l1): 0.314543, Epoch time: 0.19s
+Epoch 94/1000, Loss: 95.4960, Obj: 18.7793, Eq Viol (l1): 4.205552, Ineq Viol (l1): 0.271360, Epoch time: 0.19s
+Epoch 95/1000, Loss: 95.2690, Obj: 18.7877, Eq Viol (l1): 4.167329, Ineq Viol (l1): 0.261601, Epoch time: 0.19s
+Epoch 96/1000, Loss: 95.3088, Obj: 18.8291, Eq Viol (l1): 4.158526, Ineq Viol (l1): 0.275562, Epoch time: 0.19s
+Epoch 97/1000, Loss: 95.2383, Obj: 18.9022, Eq Viol (l1): 4.160403, Ineq Viol (l1): 0.261049, Epoch time: 0.19s
+Epoch 98/1000, Loss: 95.0961, Obj: 18.9478, Eq Viol (l1): 4.138495, Ineq Viol (l1): 0.255519, Epoch time: 0.19s
+Epoch 99/1000, Loss: 95.0248, Obj: 18.9787, Eq Viol (l1): 4.118463, Ineq Viol (l1): 0.265139, Epoch time: 0.19s
+Epoch 100/1000, Loss: 95.1888, Obj: 19.0955, Eq Viol (l1): 4.116887, Ineq Viol (l1): 0.254782, Epoch time: 0.19s
+Epoch 101/1000, Loss: 94.8137, Obj: 19.0402, Eq Viol (l1): 4.106637, Ineq Viol (l1): 0.257230, Epoch time: 0.19s
+
+Running validation at epoch 100...
+
+VALIDATION_EPOCH_100 EVALUATION RESULTS:
+==================================================
+Obj:     1.887909e+01
+Opt Gap:      3.315690e+01 ± 1.040499e+01
+Eq Vio l1:   1.672981e+00 (max: 2.827585e+00)
+Ineq Vio l1: 8.866051e-02 (max: 3.330376e+00)
+Sol Dis:   2.036092e+02 ± 7.666609e-02
+Merit:             3.649551e+01 ± 2.642896e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_100.pt
+Epoch 102/1000, Loss: 94.6455, Obj: 19.0053, Eq Viol (l1): 4.079934, Ineq Viol (l1): 0.291568, Epoch time: 0.19s
+Epoch 103/1000, Loss: 94.5755, Obj: 19.0605, Eq Viol (l1): 4.066165, Ineq Viol (l1): 0.260796, Epoch time: 0.19s
+Epoch 104/1000, Loss: 94.7330, Obj: 19.1369, Eq Viol (l1): 4.061637, Ineq Viol (l1): 0.292508, Epoch time: 0.19s
+Epoch 105/1000, Loss: 94.4096, Obj: 19.1206, Eq Viol (l1): 4.052635, Ineq Viol (l1): 0.269023, Epoch time: 0.19s
+Epoch 106/1000, Loss: 94.6498, Obj: 19.1625, Eq Viol (l1): 4.025730, Ineq Viol (l1): 0.325233, Epoch time: 0.19s
+Epoch 107/1000, Loss: 94.2832, Obj: 19.1563, Eq Viol (l1): 4.024601, Ineq Viol (l1): 0.293987, Epoch time: 0.28s
+Epoch 108/1000, Loss: 94.2947, Obj: 19.2284, Eq Viol (l1): 4.012902, Ineq Viol (l1): 0.276119, Epoch time: 0.19s
+Epoch 109/1000, Loss: 93.9980, Obj: 19.1990, Eq Viol (l1): 3.983689, Ineq Viol (l1): 0.284731, Epoch time: 0.19s
+Epoch 110/1000, Loss: 93.8868, Obj: 19.2595, Eq Viol (l1): 3.978062, Ineq Viol (l1): 0.267373, Epoch time: 0.19s
+Epoch 111/1000, Loss: 93.9727, Obj: 19.3261, Eq Viol (l1): 3.985408, Ineq Viol (l1): 0.267889, Epoch time: 0.19s
+
+Running validation at epoch 110...
+
+VALIDATION_EPOCH_110 EVALUATION RESULTS:
+==================================================
+Obj:     1.904124e+01
+Opt Gap:      3.360839e+01 ± 1.085670e+01
+Eq Vio l1:   1.590353e+00 (max: 2.637733e+00)
+Ineq Vio l1: 9.120005e-02 (max: 3.937969e+00)
+Sol Dis:   2.041717e+02 ± 5.380140e-02
+Merit:             3.585676e+01 ± 2.008079e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_110.pt
+Epoch 112/1000, Loss: 93.9024, Obj: 19.3254, Eq Viol (l1): 3.961023, Ineq Viol (l1): 0.276643, Epoch time: 0.19s
+Epoch 113/1000, Loss: 93.7105, Obj: 19.2949, Eq Viol (l1): 3.943271, Ineq Viol (l1): 0.295453, Epoch time: 0.19s
+Epoch 114/1000, Loss: 93.5835, Obj: 19.3845, Eq Viol (l1): 3.937433, Ineq Viol (l1): 0.255590, Epoch time: 0.19s
+Epoch 115/1000, Loss: 93.4575, Obj: 19.3955, Eq Viol (l1): 3.928060, Ineq Viol (l1): 0.263772, Epoch time: 0.19s
+Epoch 116/1000, Loss: 93.5266, Obj: 19.3984, Eq Viol (l1): 3.924243, Ineq Viol (l1): 0.286826, Epoch time: 0.19s
+Epoch 117/1000, Loss: 93.3910, Obj: 19.4646, Eq Viol (l1): 3.905765, Ineq Viol (l1): 0.259737, Epoch time: 0.19s
+Epoch 118/1000, Loss: 93.6937, Obj: 19.5699, Eq Viol (l1): 3.893892, Ineq Viol (l1): 0.288207, Epoch time: 0.19s
+Epoch 119/1000, Loss: 93.5096, Obj: 19.6160, Eq Viol (l1): 3.891388, Ineq Viol (l1): 0.271584, Epoch time: 0.19s
+Epoch 120/1000, Loss: 93.4452, Obj: 19.6229, Eq Viol (l1): 3.886807, Ineq Viol (l1): 0.270419, Epoch time: 0.19s
+Epoch 121/1000, Loss: 93.0920, Obj: 19.6372, Eq Viol (l1): 3.872965, Ineq Viol (l1): 0.250310, Epoch time: 0.19s
+
+Running validation at epoch 120...
+
+VALIDATION_EPOCH_120 EVALUATION RESULTS:
+==================================================
+Obj:     1.936646e+01
+Opt Gap:      3.431152e+01 ± 1.108639e+01
+Eq Vio l1:   1.609523e+00 (max: 2.611788e+00)
+Ineq Vio l1: 8.224074e-02 (max: 2.854190e+00)
+Sol Dis:   2.046553e+02 ± 3.561900e-01
+Merit:             3.628409e+01 ± 1.816602e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_120.pt
+Epoch 122/1000, Loss: 92.9663, Obj: 19.5587, Eq Viol (l1): 3.842184, Ineq Viol (l1): 0.306617, Epoch time: 0.19s
+Epoch 123/1000, Loss: 93.1776, Obj: 19.6892, Eq Viol (l1): 3.849353, Ineq Viol (l1): 0.291967, Epoch time: 0.19s
+Epoch 124/1000, Loss: 93.3984, Obj: 19.6569, Eq Viol (l1): 3.870648, Ineq Viol (l1): 0.374497, Epoch time: 0.19s
+Epoch 125/1000, Loss: 92.5126, Obj: 19.6458, Eq Viol (l1): 3.827458, Ineq Viol (l1): 0.248879, Epoch time: 0.19s
+Epoch 126/1000, Loss: 92.4316, Obj: 19.6479, Eq Viol (l1): 3.807987, Ineq Viol (l1): 0.264055, Epoch time: 0.19s
+Epoch 127/1000, Loss: 92.5757, Obj: 19.7272, Eq Viol (l1): 3.826009, Ineq Viol (l1): 0.256831, Epoch time: 0.19s
+Epoch 128/1000, Loss: 92.8805, Obj: 19.7524, Eq Viol (l1): 3.827274, Ineq Viol (l1): 0.349175, Epoch time: 0.19s
+Epoch 129/1000, Loss: 92.2259, Obj: 19.7399, Eq Viol (l1): 3.776170, Ineq Viol (l1): 0.271362, Epoch time: 0.19s
+Epoch 130/1000, Loss: 92.4633, Obj: 19.8561, Eq Viol (l1): 3.794712, Ineq Viol (l1): 0.261388, Epoch time: 0.19s
+Epoch 131/1000, Loss: 92.3983, Obj: 19.8789, Eq Viol (l1): 3.790816, Ineq Viol (l1): 0.269856, Epoch time: 0.19s
+
+Running validation at epoch 130...
+
+VALIDATION_EPOCH_130 EVALUATION RESULTS:
+==================================================
+Obj:     1.999322e+01
+Opt Gap:      3.525355e+01 ± 1.143905e+01
+Eq Vio l1:   1.579726e+00 (max: 2.553955e+00)
+Ineq Vio l1: 2.084419e-02 (max: 6.637471e-01)
+Sol Dis:   2.065251e+02 ± 3.534796e-01
+Merit:             3.599892e+01 ± 8.698850e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_130.pt
+Epoch 132/1000, Loss: 92.1598, Obj: 19.8261, Eq Viol (l1): 3.754314, Ineq Viol (l1): 0.300147, Epoch time: 0.19s
+Epoch 133/1000, Loss: 92.0101, Obj: 19.9096, Eq Viol (l1): 3.757634, Ineq Viol (l1): 0.252270, Epoch time: 0.19s
+Epoch 134/1000, Loss: 92.1182, Obj: 19.9222, Eq Viol (l1): 3.759882, Ineq Viol (l1): 0.301902, Epoch time: 0.19s
+Epoch 135/1000, Loss: 91.8747, Obj: 19.9787, Eq Viol (l1): 3.748509, Ineq Viol (l1): 0.268019, Epoch time: 0.19s
+Epoch 136/1000, Loss: 92.2092, Obj: 20.0657, Eq Viol (l1): 3.761913, Ineq Viol (l1): 0.312438, Epoch time: 0.19s
+Epoch 137/1000, Loss: 91.8674, Obj: 20.0032, Eq Viol (l1): 3.774480, Ineq Viol (l1): 0.303686, Epoch time: 0.19s
+Epoch 138/1000, Loss: 91.5868, Obj: 20.0434, Eq Viol (l1): 3.719607, Ineq Viol (l1): 0.273787, Epoch time: 0.19s
+Epoch 139/1000, Loss: 91.6637, Obj: 20.0946, Eq Viol (l1): 3.723632, Ineq Viol (l1): 0.277249, Epoch time: 0.19s
+Epoch 140/1000, Loss: 91.5182, Obj: 20.0940, Eq Viol (l1): 3.717773, Ineq Viol (l1): 0.297263, Epoch time: 0.19s
+Epoch 141/1000, Loss: 91.7647, Obj: 20.1757, Eq Viol (l1): 3.714798, Ineq Viol (l1): 0.322002, Epoch time: 0.19s
+
+Running validation at epoch 140...
+
+VALIDATION_EPOCH_140 EVALUATION RESULTS:
+==================================================
+Obj:     2.019371e+01
+Opt Gap:      3.557266e+01 ± 1.138360e+01
+Eq Vio l1:   1.641985e+00 (max: 2.570652e+00)
+Ineq Vio l1: 2.018392e-02 (max: 5.792606e-01)
+Sol Dis:   2.065696e+02 ± 5.917250e-01
+Merit:             3.681540e+01 ± 2.486529e-02
+Avg Inf Time:  0.0003s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_140.pt
+Epoch 142/1000, Loss: 91.2797, Obj: 20.1730, Eq Viol (l1): 3.711474, Ineq Viol (l1): 0.254081, Epoch time: 0.19s
+Epoch 143/1000, Loss: 91.3179, Obj: 20.1822, Eq Viol (l1): 3.681625, Ineq Viol (l1): 0.293886, Epoch time: 0.19s
+Epoch 144/1000, Loss: 91.4822, Obj: 20.2766, Eq Viol (l1): 3.699321, Ineq Viol (l1): 0.288577, Epoch time: 0.19s
+Epoch 145/1000, Loss: 91.2554, Obj: 20.2655, Eq Viol (l1): 3.687532, Ineq Viol (l1): 0.289125, Epoch time: 0.19s
+Epoch 146/1000, Loss: 91.0902, Obj: 20.2993, Eq Viol (l1): 3.682263, Ineq Viol (l1): 0.269119, Epoch time: 0.19s
+Epoch 147/1000, Loss: 90.9922, Obj: 20.2905, Eq Viol (l1): 3.667388, Ineq Viol (l1): 0.285360, Epoch time: 0.19s
+Epoch 148/1000, Loss: 91.0382, Obj: 20.3396, Eq Viol (l1): 3.665768, Ineq Viol (l1): 0.286338, Epoch time: 0.19s
+Epoch 149/1000, Loss: 90.8898, Obj: 20.3669, Eq Viol (l1): 3.661037, Ineq Viol (l1): 0.269969, Epoch time: 0.19s
+Epoch 150/1000, Loss: 90.6836, Obj: 20.3501, Eq Viol (l1): 3.646279, Ineq Viol (l1): 0.266405, Epoch time: 0.19s
+Epoch 151/1000, Loss: 90.8463, Obj: 20.3619, Eq Viol (l1): 3.628069, Ineq Viol (l1): 0.310695, Epoch time: 0.19s
+
+Running validation at epoch 150...
+
+VALIDATION_EPOCH_150 EVALUATION RESULTS:
+==================================================
+Obj:     2.057365e+01
+Opt Gap:      3.612211e+01 ± 1.152078e+01
+Eq Vio l1:   1.580563e+00 (max: 2.530145e+00)
+Ineq Vio l1: 2.557080e-02 (max: 1.292343e+00)
+Sol Dis:   2.079647e+02 ± 6.833674e-01
+Merit:             3.663499e+01 ± 2.006652e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_150.pt
+Epoch 152/1000, Loss: 90.8427, Obj: 20.4080, Eq Viol (l1): 3.626245, Ineq Viol (l1): 0.300154, Epoch time: 0.19s
+Epoch 153/1000, Loss: 91.0110, Obj: 20.5557, Eq Viol (l1): 3.642127, Ineq Viol (l1): 0.257932, Epoch time: 0.19s
+Epoch 154/1000, Loss: 90.6381, Obj: 20.3794, Eq Viol (l1): 3.632499, Ineq Viol (l1): 0.313804, Epoch time: 0.19s
+Epoch 155/1000, Loss: 90.5038, Obj: 20.4387, Eq Viol (l1): 3.600446, Ineq Viol (l1): 0.259359, Epoch time: 0.19s
+Epoch 156/1000, Loss: 90.4973, Obj: 20.3982, Eq Viol (l1): 3.613396, Ineq Viol (l1): 0.291920, Epoch time: 0.19s
+Epoch 157/1000, Loss: 90.6454, Obj: 20.4337, Eq Viol (l1): 3.592458, Ineq Viol (l1): 0.326140, Epoch time: 0.19s
+Epoch 158/1000, Loss: 90.4162, Obj: 20.5002, Eq Viol (l1): 3.602027, Ineq Viol (l1): 0.260731, Epoch time: 0.19s
+Epoch 159/1000, Loss: 90.4069, Obj: 20.4622, Eq Viol (l1): 3.586589, Ineq Viol (l1): 0.287746, Epoch time: 0.19s
+Epoch 160/1000, Loss: 90.3499, Obj: 20.4763, Eq Viol (l1): 3.576836, Ineq Viol (l1): 0.282774, Epoch time: 0.19s
+Epoch 161/1000, Loss: 90.2477, Obj: 20.4945, Eq Viol (l1): 3.560616, Ineq Viol (l1): 0.274162, Epoch time: 0.19s
+
+Running validation at epoch 160...
+
+VALIDATION_EPOCH_160 EVALUATION RESULTS:
+==================================================
+Obj:     2.071231e+01
+Opt Gap:      3.641189e+01 ± 1.153970e+01
+Eq Vio l1:   1.515109e+00 (max: 2.370920e+00)
+Ineq Vio l1: 1.351019e-02 (max: 5.861671e-01)
+Sol Dis:   2.082318e+02 ± 7.861258e-01
+Merit:             3.599850e+01 ± 4.965369e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_160.pt
+Epoch 162/1000, Loss: 90.3380, Obj: 20.5494, Eq Viol (l1): 3.561381, Ineq Viol (l1): 0.267776, Epoch time: 0.19s
+Epoch 163/1000, Loss: 90.4011, Obj: 20.5025, Eq Viol (l1): 3.544313, Ineq Viol (l1): 0.329737, Epoch time: 0.19s
+Epoch 164/1000, Loss: 90.3743, Obj: 20.5812, Eq Viol (l1): 3.557694, Ineq Viol (l1): 0.280206, Epoch time: 0.19s
+Epoch 165/1000, Loss: 90.5208, Obj: 20.5705, Eq Viol (l1): 3.545570, Ineq Viol (l1): 0.349071, Epoch time: 0.19s
+Epoch 166/1000, Loss: 90.1938, Obj: 20.5831, Eq Viol (l1): 3.538848, Ineq Viol (l1): 0.273432, Epoch time: 0.19s
+Epoch 167/1000, Loss: 90.0566, Obj: 20.5344, Eq Viol (l1): 3.520425, Ineq Viol (l1): 0.302032, Epoch time: 0.19s
+Epoch 168/1000, Loss: 90.0754, Obj: 20.5867, Eq Viol (l1): 3.516284, Ineq Viol (l1): 0.287985, Epoch time: 0.19s
+Epoch 169/1000, Loss: 90.0284, Obj: 20.6156, Eq Viol (l1): 3.510328, Ineq Viol (l1): 0.273169, Epoch time: 0.19s
+Epoch 170/1000, Loss: 90.0416, Obj: 20.5938, Eq Viol (l1): 3.504331, Ineq Viol (l1): 0.297648, Epoch time: 0.19s
+Epoch 171/1000, Loss: 89.9792, Obj: 20.6310, Eq Viol (l1): 3.504165, Ineq Viol (l1): 0.290604, Epoch time: 0.19s
+
+Running validation at epoch 170...
+
+VALIDATION_EPOCH_170 EVALUATION RESULTS:
+==================================================
+Obj:     2.102258e+01
+Opt Gap:      3.700689e+01 ± 1.187333e+01
+Eq Vio l1:   1.515258e+00 (max: 2.505717e+00)
+Ineq Vio l1: 5.702602e-03 (max: 4.344359e-01)
+Sol Dis:   2.093790e+02 ± 7.883270e-01
+Merit:             3.623218e+01 ± 1.564197e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_170.pt
+Epoch 172/1000, Loss: 90.1840, Obj: 20.7284, Eq Viol (l1): 3.510143, Ineq Viol (l1): 0.272974, Epoch time: 0.19s
+Epoch 173/1000, Loss: 89.9970, Obj: 20.6144, Eq Viol (l1): 3.491562, Ineq Viol (l1): 0.331648, Epoch time: 0.19s
+Epoch 174/1000, Loss: 89.9257, Obj: 20.6890, Eq Viol (l1): 3.484456, Ineq Viol (l1): 0.282144, Epoch time: 0.19s
+Epoch 175/1000, Loss: 90.0549, Obj: 20.6707, Eq Viol (l1): 3.471918, Ineq Viol (l1): 0.335609, Epoch time: 0.19s
+Epoch 176/1000, Loss: 89.7495, Obj: 20.6922, Eq Viol (l1): 3.484869, Ineq Viol (l1): 0.277753, Epoch time: 0.29s
+Epoch 177/1000, Loss: 89.7170, Obj: 20.6945, Eq Viol (l1): 3.466337, Ineq Viol (l1): 0.281710, Epoch time: 0.19s
+Epoch 178/1000, Loss: 89.7850, Obj: 20.6668, Eq Viol (l1): 3.459084, Ineq Viol (l1): 0.339131, Epoch time: 0.19s
+Epoch 179/1000, Loss: 89.6959, Obj: 20.7405, Eq Viol (l1): 3.460790, Ineq Viol (l1): 0.270145, Epoch time: 0.19s
+Epoch 180/1000, Loss: 89.6298, Obj: 20.7324, Eq Viol (l1): 3.435776, Ineq Viol (l1): 0.283757, Epoch time: 0.19s
+Epoch 181/1000, Loss: 89.5784, Obj: 20.7495, Eq Viol (l1): 3.425829, Ineq Viol (l1): 0.290038, Epoch time: 0.19s
+
+Running validation at epoch 180...
+
+VALIDATION_EPOCH_180 EVALUATION RESULTS:
+==================================================
+Obj:     2.089197e+01
+Opt Gap:      3.679514e+01 ± 1.176336e+01
+Eq Vio l1:   1.480565e+00 (max: 2.400903e+00)
+Ineq Vio l1: 1.907671e-02 (max: 8.623805e-01)
+Sol Dis:   2.085975e+02 ± 8.985880e-01
+Merit:             3.588838e+01 ± 2.734181e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_180.pt
+Epoch 182/1000, Loss: 89.6049, Obj: 20.7795, Eq Viol (l1): 3.447439, Ineq Viol (l1): 0.280887, Epoch time: 0.19s
+Epoch 183/1000, Loss: 89.7074, Obj: 20.7673, Eq Viol (l1): 3.434026, Ineq Viol (l1): 0.317985, Epoch time: 0.19s
+Epoch 184/1000, Loss: 89.4024, Obj: 20.7365, Eq Viol (l1): 3.437462, Ineq Viol (l1): 0.266405, Epoch time: 0.19s
+Epoch 185/1000, Loss: 89.5787, Obj: 20.8108, Eq Viol (l1): 3.415532, Ineq Viol (l1): 0.280713, Epoch time: 0.19s
+Epoch 186/1000, Loss: 89.6592, Obj: 20.8570, Eq Viol (l1): 3.433322, Ineq Viol (l1): 0.260641, Epoch time: 0.19s
+Epoch 187/1000, Loss: 89.5828, Obj: 20.8293, Eq Viol (l1): 3.397412, Ineq Viol (l1): 0.294653, Epoch time: 0.19s
+Epoch 188/1000, Loss: 89.2854, Obj: 20.7525, Eq Viol (l1): 3.402965, Ineq Viol (l1): 0.286197, Epoch time: 0.19s
+Epoch 189/1000, Loss: 89.4180, Obj: 20.8420, Eq Viol (l1): 3.398808, Ineq Viol (l1): 0.265336, Epoch time: 0.19s
+Epoch 190/1000, Loss: 89.6902, Obj: 20.9131, Eq Viol (l1): 3.407659, Ineq Viol (l1): 0.272769, Epoch time: 0.19s
+Epoch 191/1000, Loss: 89.8384, Obj: 20.7909, Eq Viol (l1): 3.387377, Ineq Viol (l1): 0.419950, Epoch time: 0.19s
+
+Running validation at epoch 190...
+
+VALIDATION_EPOCH_190 EVALUATION RESULTS:
+==================================================
+Obj:     2.106455e+01
+Opt Gap:      3.703876e+01 ± 1.184365e+01
+Eq Vio l1:   1.493787e+00 (max: 2.294522e+00)
+Ineq Vio l1: 9.073821e-03 (max: 3.800025e-01)
+Sol Dis:   2.093558e+02 ± 8.612124e-01
+Merit:             3.609316e+01 ± 6.112046e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_190.pt
+Epoch 192/1000, Loss: 89.3765, Obj: 20.8683, Eq Viol (l1): 3.391399, Ineq Viol (l1): 0.251350, Epoch time: 0.19s
+Epoch 193/1000, Loss: 89.4004, Obj: 20.8234, Eq Viol (l1): 3.383428, Ineq Viol (l1): 0.304590, Epoch time: 0.19s
+Epoch 194/1000, Loss: 89.1792, Obj: 20.7937, Eq Viol (l1): 3.378088, Ineq Viol (l1): 0.286017, Epoch time: 0.19s
+Epoch 195/1000, Loss: 89.2345, Obj: 20.8107, Eq Viol (l1): 3.374338, Ineq Viol (l1): 0.284273, Epoch time: 0.19s
+Epoch 196/1000, Loss: 89.0836, Obj: 20.7927, Eq Viol (l1): 3.360829, Ineq Viol (l1): 0.280827, Epoch time: 0.19s
+Epoch 197/1000, Loss: 89.1624, Obj: 20.8472, Eq Viol (l1): 3.361445, Ineq Viol (l1): 0.261990, Epoch time: 0.19s
+Epoch 198/1000, Loss: 89.2339, Obj: 20.8411, Eq Viol (l1): 3.355597, Ineq Viol (l1): 0.282171, Epoch time: 0.19s
+Epoch 199/1000, Loss: 89.1887, Obj: 20.7902, Eq Viol (l1): 3.339819, Ineq Viol (l1): 0.333661, Epoch time: 0.19s
+Epoch 200/1000, Loss: 89.2321, Obj: 20.8922, Eq Viol (l1): 3.347820, Ineq Viol (l1): 0.258660, Epoch time: 0.19s
+Epoch 201/1000, Loss: 89.2350, Obj: 20.8520, Eq Viol (l1): 3.335609, Ineq Viol (l1): 0.289135, Epoch time: 0.19s
+
+Running validation at epoch 200...
+
+VALIDATION_EPOCH_200 EVALUATION RESULTS:
+==================================================
+Obj:     2.097648e+01
+Opt Gap:      3.671772e+01 ± 1.171289e+01
+Eq Vio l1:   1.395207e+00 (max: 2.181199e+00)
+Ineq Vio l1: 1.528863e-02 (max: 9.325100e-01)
+Sol Dis:   2.087379e+02 ± 8.571034e-01
+Merit:             3.508143e+01 ± 2.619942e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_200.pt
+Epoch 202/1000, Loss: 89.0925, Obj: 20.8423, Eq Viol (l1): 3.329250, Ineq Viol (l1): 0.280485, Epoch time: 0.19s
+Epoch 203/1000, Loss: 89.1140, Obj: 20.8700, Eq Viol (l1): 3.332014, Ineq Viol (l1): 0.263085, Epoch time: 0.19s
+Epoch 204/1000, Loss: 88.9591, Obj: 20.8059, Eq Viol (l1): 3.319097, Ineq Viol (l1): 0.290231, Epoch time: 0.19s
+Epoch 205/1000, Loss: 89.1134, Obj: 20.8123, Eq Viol (l1): 3.319785, Ineq Viol (l1): 0.321592, Epoch time: 0.19s
+Epoch 206/1000, Loss: 89.0246, Obj: 20.8171, Eq Viol (l1): 3.314388, Ineq Viol (l1): 0.307994, Epoch time: 0.19s
+Epoch 207/1000, Loss: 89.0759, Obj: 20.8582, Eq Viol (l1): 3.313344, Ineq Viol (l1): 0.290062, Epoch time: 0.19s
+Epoch 208/1000, Loss: 88.8619, Obj: 20.8090, Eq Viol (l1): 3.307104, Ineq Viol (l1): 0.279823, Epoch time: 0.19s
+Epoch 209/1000, Loss: 88.8968, Obj: 20.8285, Eq Viol (l1): 3.301992, Ineq Viol (l1): 0.274285, Epoch time: 0.19s
+Epoch 210/1000, Loss: 88.8827, Obj: 20.8357, Eq Viol (l1): 3.288790, Ineq Viol (l1): 0.273901, Epoch time: 0.19s
+Epoch 211/1000, Loss: 89.0566, Obj: 20.8433, Eq Viol (l1): 3.290848, Ineq Viol (l1): 0.298533, Epoch time: 0.27s
+
+Running validation at epoch 210...
+
+VALIDATION_EPOCH_210 EVALUATION RESULTS:
+==================================================
+Obj:     2.070467e+01
+Opt Gap:      3.644488e+01 ± 1.166976e+01
+Eq Vio l1:   1.401804e+00 (max: 2.110657e+00)
+Ineq Vio l1: 7.648552e-02 (max: 1.731306e+00)
+Sol Dis:   2.074118e+02 ± 9.881604e-01
+Merit:             3.548756e+01 ± 9.707533e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_210.pt
+Epoch 212/1000, Loss: 88.9726, Obj: 20.8582, Eq Viol (l1): 3.304205, Ineq Viol (l1): 0.275002, Epoch time: 0.19s
+Epoch 213/1000, Loss: 88.9093, Obj: 20.8349, Eq Viol (l1): 3.281218, Ineq Viol (l1): 0.298224, Epoch time: 0.19s
+Epoch 214/1000, Loss: 88.7089, Obj: 20.7968, Eq Viol (l1): 3.275736, Ineq Viol (l1): 0.275420, Epoch time: 0.19s
+Epoch 215/1000, Loss: 88.7392, Obj: 20.8139, Eq Viol (l1): 3.266357, Ineq Viol (l1): 0.266692, Epoch time: 0.19s
+Epoch 216/1000, Loss: 88.7754, Obj: 20.8438, Eq Viol (l1): 3.267313, Ineq Viol (l1): 0.255790, Epoch time: 0.19s
+Epoch 217/1000, Loss: 88.9619, Obj: 20.8316, Eq Viol (l1): 3.268132, Ineq Viol (l1): 0.304397, Epoch time: 0.19s
+Epoch 218/1000, Loss: 88.6428, Obj: 20.8019, Eq Viol (l1): 3.258298, Ineq Viol (l1): 0.274435, Epoch time: 0.19s
+Epoch 219/1000, Loss: 88.6067, Obj: 20.7934, Eq Viol (l1): 3.249278, Ineq Viol (l1): 0.281781, Epoch time: 0.19s
+Epoch 220/1000, Loss: 88.5824, Obj: 20.7754, Eq Viol (l1): 3.235008, Ineq Viol (l1): 0.287280, Epoch time: 0.19s
+Epoch 221/1000, Loss: 88.6886, Obj: 20.8301, Eq Viol (l1): 3.236385, Ineq Viol (l1): 0.273658, Epoch time: 0.19s
+
+Running validation at epoch 220...
+
+VALIDATION_EPOCH_220 EVALUATION RESULTS:
+==================================================
+Obj:     2.068165e+01
+Opt Gap:      3.640598e+01 ± 1.158477e+01
+Eq Vio l1:   1.293271e+00 (max: 1.993105e+00)
+Ineq Vio l1: 5.859820e-02 (max: 1.377789e+00)
+Sol Dis:   2.072408e+02 ± 8.987964e-01
+Merit:             3.420034e+01 ± 2.984707e-03
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_220.pt
+Epoch 222/1000, Loss: 88.5275, Obj: 20.7646, Eq Viol (l1): 3.233830, Ineq Viol (l1): 0.287435, Epoch time: 0.19s
+Epoch 223/1000, Loss: 88.6859, Obj: 20.8167, Eq Viol (l1): 3.238232, Ineq Viol (l1): 0.279262, Epoch time: 0.19s
+Epoch 224/1000, Loss: 88.8124, Obj: 20.7759, Eq Viol (l1): 3.232141, Ineq Viol (l1): 0.333194, Epoch time: 0.19s
+Epoch 225/1000, Loss: 88.6312, Obj: 20.8014, Eq Viol (l1): 3.227579, Ineq Viol (l1): 0.280649, Epoch time: 0.19s
+Epoch 226/1000, Loss: 88.6452, Obj: 20.8063, Eq Viol (l1): 3.231530, Ineq Viol (l1): 0.277921, Epoch time: 0.19s
+Epoch 227/1000, Loss: 88.5918, Obj: 20.8287, Eq Viol (l1): 3.216981, Ineq Viol (l1): 0.269918, Epoch time: 0.19s
+Epoch 228/1000, Loss: 88.8456, Obj: 20.8269, Eq Viol (l1): 3.229220, Ineq Viol (l1): 0.321187, Epoch time: 0.19s
+Epoch 229/1000, Loss: 88.7905, Obj: 20.7875, Eq Viol (l1): 3.243337, Ineq Viol (l1): 0.336641, Epoch time: 0.19s
+Epoch 230/1000, Loss: 88.3078, Obj: 20.7478, Eq Viol (l1): 3.203268, Ineq Viol (l1): 0.268117, Epoch time: 0.19s
+Epoch 231/1000, Loss: 88.5475, Obj: 20.7960, Eq Viol (l1): 3.212302, Ineq Viol (l1): 0.279400, Epoch time: 0.19s
+
+Running validation at epoch 230...
+
+VALIDATION_EPOCH_230 EVALUATION RESULTS:
+==================================================
+Obj:     2.051549e+01
+Opt Gap:      3.594561e+01 ± 1.134601e+01
+Eq Vio l1:   1.425333e+00 (max: 2.106060e+00)
+Ineq Vio l1: 2.339271e-01 (max: 5.958092e+00)
+Sol Dis:   2.064315e+02 ± 8.996140e-01
+Merit:             3.710810e+01 ± 1.824924e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_230.pt
+Epoch 232/1000, Loss: 88.5694, Obj: 20.7442, Eq Viol (l1): 3.222676, Ineq Viol (l1): 0.326124, Epoch time: 0.19s
+Epoch 233/1000, Loss: 88.3972, Obj: 20.7662, Eq Viol (l1): 3.192157, Ineq Viol (l1): 0.279401, Epoch time: 0.19s
+Epoch 234/1000, Loss: 88.4339, Obj: 20.7754, Eq Viol (l1): 3.199556, Ineq Viol (l1): 0.279435, Epoch time: 0.19s
+Epoch 235/1000, Loss: 88.4526, Obj: 20.7716, Eq Viol (l1): 3.193940, Ineq Viol (l1): 0.281845, Epoch time: 0.19s
+Epoch 236/1000, Loss: 88.3215, Obj: 20.7520, Eq Viol (l1): 3.199133, Ineq Viol (l1): 0.267288, Epoch time: 0.19s
+Epoch 237/1000, Loss: 88.3718, Obj: 20.7571, Eq Viol (l1): 3.183738, Ineq Viol (l1): 0.285833, Epoch time: 0.19s
+Epoch 238/1000, Loss: 88.5742, Obj: 20.7934, Eq Viol (l1): 3.187063, Ineq Viol (l1): 0.290463, Epoch time: 0.19s
+Epoch 239/1000, Loss: 88.4773, Obj: 20.7551, Eq Viol (l1): 3.178767, Ineq Viol (l1): 0.312619, Epoch time: 0.19s
+Epoch 240/1000, Loss: 88.2274, Obj: 20.7364, Eq Viol (l1): 3.180518, Ineq Viol (l1): 0.266772, Epoch time: 0.19s
+Epoch 241/1000, Loss: 88.3382, Obj: 20.7563, Eq Viol (l1): 3.175128, Ineq Viol (l1): 0.272346, Epoch time: 0.19s
+
+Running validation at epoch 240...
+
+VALIDATION_EPOCH_240 EVALUATION RESULTS:
+==================================================
+Obj:     2.087073e+01
+Opt Gap:      3.691009e+01 ± 1.182633e+01
+Eq Vio l1:   1.314663e+00 (max: 2.112154e+00)
+Ineq Vio l1: 3.989977e-02 (max: 1.307486e+00)
+Sol Dis:   2.078691e+02 ± 9.140356e-01
+Merit:             3.441636e+01 ± 1.284506e-01
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_240.pt
+Epoch 242/1000, Loss: 88.3872, Obj: 20.7762, Eq Viol (l1): 3.171345, Ineq Viol (l1): 0.278931, Epoch time: 0.19s
+Epoch 243/1000, Loss: 88.4017, Obj: 20.7792, Eq Viol (l1): 3.161042, Ineq Viol (l1): 0.279488, Epoch time: 0.19s
+Epoch 244/1000, Loss: 88.5306, Obj: 20.8327, Eq Viol (l1): 3.169063, Ineq Viol (l1): 0.271454, Epoch time: 0.19s
+Epoch 245/1000, Loss: 88.2376, Obj: 20.7579, Eq Viol (l1): 3.149602, Ineq Viol (l1): 0.272169, Epoch time: 0.19s
+Epoch 246/1000, Loss: 88.3031, Obj: 20.7647, Eq Viol (l1): 3.158819, Ineq Viol (l1): 0.268994, Epoch time: 0.19s
+Epoch 247/1000, Loss: 88.3133, Obj: 20.7441, Eq Viol (l1): 3.163175, Ineq Viol (l1): 0.290845, Epoch time: 0.27s
+Epoch 248/1000, Loss: 88.1044, Obj: 20.7130, Eq Viol (l1): 3.152912, Ineq Viol (l1): 0.272690, Epoch time: 0.19s
+Epoch 249/1000, Loss: 88.1609, Obj: 20.7060, Eq Viol (l1): 3.153601, Ineq Viol (l1): 0.280601, Epoch time: 0.19s
+Epoch 250/1000, Loss: 88.3728, Obj: 20.7157, Eq Viol (l1): 3.150987, Ineq Viol (l1): 0.333782, Epoch time: 0.19s
+Epoch 251/1000, Loss: 88.4987, Obj: 20.8282, Eq Viol (l1): 3.154714, Ineq Viol (l1): 0.269669, Epoch time: 0.19s
+
+Running validation at epoch 250...
+
+VALIDATION_EPOCH_250 EVALUATION RESULTS:
+==================================================
+Obj:     2.082568e+01
+Opt Gap:      3.666561e+01 ± 1.170317e+01
+Eq Vio l1:   1.286461e+00 (max: 2.068853e+00)
+Ineq Vio l1: 2.648513e-02 (max: 9.078859e-01)
+Sol Dis:   2.075916e+02 ± 8.791174e-01
+Merit:             3.395514e+01 ± 5.573859e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_250.pt
+Epoch 252/1000, Loss: 88.4931, Obj: 20.7022, Eq Viol (l1): 3.162051, Ineq Viol (l1): 0.358809, Epoch time: 0.19s
+Epoch 253/1000, Loss: 88.2064, Obj: 20.7394, Eq Viol (l1): 3.127281, Ineq Viol (l1): 0.275742, Epoch time: 0.19s
+Epoch 254/1000, Loss: 88.1310, Obj: 20.7217, Eq Viol (l1): 3.138838, Ineq Viol (l1): 0.271633, Epoch time: 0.19s
+Epoch 255/1000, Loss: 88.1582, Obj: 20.7225, Eq Viol (l1): 3.138610, Ineq Viol (l1): 0.281836, Epoch time: 0.19s
+Epoch 256/1000, Loss: 88.0523, Obj: 20.6553, Eq Viol (l1): 3.120292, Ineq Viol (l1): 0.301534, Epoch time: 0.19s
+Epoch 257/1000, Loss: 88.0013, Obj: 20.6587, Eq Viol (l1): 3.138076, Ineq Viol (l1): 0.285876, Epoch time: 0.19s
+Epoch 258/1000, Loss: 88.0474, Obj: 20.7032, Eq Viol (l1): 3.110139, Ineq Viol (l1): 0.286479, Epoch time: 0.19s
+Epoch 259/1000, Loss: 88.0233, Obj: 20.7001, Eq Viol (l1): 3.119400, Ineq Viol (l1): 0.268745, Epoch time: 0.19s
+Epoch 260/1000, Loss: 88.1656, Obj: 20.7309, Eq Viol (l1): 3.115015, Ineq Viol (l1): 0.277604, Epoch time: 0.19s
+Epoch 261/1000, Loss: 88.0539, Obj: 20.7144, Eq Viol (l1): 3.112422, Ineq Viol (l1): 0.266547, Epoch time: 0.19s
+
+Running validation at epoch 260...
+
+VALIDATION_EPOCH_260 EVALUATION RESULTS:
+==================================================
+Obj:     2.055070e+01
+Opt Gap:      3.637111e+01 ± 1.161808e+01
+Eq Vio l1:   1.292074e+00 (max: 2.073878e+00)
+Ineq Vio l1: 1.183814e-01 (max: 2.876512e+00)
+Sol Dis:   2.062412e+02 ± 8.996071e-01
+Merit:             3.465526e+01 ± 5.398594e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_260.pt
+Epoch 262/1000, Loss: 88.2338, Obj: 20.7270, Eq Viol (l1): 3.118204, Ineq Viol (l1): 0.293303, Epoch time: 0.19s
+Epoch 263/1000, Loss: 88.1935, Obj: 20.7295, Eq Viol (l1): 3.124698, Ineq Viol (l1): 0.279745, Epoch time: 0.19s
+Epoch 264/1000, Loss: 88.0289, Obj: 20.7115, Eq Viol (l1): 3.102755, Ineq Viol (l1): 0.270623, Epoch time: 0.19s
+Epoch 265/1000, Loss: 87.9717, Obj: 20.6945, Eq Viol (l1): 3.100252, Ineq Viol (l1): 0.276836, Epoch time: 0.19s
+Epoch 266/1000, Loss: 87.9179, Obj: 20.6409, Eq Viol (l1): 3.108073, Ineq Viol (l1): 0.296098, Epoch time: 0.19s
+Epoch 267/1000, Loss: 87.9373, Obj: 20.6793, Eq Viol (l1): 3.103571, Ineq Viol (l1): 0.269050, Epoch time: 0.19s
+Epoch 268/1000, Loss: 87.9662, Obj: 20.6403, Eq Viol (l1): 3.092956, Ineq Viol (l1): 0.289041, Epoch time: 0.19s
+Epoch 269/1000, Loss: 87.8321, Obj: 20.6507, Eq Viol (l1): 3.080901, Ineq Viol (l1): 0.272456, Epoch time: 0.19s
+Epoch 270/1000, Loss: 87.9128, Obj: 20.6570, Eq Viol (l1): 3.089898, Ineq Viol (l1): 0.276306, Epoch time: 0.19s
+Epoch 271/1000, Loss: 87.9734, Obj: 20.6475, Eq Viol (l1): 3.087614, Ineq Viol (l1): 0.292474, Epoch time: 0.19s
+
+Running validation at epoch 270...
+
+VALIDATION_EPOCH_270 EVALUATION RESULTS:
+==================================================
+Obj:     2.078562e+01
+Opt Gap:      3.667456e+01 ± 1.168735e+01
+Eq Vio l1:   1.315336e+00 (max: 2.064423e+00)
+Ineq Vio l1: 1.965615e-02 (max: 4.836295e-01)
+Sol Dis:   2.072369e+02 ± 9.589058e-01
+Merit:             3.413553e+01 ± 8.026863e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_270.pt
+Epoch 272/1000, Loss: 87.9596, Obj: 20.6936, Eq Viol (l1): 3.063308, Ineq Viol (l1): 0.270973, Epoch time: 0.19s
+Epoch 273/1000, Loss: 87.9298, Obj: 20.6484, Eq Viol (l1): 3.079301, Ineq Viol (l1): 0.281024, Epoch time: 0.19s
+Epoch 274/1000, Loss: 87.9824, Obj: 20.6607, Eq Viol (l1): 3.091267, Ineq Viol (l1): 0.275715, Epoch time: 0.19s
+Epoch 275/1000, Loss: 87.7876, Obj: 20.6258, Eq Viol (l1): 3.072675, Ineq Viol (l1): 0.268082, Epoch time: 0.19s
+Epoch 276/1000, Loss: 87.8396, Obj: 20.6293, Eq Viol (l1): 3.063728, Ineq Viol (l1): 0.284470, Epoch time: 0.19s
+Epoch 277/1000, Loss: 87.8678, Obj: 20.6551, Eq Viol (l1): 3.069289, Ineq Viol (l1): 0.261712, Epoch time: 0.19s
+Epoch 278/1000, Loss: 88.0102, Obj: 20.6523, Eq Viol (l1): 3.072686, Ineq Viol (l1): 0.287417, Epoch time: 0.19s
+Epoch 279/1000, Loss: 87.8029, Obj: 20.6261, Eq Viol (l1): 3.056962, Ineq Viol (l1): 0.272231, Epoch time: 0.19s
+Epoch 280/1000, Loss: 87.8539, Obj: 20.5889, Eq Viol (l1): 3.068179, Ineq Viol (l1): 0.315068, Epoch time: 0.19s
+Epoch 281/1000, Loss: 87.7157, Obj: 20.5941, Eq Viol (l1): 3.058093, Ineq Viol (l1): 0.273704, Epoch time: 0.19s
+
+Running validation at epoch 280...
+
+VALIDATION_EPOCH_280 EVALUATION RESULTS:
+==================================================
+Obj:     2.064010e+01
+Opt Gap:      3.639667e+01 ± 1.159545e+01
+Eq Vio l1:   1.263962e+00 (max: 2.087472e+00)
+Ineq Vio l1: 2.656396e-02 (max: 7.236880e-01)
+Sol Dis:   2.064975e+02 ± 9.569300e-01
+Merit:             3.354536e+01 ± 3.568421e-02
+Avg Inf Time:  0.0003s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_280.pt
+Epoch 282/1000, Loss: 87.7633, Obj: 20.5896, Eq Viol (l1): 3.054181, Ineq Viol (l1): 0.286022, Epoch time: 0.19s
+Epoch 283/1000, Loss: 87.6574, Obj: 20.5888, Eq Viol (l1): 3.043990, Ineq Viol (l1): 0.271067, Epoch time: 0.19s
+Epoch 284/1000, Loss: 87.8209, Obj: 20.5727, Eq Viol (l1): 3.058659, Ineq Viol (l1): 0.303312, Epoch time: 0.19s
+Epoch 285/1000, Loss: 87.6205, Obj: 20.5811, Eq Viol (l1): 3.043411, Ineq Viol (l1): 0.265154, Epoch time: 0.19s
+Epoch 286/1000, Loss: 87.7422, Obj: 20.5821, Eq Viol (l1): 3.048889, Ineq Viol (l1): 0.290284, Epoch time: 0.19s
+Epoch 287/1000, Loss: 87.6110, Obj: 20.5542, Eq Viol (l1): 3.027767, Ineq Viol (l1): 0.284220, Epoch time: 0.19s
+Epoch 288/1000, Loss: 87.7071, Obj: 20.5782, Eq Viol (l1): 3.042564, Ineq Viol (l1): 0.282597, Epoch time: 0.19s
+Epoch 289/1000, Loss: 87.5534, Obj: 20.5409, Eq Viol (l1): 3.036068, Ineq Viol (l1): 0.276848, Epoch time: 0.19s
+Epoch 290/1000, Loss: 87.7915, Obj: 20.5643, Eq Viol (l1): 3.028495, Ineq Viol (l1): 0.311494, Epoch time: 0.19s
+Epoch 291/1000, Loss: 87.5850, Obj: 20.5492, Eq Viol (l1): 3.033726, Ineq Viol (l1): 0.273293, Epoch time: 0.19s
+
+Running validation at epoch 290...
+
+VALIDATION_EPOCH_290 EVALUATION RESULTS:
+==================================================
+Obj:     2.053343e+01
+Opt Gap:      3.623674e+01 ± 1.153450e+01
+Eq Vio l1:   1.303111e+00 (max: 1.972822e+00)
+Ineq Vio l1: 4.294591e-02 (max: 1.360549e+00)
+Sol Dis:   2.059755e+02 ± 9.796085e-01
+Merit:             3.399400e+01 ± 7.952855e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_290.pt
+Epoch 292/1000, Loss: 87.5419, Obj: 20.5270, Eq Viol (l1): 3.020497, Ineq Viol (l1): 0.275563, Epoch time: 0.19s
+Epoch 293/1000, Loss: 87.6653, Obj: 20.5530, Eq Viol (l1): 3.021320, Ineq Viol (l1): 0.287559, Epoch time: 0.19s
+Epoch 294/1000, Loss: 87.5649, Obj: 20.5588, Eq Viol (l1): 3.017464, Ineq Viol (l1): 0.265512, Epoch time: 0.19s
+Epoch 295/1000, Loss: 87.6217, Obj: 20.5298, Eq Viol (l1): 3.016409, Ineq Viol (l1): 0.301890, Epoch time: 0.19s
+Epoch 296/1000, Loss: 87.6897, Obj: 20.5771, Eq Viol (l1): 3.036399, Ineq Viol (l1): 0.257336, Epoch time: 0.19s
+Epoch 297/1000, Loss: 87.5602, Obj: 20.5222, Eq Viol (l1): 3.008621, Ineq Viol (l1): 0.283664, Epoch time: 0.19s
+Epoch 298/1000, Loss: 87.6379, Obj: 20.5466, Eq Viol (l1): 3.035042, Ineq Viol (l1): 0.285710, Epoch time: 0.19s
+Epoch 299/1000, Loss: 87.4030, Obj: 20.4959, Eq Viol (l1): 3.008672, Ineq Viol (l1): 0.277940, Epoch time: 0.19s
+Epoch 300/1000, Loss: 87.3716, Obj: 20.4794, Eq Viol (l1): 3.008715, Ineq Viol (l1): 0.278997, Epoch time: 0.19s
+Epoch 301/1000, Loss: 87.3770, Obj: 20.4783, Eq Viol (l1): 3.018335, Ineq Viol (l1): 0.267981, Epoch time: 0.19s
+
+Running validation at epoch 300...
+
+VALIDATION_EPOCH_300 EVALUATION RESULTS:
+==================================================
+Obj:     2.052636e+01
+Opt Gap:      3.620324e+01 ± 1.152835e+01
+Eq Vio l1:   1.325443e+00 (max: 2.109526e+00)
+Ineq Vio l1: 3.752780e-02 (max: 1.179933e+00)
+Sol Dis:   2.057209e+02 ± 9.231543e-01
+Merit:             3.415607e+01 ± 4.885100e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_300.pt
+Epoch 302/1000, Loss: 87.4340, Obj: 20.4766, Eq Viol (l1): 3.002157, Ineq Viol (l1): 0.286638, Epoch time: 0.19s
+Epoch 303/1000, Loss: 87.3300, Obj: 20.4533, Eq Viol (l1): 2.989078, Ineq Viol (l1): 0.290499, Epoch time: 0.19s
+Epoch 304/1000, Loss: 87.3505, Obj: 20.4741, Eq Viol (l1): 2.983855, Ineq Viol (l1): 0.264753, Epoch time: 0.19s
+Epoch 305/1000, Loss: 87.4049, Obj: 20.4777, Eq Viol (l1): 2.997812, Ineq Viol (l1): 0.263841, Epoch time: 0.19s
+Epoch 306/1000, Loss: 87.3762, Obj: 20.4583, Eq Viol (l1): 2.989960, Ineq Viol (l1): 0.288109, Epoch time: 0.19s
+Epoch 307/1000, Loss: 87.4896, Obj: 20.4681, Eq Viol (l1): 3.000553, Ineq Viol (l1): 0.294159, Epoch time: 0.19s
+Epoch 308/1000, Loss: 87.3878, Obj: 20.4811, Eq Viol (l1): 2.981943, Ineq Viol (l1): 0.262298, Epoch time: 0.19s
+Epoch 309/1000, Loss: 87.4190, Obj: 20.4729, Eq Viol (l1): 2.997005, Ineq Viol (l1): 0.274249, Epoch time: 0.19s
+Epoch 310/1000, Loss: 87.4344, Obj: 20.4579, Eq Viol (l1): 2.991906, Ineq Viol (l1): 0.281898, Epoch time: 0.19s
+Epoch 311/1000, Loss: 87.5201, Obj: 20.4654, Eq Viol (l1): 2.993401, Ineq Viol (l1): 0.302381, Epoch time: 0.19s
+
+Running validation at epoch 310...
+
+VALIDATION_EPOCH_310 EVALUATION RESULTS:
+==================================================
+Obj:     2.054688e+01
+Opt Gap:      3.636943e+01 ± 1.159938e+01
+Eq Vio l1:   1.353805e+00 (max: 2.162575e+00)
+Ineq Vio l1: 3.426492e-02 (max: 1.393335e+00)
+Sol Dis:   2.058138e+02 ± 1.027155e+00
+Merit:             3.442758e+01 ± 2.607709e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_310.pt
+Epoch 312/1000, Loss: 87.2473, Obj: 20.4110, Eq Viol (l1): 2.984486, Ineq Viol (l1): 0.280291, Epoch time: 0.19s
+Epoch 313/1000, Loss: 87.2373, Obj: 20.4233, Eq Viol (l1): 2.988651, Ineq Viol (l1): 0.266165, Epoch time: 0.19s
+Epoch 314/1000, Loss: 87.2781, Obj: 20.4200, Eq Viol (l1): 2.979437, Ineq Viol (l1): 0.274576, Epoch time: 0.19s
+Epoch 315/1000, Loss: 87.2064, Obj: 20.4048, Eq Viol (l1): 2.969183, Ineq Viol (l1): 0.271508, Epoch time: 0.19s
+Epoch 316/1000, Loss: 87.2819, Obj: 20.4210, Eq Viol (l1): 2.974994, Ineq Viol (l1): 0.270419, Epoch time: 0.27s
+Epoch 317/1000, Loss: 87.1755, Obj: 20.3912, Eq Viol (l1): 2.963092, Ineq Viol (l1): 0.282795, Epoch time: 0.19s
+Epoch 318/1000, Loss: 87.2048, Obj: 20.4087, Eq Viol (l1): 2.971568, Ineq Viol (l1): 0.267294, Epoch time: 0.19s
+Epoch 319/1000, Loss: 87.2897, Obj: 20.4199, Eq Viol (l1): 2.970569, Ineq Viol (l1): 0.274453, Epoch time: 0.19s
+Epoch 320/1000, Loss: 87.2390, Obj: 20.4025, Eq Viol (l1): 2.976625, Ineq Viol (l1): 0.274568, Epoch time: 0.19s
+Epoch 321/1000, Loss: 87.2833, Obj: 20.3986, Eq Viol (l1): 2.969960, Ineq Viol (l1): 0.281577, Epoch time: 0.19s
+
+Running validation at epoch 320...
+
+VALIDATION_EPOCH_320 EVALUATION RESULTS:
+==================================================
+Obj:     2.063948e+01
+Opt Gap:      3.619882e+01 ± 1.151233e+01
+Eq Vio l1:   1.324945e+00 (max: 2.182982e+00)
+Ineq Vio l1: 2.005275e-02 (max: 7.924319e-01)
+Sol Dis:   2.061369e+02 ± 1.038361e+00
+Merit:             3.408946e+01 ± 3.140495e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_320.pt
+Epoch 322/1000, Loss: 87.3695, Obj: 20.4438, Eq Viol (l1): 2.965591, Ineq Viol (l1): 0.274796, Epoch time: 0.19s
+Epoch 323/1000, Loss: 87.2152, Obj: 20.3967, Eq Viol (l1): 2.972516, Ineq Viol (l1): 0.265959, Epoch time: 0.19s
+Epoch 324/1000, Loss: 87.1829, Obj: 20.3695, Eq Viol (l1): 2.957754, Ineq Viol (l1): 0.275237, Epoch time: 0.19s
+Epoch 325/1000, Loss: 87.1127, Obj: 20.3584, Eq Viol (l1): 2.948564, Ineq Viol (l1): 0.270988, Epoch time: 0.19s
+Epoch 326/1000, Loss: 87.1578, Obj: 20.3588, Eq Viol (l1): 2.946743, Ineq Viol (l1): 0.280911, Epoch time: 0.19s
+Epoch 327/1000, Loss: 87.3591, Obj: 20.3938, Eq Viol (l1): 2.966011, Ineq Viol (l1): 0.288597, Epoch time: 0.19s
+Epoch 328/1000, Loss: 87.0999, Obj: 20.3610, Eq Viol (l1): 2.945290, Ineq Viol (l1): 0.264523, Epoch time: 0.19s
+Epoch 329/1000, Loss: 87.1969, Obj: 20.3529, Eq Viol (l1): 2.950911, Ineq Viol (l1): 0.287335, Epoch time: 0.19s
+Epoch 330/1000, Loss: 87.0753, Obj: 20.3280, Eq Viol (l1): 2.938526, Ineq Viol (l1): 0.282996, Epoch time: 0.19s
+Epoch 331/1000, Loss: 87.1033, Obj: 20.3341, Eq Viol (l1): 2.943333, Ineq Viol (l1): 0.278452, Epoch time: 0.19s
+
+Running validation at epoch 330...
+
+VALIDATION_EPOCH_330 EVALUATION RESULTS:
+==================================================
+Obj:     2.050065e+01
+Opt Gap:      3.605986e+01 ± 1.149154e+01
+Eq Vio l1:   1.341997e+00 (max: 2.183563e+00)
+Ineq Vio l1: 1.981637e-02 (max: 8.583174e-01)
+Sol Dis:   2.054499e+02 ± 1.042219e+00
+Merit:             3.411879e+01 ± 1.767073e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_330.pt
+Epoch 332/1000, Loss: 87.2475, Obj: 20.3568, Eq Viol (l1): 2.942695, Ineq Viol (l1): 0.293448, Epoch time: 0.19s
+Epoch 333/1000, Loss: 87.0676, Obj: 20.3247, Eq Viol (l1): 2.943497, Ineq Viol (l1): 0.274026, Epoch time: 0.19s
+Epoch 334/1000, Loss: 87.0079, Obj: 20.3101, Eq Viol (l1): 2.935388, Ineq Viol (l1): 0.273945, Epoch time: 0.19s
+Epoch 335/1000, Loss: 86.9979, Obj: 20.2958, Eq Viol (l1): 2.935370, Ineq Viol (l1): 0.287433, Epoch time: 0.19s
+Epoch 336/1000, Loss: 87.0384, Obj: 20.3244, Eq Viol (l1): 2.931351, Ineq Viol (l1): 0.262781, Epoch time: 0.19s
+Epoch 337/1000, Loss: 87.0646, Obj: 20.2974, Eq Viol (l1): 2.944745, Ineq Viol (l1): 0.287794, Epoch time: 0.19s
+Epoch 338/1000, Loss: 86.9136, Obj: 20.2730, Eq Viol (l1): 2.921793, Ineq Viol (l1): 0.271916, Epoch time: 0.19s
+Epoch 339/1000, Loss: 87.1990, Obj: 20.3515, Eq Viol (l1): 2.930082, Ineq Viol (l1): 0.275532, Epoch time: 0.19s
+Epoch 340/1000, Loss: 87.0468, Obj: 20.2718, Eq Viol (l1): 2.938679, Ineq Viol (l1): 0.303910, Epoch time: 0.19s
+Epoch 341/1000, Loss: 86.9505, Obj: 20.2822, Eq Viol (l1): 2.925263, Ineq Viol (l1): 0.269070, Epoch time: 0.19s
+
+Running validation at epoch 340...
+
+VALIDATION_EPOCH_340 EVALUATION RESULTS:
+==================================================
+Obj:     2.022737e+01
+Opt Gap:      3.578380e+01 ± 1.147786e+01
+Eq Vio l1:   1.232267e+00 (max: 2.051917e+00)
+Ineq Vio l1: 1.219748e-01 (max: 2.317231e+00)
+Sol Dis:   2.041552e+02 ± 1.066512e+00
+Merit:             3.376979e+01 ± 7.758320e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_340.pt
+Epoch 342/1000, Loss: 87.0474, Obj: 20.2900, Eq Viol (l1): 2.929388, Ineq Viol (l1): 0.281209, Epoch time: 0.19s
+Epoch 343/1000, Loss: 87.0325, Obj: 20.3003, Eq Viol (l1): 2.925256, Ineq Viol (l1): 0.274591, Epoch time: 0.19s
+Epoch 344/1000, Loss: 86.9807, Obj: 20.2953, Eq Viol (l1): 2.922012, Ineq Viol (l1): 0.273847, Epoch time: 0.19s
+Epoch 345/1000, Loss: 86.9797, Obj: 20.2960, Eq Viol (l1): 2.924972, Ineq Viol (l1): 0.257813, Epoch time: 0.19s
+Epoch 346/1000, Loss: 87.0014, Obj: 20.2840, Eq Viol (l1): 2.920239, Ineq Viol (l1): 0.280711, Epoch time: 0.19s
+Epoch 347/1000, Loss: 87.0004, Obj: 20.2804, Eq Viol (l1): 2.919010, Ineq Viol (l1): 0.287902, Epoch time: 0.19s
+Epoch 348/1000, Loss: 86.8607, Obj: 20.2412, Eq Viol (l1): 2.904603, Ineq Viol (l1): 0.278430, Epoch time: 0.19s
+Epoch 349/1000, Loss: 86.9710, Obj: 20.2664, Eq Viol (l1): 2.928636, Ineq Viol (l1): 0.279087, Epoch time: 0.19s
+Epoch 350/1000, Loss: 86.9142, Obj: 20.2385, Eq Viol (l1): 2.926178, Ineq Viol (l1): 0.295302, Epoch time: 0.19s
+Epoch 351/1000, Loss: 86.8242, Obj: 20.2425, Eq Viol (l1): 2.909761, Ineq Viol (l1): 0.253928, Epoch time: 0.27s
+
+Running validation at epoch 350...
+
+VALIDATION_EPOCH_350 EVALUATION RESULTS:
+==================================================
+Obj:     2.025029e+01
+Opt Gap:      3.580217e+01 ± 1.147483e+01
+Eq Vio l1:   1.225349e+00 (max: 2.025115e+00)
+Ineq Vio l1: 5.748805e-02 (max: 9.644388e-01)
+Sol Dis:   2.041797e+02 ± 1.050727e+00
+Merit:             3.307866e+01 ± 2.863094e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_350.pt
+Epoch 352/1000, Loss: 86.8042, Obj: 20.2245, Eq Viol (l1): 2.912726, Ineq Viol (l1): 0.277076, Epoch time: 0.19s
+Epoch 353/1000, Loss: 86.7968, Obj: 20.2249, Eq Viol (l1): 2.902641, Ineq Viol (l1): 0.269218, Epoch time: 0.19s
+Epoch 354/1000, Loss: 87.0807, Obj: 20.3179, Eq Viol (l1): 2.911834, Ineq Viol (l1): 0.261185, Epoch time: 0.19s
+Epoch 355/1000, Loss: 86.9557, Obj: 20.2441, Eq Viol (l1): 2.912621, Ineq Viol (l1): 0.289789, Epoch time: 0.19s
+Epoch 356/1000, Loss: 86.9336, Obj: 20.2642, Eq Viol (l1): 2.898643, Ineq Viol (l1): 0.270458, Epoch time: 0.19s
+Epoch 357/1000, Loss: 86.9565, Obj: 20.2794, Eq Viol (l1): 2.900024, Ineq Viol (l1): 0.266584, Epoch time: 0.19s
+Epoch 358/1000, Loss: 86.8623, Obj: 20.2272, Eq Viol (l1): 2.904850, Ineq Viol (l1): 0.276498, Epoch time: 0.19s
+Epoch 359/1000, Loss: 86.8804, Obj: 20.2300, Eq Viol (l1): 2.901233, Ineq Viol (l1): 0.277192, Epoch time: 0.19s
+Epoch 360/1000, Loss: 86.8703, Obj: 20.2317, Eq Viol (l1): 2.906941, Ineq Viol (l1): 0.271680, Epoch time: 0.19s
+Epoch 361/1000, Loss: 86.8413, Obj: 20.2234, Eq Viol (l1): 2.899574, Ineq Viol (l1): 0.276504, Epoch time: 0.19s
+
+Running validation at epoch 360...
+
+VALIDATION_EPOCH_360 EVALUATION RESULTS:
+==================================================
+Obj:     2.028103e+01
+Opt Gap:      3.578282e+01 ± 1.144336e+01
+Eq Vio l1:   1.226303e+00 (max: 1.952846e+00)
+Ineq Vio l1: 4.347834e-02 (max: 1.372222e+00)
+Sol Dis:   2.043073e+02 ± 1.020262e+00
+Merit:             3.297884e+01 ± 4.453425e-02
+Avg Inf Time:  0.0002s
+==================================================
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-171736_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_0.5/model_360.pt
+Epoch 362/1000, Loss: 86.9426, Obj: 20.2580, Eq Viol (l1): 2.903255, Ineq Viol (l1): 0.261493, Epoch time: 0.19s
+Epoch 363/1000, Loss: 86.8881, Obj: 20.2094, Eq Viol (l1): 2.905755, Ineq Viol (l1): 0.290369, Epoch time: 0.19s
+Epoch 364/1000, Loss: 86.7521, Obj: 20.2165, Eq Viol (l1): 2.879629, Ineq Viol (l1): 0.262811, Epoch time: 0.19s
+Epoch 365/1000, Loss: 86.7844, Obj: 20.2066, Eq Viol (l1): 2.890068, Ineq Viol (l1): 0.266292, Epoch time: 0.19s
+Epoch 366/1000, Loss: 86.7628, Obj: 20.1986, Eq Viol (l1): 2.891072, Ineq Viol (l1): 0.269631, Epoch time: 0.19s
+Epoch 367/1000, Loss: 86.7667, Obj: 20.1856, Eq Viol (l1): 2.882949, Ineq Viol (l1): 0.280669, Epoch time: 0.19s
+Epoch 368/1000, Loss: 86.7296, Obj: 20.1990, Eq Viol (l1): 2.884328, Ineq Viol (l1): 0.268329, Epoch time: 0.19s
+Epoch 369/1000, Loss: 86.7828, Obj: 20.2060, Eq Viol (l1): 2.877551, Ineq Viol (l1): 0.270505, Epoch time: 0.19s

@@ -73,6 +73,8 @@ def load_instance(config):
                 dataset_filepath = dataset_filepath + f'_tol1e0_ready'
             if config['subopt_ratio'] == -10:
                 dataset_filepath = dataset_filepath + f'_tol1em1_ready'
+        if config['en_subopt'] == 3:
+            dataset_filepath = dataset_filepath + f'_maxt{config["subopt_ratio"]}_ready'
 
     print("Loading  dataset from:", dataset_filepath, '\n')
     with open(dataset_filepath, 'rb') as f:
@@ -103,8 +105,10 @@ def load_instance(config):
         if config['checkpoint']:
             # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
             ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
+            ckpt_method = config['checkpoint'].split('/')[4].split('_')[2]
+            ckpt_seed = config['checkpoint'].split('/')[4].split('_')[3]
             ckpt_number = config['checkpoint'].split('_')[-1].split('.')[0]
-            result_save_dir += f"_finetune_{ckpt_date}_model_{ckpt_number}"
+            result_save_dir += f"_finetune_{ckpt_date}_{ckpt_method}_seed{ckpt_seed}_model_{ckpt_number}"
 
     if not os.path.exists(result_save_dir):
         os.makedirs(result_save_dir)
@@ -338,7 +342,7 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        sup_weight = 1.0
+        sup_weight = 100.0 # prev 1.0
 
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):

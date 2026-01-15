@@ -138,6 +138,7 @@ class Evaluator:
         return {
             # Objective metrics
             'objective': obj_pred.mean().item(),
+            'objective_max': obj_pred.max().item(),
             'true_objective': obj_true.mean().item(),
             'opt_gap_mean': opt_gap.mean().item(),
             'opt_gap_std': opt_gap.std().item(),
@@ -195,14 +196,13 @@ class Evaluator:
         """Print evaluation summary."""
         print(f"\n{split_name.upper()} EVALUATION RESULTS:")
         print("=" * 50)
-        print(f"Objective Value:     {metrics.get('objective', 0):.6e}")
-        print(f"True Objective:      {metrics.get('true_objective', 0):.6e}")
-        print(f"Optimality Gap:      {metrics.get('opt_gap_mean', 0):.6e} ± {metrics.get('opt_gap_std', 0):.6e}")
-        print(f"Eq Violation l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
-        print(f"Ineq Violation l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
-        print(f"Solution Distance:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
+        print(f"Obj:     {metrics.get('objective', 0):.6e}")
+        print(f"Opt Gap:      {metrics.get('opt_gap_mean', 0):.6e} ± {metrics.get('opt_gap_std', 0):.6e}")
+        print(f"Eq Vio l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
+        print(f"Ineq Vio l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
+        print(f"Sol Dis:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
         print(f"Merit:             {metrics.get('merit_mean', 0):.6e} ± {metrics.get('merit_std', 0):.6e}")
-        print(f"Avg Inference Time:  {metrics.get('avg_inference_time', 0):.4f}s")
+        print(f"Avg Inf Time:  {metrics.get('avg_inference_time', 0):.4f}s")
 
         print("=" * 50)
     

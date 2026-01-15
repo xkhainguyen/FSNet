@@ -26,6 +26,93 @@
 # done
 
 python main.py \
+    --method sup_pen \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --train_size 7000 \
+    --seed 0 \
+    --en_subopt 3 \
+    --subopt_ratio 0.5 \
+    --save_intermediate True
+
+python main.py \
+    --method sup \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --train_size 7000 \
+    --seed 1 \
+    --en_subopt 3 \
+    --subopt_ratio 1.5 \
+    --save_intermediate True 
+
+python main.py \
+    --method penalty \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0001  \
+    --seed 1 \
+    --num_epochs 1000 \
+    --save_intermediate True 
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 3 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-233753_MLP_sup_pen_seed1_nepochs1000_lr0.0001_trainsize7000_subopt_3_1.5/model_950.pt"
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 3 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-233655_MLP_sup_seed1_nepochs1000_lr0.0005_trainsize7000_subopt_3_1.5/model_180.pt"
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 3 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-233753_MLP_sup_pen_seed1_nepochs1000_lr0.0001_trainsize7000_subopt_3_1.5/model_990.pt"
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 3 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-233655_MLP_sup_seed1_nepochs1000_lr0.0005_trainsize7000_subopt_3_1.5/model_990.pt"
+
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.0002  \
+    --seed 0 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-223104_MLP_penalty_seed1_nepochs1000_lr0.0001_trainsize7000/model.pt"
+
+python main.py \
+    --method penalty \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --lr 0.00005  \
+    --seed 3 \
+    --num_epochs 300 \
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260113-233753_MLP_sup_pen_seed1_nepochs1000_lr0.0001_trainsize7000_subopt_3_1.5/model_950.pt"
+
+
+
+
+############
+python main.py \
     --method sup \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
@@ -58,9 +145,9 @@ python main.py \
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --lr 0.0002  \
-    --seed 1 \
+    --seed 3 \
     --num_epochs 300 \
-    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260105-234302_MLP_sup_seed1_dropout0.1_subopt_2_-10.0/model_60.pt"
+    --checkpoint "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260112-141000_MLP_penalty_seed1_nepochs1000_lr0.0001_trainsize7000/model_990.pt"
 
 
 

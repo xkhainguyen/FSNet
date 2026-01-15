@@ -1,0 +1,1513 @@
+==============================================
+ Job started at: 2026-01-15 15:37:50
+ Job ID: 8102368
+ Node: node3204
+==============================================
+
+======= Running for problem: nonsmooth_nonconvex/socp =======
+
+Loading problem instance: nonsmooth_nonconvex/socp with size [100, 50, 50, 10000]
+Loading  dataset from: datasets/nonsmooth_nonconvex/socp/random2025_socp_dataset_var100_ineq50_eq50_ex10000 
+
+Running on:  cuda
+Training model using FSNet method with seed 2 for 300 epochs
+Using batch size: 512
+Loading model from checkpoint: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-145229_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_1.5/model_630.pt
+
+lr: 0.0002, weight_decay: 0.001, num_epochs: 300
+
+Epoch 1/300, Loss: 22.6470, Obj: 22.5844, Eq Viol (l1): 0.000072, Ineq Viol (l1): 0.000000, Epoch time: 7.15s
+
+Running validation at epoch 0...
+
+VALIDATION_EPOCH_0 EVALUATION RESULTS:
+==================================================
+Obj:     2.239558e+01
+Opt Gap:      3.987623e+01 ± 1.308074e+01
+Eq Vio l1:   6.087595e-05 (max: 2.884294e-03)
+Ineq Vio l1: 9.106385e-08 (max: 3.240629e-05)
+Sol Dis:   1.926812e+02 ± 2.217104e-01
+Merit:             2.239619e+01 ± 2.254388e-06
+Avg Inf Time:  0.6020s
+==================================================
+Epoch 2/300, Loss: 21.3855, Obj: 21.1963, Eq Viol (l1): 0.000069, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 3/300, Loss: 20.3342, Obj: 19.8683, Eq Viol (l1): 0.000090, Ineq Viol (l1): 0.000001, Epoch time: 2.49s
+Epoch 4/300, Loss: 19.3537, Obj: 19.0357, Eq Viol (l1): 0.000087, Ineq Viol (l1): 0.000001, Epoch time: 2.35s
+Epoch 5/300, Loss: 18.1311, Obj: 17.8142, Eq Viol (l1): 0.000086, Ineq Viol (l1): 0.000001, Epoch time: 2.38s
+Epoch 6/300, Loss: 16.3132, Obj: 15.9488, Eq Viol (l1): 0.000080, Ineq Viol (l1): 0.000001, Epoch time: 2.51s
+Epoch 7/300, Loss: 14.2700, Obj: 13.7556, Eq Viol (l1): 0.000080, Ineq Viol (l1): 0.000000, Epoch time: 2.55s
+Epoch 8/300, Loss: 12.1261, Obj: 11.4989, Eq Viol (l1): 0.000074, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 9/300, Loss: 9.8108, Obj: 9.0325, Eq Viol (l1): 0.000069, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 10/300, Loss: 8.0143, Obj: 7.2049, Eq Viol (l1): 0.000074, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 11/300, Loss: 7.5236, Obj: 6.8805, Eq Viol (l1): 0.000071, Ineq Viol (l1): 0.000000, Epoch time: 2.54s
+
+Running validation at epoch 10...
+
+VALIDATION_EPOCH_10 EVALUATION RESULTS:
+==================================================
+Obj:     6.632839e+00
+Opt Gap:      1.237416e+01 ± 3.739215e+00
+Eq Vio l1:   6.747438e-05 (max: 9.921708e-04)
+Ineq Vio l1: 3.494509e-07 (max: 3.427199e-05)
+Sol Dis:   1.642318e+02 ± 5.890542e-01
+Merit:             6.633517e+00 ± 1.362614e-02
+Avg Inf Time:  0.0685s
+==================================================
+Epoch 12/300, Loss: 7.2278, Obj: 6.5992, Eq Viol (l1): 0.000066, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 13/300, Loss: 7.0066, Obj: 6.4690, Eq Viol (l1): 0.000069, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 14/300, Loss: 6.8164, Obj: 6.3196, Eq Viol (l1): 0.000063, Ineq Viol (l1): 0.000000, Epoch time: 2.58s
+Epoch 15/300, Loss: 6.7129, Obj: 6.1989, Eq Viol (l1): 0.000061, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 16/300, Loss: 6.6886, Obj: 6.1288, Eq Viol (l1): 0.000065, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 17/300, Loss: 6.5104, Obj: 5.9798, Eq Viol (l1): 0.000056, Ineq Viol (l1): 0.000000, Epoch time: 2.64s
+Epoch 18/300, Loss: 6.5902, Obj: 5.9150, Eq Viol (l1): 0.000055, Ineq Viol (l1): 0.000000, Epoch time: 2.68s
+Epoch 19/300, Loss: 6.7400, Obj: 5.9113, Eq Viol (l1): 0.000041, Ineq Viol (l1): 0.000000, Epoch time: 2.74s
+Epoch 20/300, Loss: 6.7667, Obj: 5.7488, Eq Viol (l1): 0.000048, Ineq Viol (l1): 0.000003, Epoch time: 2.82s
+Epoch 21/300, Loss: 6.4856, Obj: 5.4736, Eq Viol (l1): 0.000040, Ineq Viol (l1): 0.000000, Epoch time: 2.80s
+
+Running validation at epoch 20...
+
+VALIDATION_EPOCH_20 EVALUATION RESULTS:
+==================================================
+Obj:     5.479406e+00
+Opt Gap:      1.095057e+01 ± 3.222738e+00
+Eq Vio l1:   2.436694e-05 (max: 2.370246e-03)
+Ineq Vio l1: 3.055086e-07 (max: 6.423728e-05)
+Sol Dis:   1.734345e+02 ± 2.883243e-01
+Merit:             5.479653e+00 ± 2.584956e-02
+Avg Inf Time:  0.0901s
+==================================================
+Epoch 22/300, Loss: 5.8484, Obj: 5.0642, Eq Viol (l1): 0.000038, Ineq Viol (l1): 0.000000, Epoch time: 2.70s
+Epoch 23/300, Loss: 5.1375, Obj: 4.4547, Eq Viol (l1): 0.000065, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 24/300, Loss: 4.7953, Obj: 4.1391, Eq Viol (l1): 0.000066, Ineq Viol (l1): 0.000000, Epoch time: 2.62s
+Epoch 25/300, Loss: 4.5447, Obj: 3.8843, Eq Viol (l1): 0.000067, Ineq Viol (l1): 0.000000, Epoch time: 2.63s
+Epoch 26/300, Loss: 4.3566, Obj: 3.6721, Eq Viol (l1): 0.000053, Ineq Viol (l1): 0.000000, Epoch time: 2.68s
+Epoch 27/300, Loss: 4.1956, Obj: 3.4953, Eq Viol (l1): 0.000044, Ineq Viol (l1): 0.000000, Epoch time: 2.71s
+Epoch 28/300, Loss: 3.9695, Obj: 3.1974, Eq Viol (l1): 0.000048, Ineq Viol (l1): 0.000001, Epoch time: 2.73s
+Epoch 29/300, Loss: 3.6837, Obj: 2.9677, Eq Viol (l1): 0.000050, Ineq Viol (l1): 0.000000, Epoch time: 2.71s
+Epoch 30/300, Loss: 3.4029, Obj: 2.6802, Eq Viol (l1): 0.000051, Ineq Viol (l1): 0.000000, Epoch time: 2.68s
+Epoch 31/300, Loss: 2.9633, Obj: 2.3730, Eq Viol (l1): 0.000050, Ineq Viol (l1): 0.000000, Epoch time: 2.66s
+
+Running validation at epoch 30...
+
+VALIDATION_EPOCH_30 EVALUATION RESULTS:
+==================================================
+Obj:     2.222915e+00
+Opt Gap:      4.860801e+00 ± 1.235832e+00
+Eq Vio l1:   6.076229e-05 (max: 2.193900e-03)
+Ineq Vio l1: 5.815281e-07 (max: 1.240554e-04)
+Sol Dis:   1.536174e+02 ± 7.278102e-01
+Merit:             2.223529e+00 ± 3.840756e-03
+Avg Inf Time:  0.0700s
+==================================================
+Epoch 32/300, Loss: 2.5181, Obj: 1.9889, Eq Viol (l1): 0.000070, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 33/300, Loss: 2.3100, Obj: 1.8279, Eq Viol (l1): 0.000082, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 34/300, Loss: 2.1723, Obj: 1.7111, Eq Viol (l1): 0.000082, Ineq Viol (l1): 0.000000, Epoch time: 2.44s
+Epoch 35/300, Loss: 2.0490, Obj: 1.6861, Eq Viol (l1): 0.000084, Ineq Viol (l1): 0.000000, Epoch time: 2.39s
+Epoch 36/300, Loss: 2.0328, Obj: 1.6436, Eq Viol (l1): 0.000085, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 37/300, Loss: 1.9830, Obj: 1.5989, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 38/300, Loss: 1.9403, Obj: 1.6053, Eq Viol (l1): 0.000082, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 39/300, Loss: 2.0037, Obj: 1.5895, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 40/300, Loss: 1.9184, Obj: 1.5776, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.34s
+Epoch 41/300, Loss: 1.8770, Obj: 1.5098, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.37s
+
+Running validation at epoch 40...
+
+VALIDATION_EPOCH_40 EVALUATION RESULTS:
+==================================================
+Obj:     1.478186e+00
+Opt Gap:      3.359291e+00 ± 6.491936e-01
+Eq Vio l1:   8.471997e-05 (max: 1.492081e-03)
+Ineq Vio l1: 2.944429e-07 (max: 4.214877e-05)
+Sol Dis:   1.471674e+02 ± 8.754397e-01
+Merit:             1.479037e+00 ± 4.803250e-03
+Avg Inf Time:  0.0637s
+==================================================
+Epoch 42/300, Loss: 1.8508, Obj: 1.5266, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 43/300, Loss: 1.8063, Obj: 1.4744, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.34s
+Epoch 44/300, Loss: 1.7982, Obj: 1.4844, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 45/300, Loss: 1.8423, Obj: 1.5025, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 46/300, Loss: 1.8301, Obj: 1.4847, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.34s
+Epoch 47/300, Loss: 1.8172, Obj: 1.4831, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 48/300, Loss: 1.8257, Obj: 1.4810, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 49/300, Loss: 1.8108, Obj: 1.4740, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 50/300, Loss: 1.7648, Obj: 1.4495, Eq Viol (l1): 0.000088, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 51/300, Loss: 1.7479, Obj: 1.4333, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+
+Running validation at epoch 50...
+
+VALIDATION_EPOCH_50 EVALUATION RESULTS:
+==================================================
+Obj:     1.315644e+00
+Opt Gap:      3.069058e+00 ± 5.565950e-01
+Eq Vio l1:   8.556583e-05 (max: 8.516430e-04)
+Ineq Vio l1: 1.605605e-07 (max: 2.039137e-05)
+Sol Dis:   1.461084e+02 ± 9.259778e-01
+Merit:             1.316501e+00 ± 7.687557e-04
+Avg Inf Time:  0.0659s
+==================================================
+Epoch 52/300, Loss: 1.7588, Obj: 1.4430, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 53/300, Loss: 1.7496, Obj: 1.4411, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 54/300, Loss: 1.6972, Obj: 1.4097, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 55/300, Loss: 1.7972, Obj: 1.4584, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 56/300, Loss: 1.7286, Obj: 1.4236, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 57/300, Loss: 1.7280, Obj: 1.4237, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 58/300, Loss: 1.7230, Obj: 1.4182, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 59/300, Loss: 1.7375, Obj: 1.4224, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 60/300, Loss: 1.7211, Obj: 1.4067, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 61/300, Loss: 1.7295, Obj: 1.4323, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 60...
+
+VALIDATION_EPOCH_60 EVALUATION RESULTS:
+==================================================
+Obj:     1.325377e+00
+Opt Gap:      3.097340e+00 ± 5.875375e-01
+Eq Vio l1:   8.118023e-05 (max: 5.936128e-04)
+Ineq Vio l1: 1.594479e-07 (max: 1.842340e-05)
+Sol Dis:   1.462988e+02 ± 9.070554e-01
+Merit:             1.326191e+00 ± 2.086897e-03
+Avg Inf Time:  0.0634s
+==================================================
+Epoch 62/300, Loss: 1.7473, Obj: 1.4379, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 63/300, Loss: 1.7271, Obj: 1.4314, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 64/300, Loss: 1.7192, Obj: 1.4231, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 65/300, Loss: 1.7107, Obj: 1.4211, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.40s
+Epoch 66/300, Loss: 1.7306, Obj: 1.4275, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 67/300, Loss: 1.7101, Obj: 1.3986, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 68/300, Loss: 1.6871, Obj: 1.4032, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 69/300, Loss: 1.6963, Obj: 1.4009, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 70/300, Loss: 1.6930, Obj: 1.4088, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 71/300, Loss: 1.6921, Obj: 1.4087, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 70...
+
+VALIDATION_EPOCH_70 EVALUATION RESULTS:
+==================================================
+Obj:     1.284123e+00
+Opt Gap:      3.042232e+00 ± 5.766076e-01
+Eq Vio l1:   1.322316e-04 (max: 6.419089e-04)
+Ineq Vio l1: 5.642785e-08 (max: 6.722362e-06)
+Sol Dis:   1.458081e+02 ± 9.543520e-01
+Merit:             1.285446e+00 ± 1.210463e-03
+Avg Inf Time:  0.0633s
+==================================================
+Epoch 72/300, Loss: 1.6995, Obj: 1.3897, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 73/300, Loss: 1.6706, Obj: 1.4049, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 74/300, Loss: 1.6607, Obj: 1.3872, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 75/300, Loss: 1.6560, Obj: 1.3797, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 76/300, Loss: 1.6745, Obj: 1.4079, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 77/300, Loss: 1.6819, Obj: 1.3935, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 78/300, Loss: 1.6952, Obj: 1.3975, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 79/300, Loss: 1.6621, Obj: 1.3924, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 80/300, Loss: 1.7185, Obj: 1.4134, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 81/300, Loss: 1.6345, Obj: 1.3663, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 80...
+
+VALIDATION_EPOCH_80 EVALUATION RESULTS:
+==================================================
+Obj:     1.362954e+00
+Opt Gap:      3.162075e+00 ± 5.998151e-01
+Eq Vio l1:   1.088676e-04 (max: 1.137394e-03)
+Ineq Vio l1: 2.637179e-07 (max: 3.165052e-05)
+Sol Dis:   1.466185e+02 ± 9.282591e-01
+Merit:             1.364046e+00 ± 4.816836e-03
+Avg Inf Time:  0.0606s
+==================================================
+Epoch 82/300, Loss: 1.6582, Obj: 1.3806, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 83/300, Loss: 1.6518, Obj: 1.3833, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 84/300, Loss: 1.6664, Obj: 1.3892, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 85/300, Loss: 1.6575, Obj: 1.3788, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 86/300, Loss: 1.6256, Obj: 1.3719, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 87/300, Loss: 1.6426, Obj: 1.3764, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 88/300, Loss: 1.6416, Obj: 1.3733, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 89/300, Loss: 1.6664, Obj: 1.3857, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 90/300, Loss: 1.7312, Obj: 1.3943, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 91/300, Loss: 1.7073, Obj: 1.4084, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+
+Running validation at epoch 90...
+
+VALIDATION_EPOCH_90 EVALUATION RESULTS:
+==================================================
+Obj:     1.285279e+00
+Opt Gap:      3.019640e+00 ± 5.481305e-01
+Eq Vio l1:   8.933043e-05 (max: 7.359644e-04)
+Ineq Vio l1: 1.420751e-07 (max: 1.612285e-05)
+Sol Dis:   1.460937e+02 ± 9.278118e-01
+Merit:             1.286174e+00 ± 8.429885e-04
+Avg Inf Time:  0.0636s
+==================================================
+Epoch 92/300, Loss: 1.6367, Obj: 1.3877, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 93/300, Loss: 1.6113, Obj: 1.3565, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 94/300, Loss: 1.6201, Obj: 1.3668, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 95/300, Loss: 1.6360, Obj: 1.3625, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 96/300, Loss: 1.6689, Obj: 1.3762, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 97/300, Loss: 1.6494, Obj: 1.3747, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 98/300, Loss: 1.6602, Obj: 1.3779, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 99/300, Loss: 1.6344, Obj: 1.3754, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 100/300, Loss: 1.6130, Obj: 1.3610, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 101/300, Loss: 1.6389, Obj: 1.3673, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 100...
+
+VALIDATION_EPOCH_100 EVALUATION RESULTS:
+==================================================
+Obj:     1.352700e+00
+Opt Gap:      3.141510e+00 ± 5.914702e-01
+Eq Vio l1:   9.416430e-05 (max: 1.322071e-03)
+Ineq Vio l1: 1.499205e-07 (max: 1.647877e-05)
+Sol Dis:   1.462797e+02 ± 9.385610e-01
+Merit:             1.353643e+00 ± 3.972461e-03
+Avg Inf Time:  0.0618s
+==================================================
+Epoch 102/300, Loss: 1.6630, Obj: 1.3745, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 103/300, Loss: 1.6501, Obj: 1.3800, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 104/300, Loss: 1.6154, Obj: 1.3590, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 105/300, Loss: 1.6163, Obj: 1.3493, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 106/300, Loss: 1.6135, Obj: 1.3575, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 107/300, Loss: 1.6354, Obj: 1.3703, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 108/300, Loss: 1.5952, Obj: 1.3375, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 109/300, Loss: 1.6376, Obj: 1.3537, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 110/300, Loss: 1.6179, Obj: 1.3624, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 111/300, Loss: 1.5827, Obj: 1.3365, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 110...
+
+VALIDATION_EPOCH_110 EVALUATION RESULTS:
+==================================================
+Obj:     1.334529e+00
+Opt Gap:      3.079389e+00 ± 5.528630e-01
+Eq Vio l1:   8.742636e-05 (max: 8.213422e-04)
+Ineq Vio l1: 1.287791e-07 (max: 1.094554e-05)
+Sol Dis:   1.467048e+02 ± 1.015391e+00
+Merit:             1.335405e+00 ± 3.795590e-03
+Avg Inf Time:  0.0606s
+==================================================
+Epoch 112/300, Loss: 1.5797, Obj: 1.3399, Eq Viol (l1): 0.000090, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 113/300, Loss: 1.5984, Obj: 1.3466, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 114/300, Loss: 1.6070, Obj: 1.3613, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 115/300, Loss: 1.6102, Obj: 1.3569, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 116/300, Loss: 1.6034, Obj: 1.3467, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 117/300, Loss: 1.5870, Obj: 1.3473, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 118/300, Loss: 1.5984, Obj: 1.3505, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 119/300, Loss: 1.6163, Obj: 1.3387, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 120/300, Loss: 1.6079, Obj: 1.3555, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 121/300, Loss: 1.6356, Obj: 1.3621, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 120...
+
+VALIDATION_EPOCH_120 EVALUATION RESULTS:
+==================================================
+Obj:     1.291081e+00
+Opt Gap:      3.028308e+00 ± 5.544909e-01
+Eq Vio l1:   1.192737e-04 (max: 7.745656e-04)
+Ineq Vio l1: 2.058176e-07 (max: 3.204962e-05)
+Sol Dis:   1.463221e+02 ± 9.893158e-01
+Merit:             1.292276e+00 ± 2.587807e-03
+Avg Inf Time:  0.0634s
+==================================================
+Epoch 122/300, Loss: 1.6379, Obj: 1.3760, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 123/300, Loss: 1.5894, Obj: 1.3414, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 124/300, Loss: 1.5806, Obj: 1.3362, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 125/300, Loss: 1.5809, Obj: 1.3586, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 126/300, Loss: 1.6402, Obj: 1.3532, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 127/300, Loss: 1.5892, Obj: 1.3369, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 128/300, Loss: 1.5709, Obj: 1.3325, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 129/300, Loss: 1.5641, Obj: 1.3355, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 130/300, Loss: 1.5625, Obj: 1.3231, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 131/300, Loss: 1.5770, Obj: 1.3291, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.37s
+
+Running validation at epoch 130...
+
+VALIDATION_EPOCH_130 EVALUATION RESULTS:
+==================================================
+Obj:     1.324287e+00
+Opt Gap:      3.096691e+00 ± 5.631262e-01
+Eq Vio l1:   1.046007e-04 (max: 8.438641e-04)
+Ineq Vio l1: 1.097574e-07 (max: 1.201438e-05)
+Sol Dis:   1.457189e+02 ± 9.862589e-01
+Merit:             1.325334e+00 ± 3.295547e-03
+Avg Inf Time:  0.0634s
+==================================================
+Epoch 132/300, Loss: 1.5868, Obj: 1.3429, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 133/300, Loss: 1.6046, Obj: 1.3467, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 134/300, Loss: 1.5831, Obj: 1.3582, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 135/300, Loss: 1.5914, Obj: 1.3314, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 136/300, Loss: 1.6054, Obj: 1.3477, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 137/300, Loss: 1.6260, Obj: 1.3622, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 138/300, Loss: 1.5668, Obj: 1.3316, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 139/300, Loss: 1.6055, Obj: 1.3392, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 140/300, Loss: 1.5755, Obj: 1.3354, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 141/300, Loss: 1.5843, Obj: 1.3366, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 140...
+
+VALIDATION_EPOCH_140 EVALUATION RESULTS:
+==================================================
+Obj:     1.291676e+00
+Opt Gap:      3.015148e+00 ± 5.596501e-01
+Eq Vio l1:   1.099217e-04 (max: 9.477750e-04)
+Ineq Vio l1: 2.020847e-07 (max: 3.471489e-05)
+Sol Dis:   1.464015e+02 ± 9.764065e-01
+Merit:             1.292777e+00 ± 4.831557e-04
+Avg Inf Time:  0.0632s
+==================================================
+Epoch 142/300, Loss: 1.6219, Obj: 1.3635, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 143/300, Loss: 1.5810, Obj: 1.3244, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 144/300, Loss: 1.5829, Obj: 1.3434, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 145/300, Loss: 1.5756, Obj: 1.3246, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 146/300, Loss: 1.5691, Obj: 1.3348, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 147/300, Loss: 1.5463, Obj: 1.3209, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 148/300, Loss: 1.5611, Obj: 1.3245, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 149/300, Loss: 1.5482, Obj: 1.3187, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 150/300, Loss: 1.5640, Obj: 1.3247, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 151/300, Loss: 1.5627, Obj: 1.3241, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 150...
+
+VALIDATION_EPOCH_150 EVALUATION RESULTS:
+==================================================
+Obj:     1.264549e+00
+Opt Gap:      2.966293e+00 ± 5.324263e-01
+Eq Vio l1:   1.021418e-04 (max: 6.972975e-04)
+Ineq Vio l1: 1.176914e-07 (max: 2.046988e-05)
+Sol Dis:   1.460935e+02 ± 9.534425e-01
+Merit:             1.265572e+00 ± 3.564692e-04
+Avg Inf Time:  0.0629s
+==================================================
+Epoch 152/300, Loss: 1.5626, Obj: 1.3370, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 153/300, Loss: 1.5828, Obj: 1.3378, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 154/300, Loss: 1.5757, Obj: 1.3155, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 155/300, Loss: 1.5210, Obj: 1.3091, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 156/300, Loss: 1.5414, Obj: 1.3255, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 157/300, Loss: 1.5471, Obj: 1.3147, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 158/300, Loss: 1.5616, Obj: 1.3219, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 159/300, Loss: 1.5593, Obj: 1.3231, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 160/300, Loss: 1.5640, Obj: 1.3324, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 161/300, Loss: 1.6230, Obj: 1.3600, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 160...
+
+VALIDATION_EPOCH_160 EVALUATION RESULTS:
+==================================================
+Obj:     1.278177e+00
+Opt Gap:      2.996900e+00 ± 5.467386e-01
+Eq Vio l1:   1.083368e-04 (max: 1.184615e-03)
+Ineq Vio l1: 2.149021e-07 (max: 5.472088e-05)
+Sol Dis:   1.459175e+02 ± 9.682926e-01
+Merit:             1.279262e+00 ± 2.547198e-03
+Avg Inf Time:  0.0631s
+==================================================
+Epoch 162/300, Loss: 1.5498, Obj: 1.3163, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 163/300, Loss: 1.5449, Obj: 1.3215, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 164/300, Loss: 1.5393, Obj: 1.3076, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 165/300, Loss: 1.5463, Obj: 1.3051, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 166/300, Loss: 1.5976, Obj: 1.3448, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 167/300, Loss: 1.5532, Obj: 1.3128, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 168/300, Loss: 1.5443, Obj: 1.3297, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 169/300, Loss: 1.5607, Obj: 1.3265, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 170/300, Loss: 1.5665, Obj: 1.3448, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 171/300, Loss: 1.5655, Obj: 1.3228, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+
+Running validation at epoch 170...
+
+VALIDATION_EPOCH_170 EVALUATION RESULTS:
+==================================================
+Obj:     1.375032e+00
+Opt Gap:      3.217300e+00 ± 6.497018e-01
+Eq Vio l1:   9.045920e-05 (max: 6.763326e-04)
+Ineq Vio l1: 2.773817e-07 (max: 4.743043e-05)
+Sol Dis:   1.467016e+02 ± 9.728284e-01
+Merit:             1.375940e+00 ± 6.923451e-04
+Avg Inf Time:  0.0602s
+==================================================
+Epoch 172/300, Loss: 1.5548, Obj: 1.3205, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 173/300, Loss: 1.5708, Obj: 1.3217, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 174/300, Loss: 1.5360, Obj: 1.3093, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 175/300, Loss: 1.5360, Obj: 1.3081, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 176/300, Loss: 1.5489, Obj: 1.3205, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 177/300, Loss: 1.5428, Obj: 1.3110, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 178/300, Loss: 1.5254, Obj: 1.3111, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 179/300, Loss: 1.5333, Obj: 1.3106, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 180/300, Loss: 1.5667, Obj: 1.3317, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 181/300, Loss: 1.5794, Obj: 1.3394, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+
+Running validation at epoch 180...
+
+VALIDATION_EPOCH_180 EVALUATION RESULTS:
+==================================================
+Obj:     1.264916e+00
+Opt Gap:      2.971211e+00 ± 5.446402e-01
+Eq Vio l1:   9.990088e-05 (max: 6.913690e-04)
+Ineq Vio l1: 1.469661e-07 (max: 1.972855e-05)
+Sol Dis:   1.462182e+02 ± 9.552744e-01
+Merit:             1.265917e+00 ± 1.689200e-03
+Avg Inf Time:  0.0632s
+==================================================
+Epoch 182/300, Loss: 1.5310, Obj: 1.3081, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 183/300, Loss: 1.5425, Obj: 1.3141, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 184/300, Loss: 1.5530, Obj: 1.3278, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 185/300, Loss: 1.5379, Obj: 1.3075, Eq Viol (l1): 0.000109, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 186/300, Loss: 1.5518, Obj: 1.3299, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 187/300, Loss: 1.5210, Obj: 1.3012, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 188/300, Loss: 1.5196, Obj: 1.3027, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 189/300, Loss: 1.5349, Obj: 1.3136, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 190/300, Loss: 1.5226, Obj: 1.2981, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 191/300, Loss: 1.5435, Obj: 1.3104, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+
+Running validation at epoch 190...
+
+VALIDATION_EPOCH_190 EVALUATION RESULTS:
+==================================================
+Obj:     1.423324e+00
+Opt Gap:      3.259665e+00 ± 6.504744e-01
+Eq Vio l1:   9.178666e-05 (max: 8.881114e-04)
+Ineq Vio l1: 2.086637e-07 (max: 5.209128e-05)
+Sol Dis:   1.465655e+02 ± 9.690624e-01
+Merit:             1.424243e+00 ± 2.205331e-03
+Avg Inf Time:  0.0581s
+==================================================
+Epoch 192/300, Loss: 1.5244, Obj: 1.3098, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 193/300, Loss: 1.5179, Obj: 1.2955, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 194/300, Loss: 1.5481, Obj: 1.3143, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 195/300, Loss: 1.5672, Obj: 1.3232, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 196/300, Loss: 1.5589, Obj: 1.2988, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 197/300, Loss: 1.5601, Obj: 1.3415, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 198/300, Loss: 1.5248, Obj: 1.3057, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 199/300, Loss: 1.5548, Obj: 1.3204, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 200/300, Loss: 1.5421, Obj: 1.3198, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 201/300, Loss: 1.5930, Obj: 1.3398, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 200...
+
+VALIDATION_EPOCH_200 EVALUATION RESULTS:
+==================================================
+Obj:     1.378804e+00
+Opt Gap:      3.185426e+00 ± 5.800759e-01
+Eq Vio l1:   9.648561e-05 (max: 1.052163e-03)
+Ineq Vio l1: 1.260473e-07 (max: 1.392769e-05)
+Sol Dis:   1.465889e+02 ± 1.010812e+00
+Merit:             1.379770e+00 ± 5.889536e-03
+Avg Inf Time:  0.0605s
+==================================================
+Epoch 202/300, Loss: 1.5711, Obj: 1.3135, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 203/300, Loss: 1.5539, Obj: 1.3163, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 204/300, Loss: 1.5247, Obj: 1.3083, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 205/300, Loss: 1.5262, Obj: 1.3041, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 206/300, Loss: 1.5706, Obj: 1.3394, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 207/300, Loss: 1.5869, Obj: 1.3171, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 208/300, Loss: 1.5573, Obj: 1.3149, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 209/300, Loss: 1.5361, Obj: 1.3036, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 210/300, Loss: 1.5309, Obj: 1.3128, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 211/300, Loss: 1.5351, Obj: 1.3094, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 210...
+
+VALIDATION_EPOCH_210 EVALUATION RESULTS:
+==================================================
+Obj:     1.319146e+00
+Opt Gap:      3.074014e+00 ± 5.730576e-01
+Eq Vio l1:   1.016061e-04 (max: 5.895082e-04)
+Ineq Vio l1: 1.133808e-07 (max: 9.033121e-06)
+Sol Dis:   1.459731e+02 ± 9.683013e-01
+Merit:             1.320163e+00 ± 2.998750e-03
+Avg Inf Time:  0.0606s
+==================================================
+Epoch 212/300, Loss: 1.5260, Obj: 1.3038, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 213/300, Loss: 1.5325, Obj: 1.3039, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 214/300, Loss: 1.5173, Obj: 1.3046, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 215/300, Loss: 1.5233, Obj: 1.3041, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 216/300, Loss: 1.5426, Obj: 1.3071, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 217/300, Loss: 1.5342, Obj: 1.3078, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 218/300, Loss: 1.5680, Obj: 1.3186, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 219/300, Loss: 1.5371, Obj: 1.3048, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 220/300, Loss: 1.5137, Obj: 1.2970, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 221/300, Loss: 1.4959, Obj: 1.2858, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 220...
+
+VALIDATION_EPOCH_220 EVALUATION RESULTS:
+==================================================
+Obj:     1.309318e+00
+Opt Gap:      3.012545e+00 ± 5.265321e-01
+Eq Vio l1:   1.015109e-04 (max: 1.236172e-03)
+Ineq Vio l1: 1.736383e-07 (max: 2.233913e-05)
+Sol Dis:   1.463591e+02 ± 9.349420e-01
+Merit:             1.310335e+00 ± 3.229973e-03
+Avg Inf Time:  0.0609s
+==================================================
+Epoch 222/300, Loss: 1.5102, Obj: 1.2999, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 223/300, Loss: 1.5382, Obj: 1.3120, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.22s
+Epoch 224/300, Loss: 1.5336, Obj: 1.3011, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 225/300, Loss: 1.5293, Obj: 1.2925, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 226/300, Loss: 1.5234, Obj: 1.3037, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 227/300, Loss: 1.5044, Obj: 1.2873, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 228/300, Loss: 1.5553, Obj: 1.3118, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 229/300, Loss: 1.5489, Obj: 1.3102, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 230/300, Loss: 1.5191, Obj: 1.2947, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 231/300, Loss: 1.5535, Obj: 1.2980, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 230...
+
+VALIDATION_EPOCH_230 EVALUATION RESULTS:
+==================================================
+Obj:     1.247180e+00
+Opt Gap:      2.953826e+00 ± 5.387630e-01
+Eq Vio l1:   1.167819e-04 (max: 1.051094e-03)
+Ineq Vio l1: 1.950492e-07 (max: 2.102461e-05)
+Sol Dis:   1.458426e+02 ± 9.616235e-01
+Merit:             1.248349e+00 ± 1.035351e-03
+Avg Inf Time:  0.0634s
+==================================================
+Epoch 232/300, Loss: 1.5016, Obj: 1.2890, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 233/300, Loss: 1.5508, Obj: 1.3214, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 234/300, Loss: 1.5206, Obj: 1.2922, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 235/300, Loss: 1.5361, Obj: 1.3036, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 236/300, Loss: 1.5429, Obj: 1.3125, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 237/300, Loss: 1.5530, Obj: 1.3197, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 238/300, Loss: 1.5128, Obj: 1.2881, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 239/300, Loss: 1.4898, Obj: 1.2764, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 240/300, Loss: 1.5036, Obj: 1.2900, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 241/300, Loss: 1.5358, Obj: 1.3074, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 240...
+
+VALIDATION_EPOCH_240 EVALUATION RESULTS:
+==================================================
+Obj:     1.252940e+00
+Opt Gap:      2.968186e+00 ± 5.428215e-01
+Eq Vio l1:   8.761135e-05 (max: 5.656581e-04)
+Ineq Vio l1: 1.174277e-07 (max: 2.119216e-05)
+Sol Dis:   1.461434e+02 ± 1.006234e+00
+Merit:             1.253817e+00 ± 2.766461e-03
+Avg Inf Time:  0.0629s
+==================================================
+Epoch 242/300, Loss: 1.4948, Obj: 1.2821, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 243/300, Loss: 1.5151, Obj: 1.2935, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 244/300, Loss: 1.5004, Obj: 1.2833, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 245/300, Loss: 1.5140, Obj: 1.3011, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 246/300, Loss: 1.5360, Obj: 1.2963, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 247/300, Loss: 1.4944, Obj: 1.2914, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.22s
+Epoch 248/300, Loss: 1.4942, Obj: 1.2885, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.22s
+Epoch 249/300, Loss: 1.5219, Obj: 1.2902, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 250/300, Loss: 1.5344, Obj: 1.3036, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 251/300, Loss: 1.5144, Obj: 1.2948, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 250...
+
+VALIDATION_EPOCH_250 EVALUATION RESULTS:
+==================================================
+Obj:     1.294906e+00
+Opt Gap:      3.016273e+00 ± 5.240742e-01
+Eq Vio l1:   9.943818e-05 (max: 9.407231e-04)
+Ineq Vio l1: 1.470976e-07 (max: 1.625864e-05)
+Sol Dis:   1.463085e+02 ± 9.728658e-01
+Merit:             1.295901e+00 ± 4.148673e-03
+Avg Inf Time:  0.0610s
+==================================================
+Epoch 252/300, Loss: 1.5235, Obj: 1.2951, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 253/300, Loss: 1.5105, Obj: 1.2868, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 254/300, Loss: 1.6137, Obj: 1.3317, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 255/300, Loss: 1.5153, Obj: 1.2946, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 256/300, Loss: 1.4879, Obj: 1.2866, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 257/300, Loss: 1.5272, Obj: 1.2967, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 258/300, Loss: 1.5290, Obj: 1.2999, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 259/300, Loss: 1.5186, Obj: 1.3035, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 260/300, Loss: 1.5866, Obj: 1.3408, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 261/300, Loss: 1.5543, Obj: 1.3226, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+
+Running validation at epoch 260...
+
+VALIDATION_EPOCH_260 EVALUATION RESULTS:
+==================================================
+Obj:     1.240243e+00
+Opt Gap:      2.948523e+00 ± 5.344438e-01
+Eq Vio l1:   1.267917e-04 (max: 9.259459e-04)
+Ineq Vio l1: 1.606398e-07 (max: 2.853574e-05)
+Sol Dis:   1.459632e+02 ± 9.944815e-01
+Merit:             1.241513e+00 ± 1.580509e-03
+Avg Inf Time:  0.0633s
+==================================================
+Epoch 262/300, Loss: 1.4884, Obj: 1.2839, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.34s
+Epoch 263/300, Loss: 1.5168, Obj: 1.3004, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 264/300, Loss: 1.5545, Obj: 1.3042, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 265/300, Loss: 1.5169, Obj: 1.2880, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 266/300, Loss: 1.4887, Obj: 1.2835, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 267/300, Loss: 1.5067, Obj: 1.2838, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 268/300, Loss: 1.5275, Obj: 1.3028, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 269/300, Loss: 1.5277, Obj: 1.2941, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 270/300, Loss: 1.5035, Obj: 1.2865, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 271/300, Loss: 1.4939, Obj: 1.2797, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 270...
+
+VALIDATION_EPOCH_270 EVALUATION RESULTS:
+==================================================
+Obj:     1.278879e+00
+Opt Gap:      2.985465e+00 ± 5.391422e-01
+Eq Vio l1:   9.719081e-05 (max: 9.459394e-04)
+Ineq Vio l1: 6.601774e-08 (max: 1.112941e-05)
+Sol Dis:   1.460296e+02 ± 9.495536e-01
+Merit:             1.279852e+00 ± 1.331943e-03
+Avg Inf Time:  0.0620s
+==================================================
+Epoch 272/300, Loss: 1.4873, Obj: 1.2786, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 273/300, Loss: 1.4916, Obj: 1.2834, Eq Viol (l1): 0.000109, Ineq Viol (l1): 0.000000, Epoch time: 2.21s
+Epoch 274/300, Loss: 1.5179, Obj: 1.2923, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 275/300, Loss: 1.5231, Obj: 1.3006, Eq Viol (l1): 0.000110, Ineq Viol (l1): 0.000000, Epoch time: 2.21s
+Epoch 276/300, Loss: 1.5456, Obj: 1.2982, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 277/300, Loss: 1.5091, Obj: 1.2835, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 278/300, Loss: 1.4857, Obj: 1.2727, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 279/300, Loss: 1.5146, Obj: 1.2849, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 280/300, Loss: 1.5366, Obj: 1.2979, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 281/300, Loss: 1.5467, Obj: 1.2942, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 280...
+
+VALIDATION_EPOCH_280 EVALUATION RESULTS:
+==================================================
+Obj:     1.276019e+00
+Opt Gap:      2.999727e+00 ± 5.439846e-01
+Eq Vio l1:   1.123814e-04 (max: 8.955221e-04)
+Ineq Vio l1: 2.095416e-07 (max: 1.513781e-05)
+Sol Dis:   1.461872e+02 ± 9.813385e-01
+Merit:             1.277145e+00 ± 5.707024e-04
+Avg Inf Time:  0.0620s
+==================================================
+Epoch 282/300, Loss: 1.5396, Obj: 1.2848, Eq Viol (l1): 0.000113, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 283/300, Loss: 1.5017, Obj: 1.2946, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 284/300, Loss: 1.5865, Obj: 1.3242, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 285/300, Loss: 1.4896, Obj: 1.2823, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 286/300, Loss: 1.5073, Obj: 1.2907, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 287/300, Loss: 1.5144, Obj: 1.2932, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 288/300, Loss: 1.5023, Obj: 1.2881, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 289/300, Loss: 1.5022, Obj: 1.2847, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 290/300, Loss: 1.5141, Obj: 1.2968, Eq Viol (l1): 0.000109, Ineq Viol (l1): 0.000000, Epoch time: 2.22s
+Epoch 291/300, Loss: 1.5154, Obj: 1.2942, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+
+Running validation at epoch 290...
+
+VALIDATION_EPOCH_290 EVALUATION RESULTS:
+==================================================
+Obj:     1.268707e+00
+Opt Gap:      3.035994e+00 ± 5.755665e-01
+Eq Vio l1:   1.106419e-04 (max: 9.450377e-04)
+Ineq Vio l1: 1.613372e-07 (max: 1.974907e-05)
+Sol Dis:   1.460304e+02 ± 9.350458e-01
+Merit:             1.269815e+00 ± 1.489422e-03
+Avg Inf Time:  0.0633s
+==================================================
+Epoch 292/300, Loss: 1.5108, Obj: 1.2937, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 293/300, Loss: 1.5316, Obj: 1.2887, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 294/300, Loss: 1.5058, Obj: 1.2923, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 295/300, Loss: 1.5208, Obj: 1.2963, Eq Viol (l1): 0.000111, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 296/300, Loss: 1.5072, Obj: 1.2848, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 297/300, Loss: 1.4766, Obj: 1.2744, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 298/300, Loss: 1.5022, Obj: 1.2866, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 299/300, Loss: 1.4804, Obj: 1.2732, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 300/300, Loss: 1.4900, Obj: 1.2797, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Training completed in 702.77 seconds.
+
+============================================================
+COMPREHENSIVE TEST EVALUATION WITH DETAILED RESULTS
+============================================================
+Testing with batch sizes: [256, 512]
+
+Evaluating with batch size: 256 (with detailed results)
+
+TEST_BS256 EVALUATION RESULTS:
+==================================================
+Obj:     1.222133e+00
+Opt Gap:      3.417110e+00 ± 1.153215e+00
+Eq Vio l1:   1.072753e-04 (max: 4.825619e-04)
+Ineq Vio l1: 1.030799e-07 (max: 1.113042e-05)
+Sol Dis:   1.462331e+02 ± 1.360216e+00
+Merit:             1.223206e+00 ± 5.396898e-02
+Avg Inf Time:  0.0575s
+==================================================
+
+Evaluating with batch size: 512 (with detailed results)
+
+TEST_BS512 EVALUATION RESULTS:
+==================================================
+Obj:     1.224207e+00
+Opt Gap:      3.382272e+00 ± 5.405095e-01
+Eq Vio l1:   1.107938e-04 (max: 5.785178e-04)
+Ineq Vio l1: 1.037195e-07 (max: 1.682426e-05)
+Sol Dis:   1.462533e+02 ± 1.089936e+00
+Merit:             1.225316e+00 ± 3.225680e-02
+Avg Inf Time:  0.0616s
+==================================================
+
+TEST BATCH SIZE COMPARISON:
+================================================================================
+Batch Size   Objective    Opt Gap      Eq Viol      Ineq Viol    Time (s)  
+--------------------------------------------------------------------------------
+256          1.2221e+00   3.4171e+00   1.0728e-04   1.0308e-07   0.46      
+512          1.2242e+00   3.3823e+00   1.1079e-04   1.0372e-07   0.25      
+================================================================================
+
+Saving model and results to: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-153756_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-153756_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630/model.pt
+✓ Detailed results saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-153756_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630/results.pkl
+
+Files saved (or attempted):
+  - model.pt (model weights and architecture)
+  - results.pkl (training history, metrics, detailed test results)
+Training and testing completed in 705.75 seconds
+Done!!!
+
+======= Running for problem: nonsmooth_nonconvex/socp =======
+
+Loading problem instance: nonsmooth_nonconvex/socp with size [100, 50, 50, 10000]
+Loading  dataset from: datasets/nonsmooth_nonconvex/socp/random2025_socp_dataset_var100_ineq50_eq50_ex10000 
+
+Running on:  cuda
+Training model using FSNet method with seed 3 for 300 epochs
+Using batch size: 512
+Loading model from checkpoint: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-145229_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_1.5/model_630.pt
+
+lr: 0.0002, weight_decay: 0.001, num_epochs: 300
+
+Epoch 1/300, Loss: 22.6334, Obj: 22.5712, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 6.82s
+
+Running validation at epoch 0...
+
+VALIDATION_EPOCH_0 EVALUATION RESULTS:
+==================================================
+Obj:     2.239174e+01
+Opt Gap:      3.986696e+01 ± 1.307436e+01
+Eq Vio l1:   3.963575e-05 (max: 2.616245e-03)
+Ineq Vio l1: 8.339927e-08 (max: 3.647054e-05)
+Sol Dis:   1.926673e+02 ± 2.226130e-01
+Merit:             2.239214e+01 ± 1.326947e-04
+Avg Inf Time:  0.6053s
+==================================================
+Epoch 2/300, Loss: 21.3957, Obj: 21.2029, Eq Viol (l1): 0.000067, Ineq Viol (l1): 0.000000, Epoch time: 2.37s
+Epoch 3/300, Loss: 20.3393, Obj: 19.8831, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000001, Epoch time: 2.48s
+Epoch 4/300, Loss: 19.3567, Obj: 19.0669, Eq Viol (l1): 0.000085, Ineq Viol (l1): 0.000001, Epoch time: 2.34s
+Epoch 5/300, Loss: 17.8967, Obj: 17.5619, Eq Viol (l1): 0.000085, Ineq Viol (l1): 0.000001, Epoch time: 2.40s
+Epoch 6/300, Loss: 15.9146, Obj: 15.5435, Eq Viol (l1): 0.000083, Ineq Viol (l1): 0.000001, Epoch time: 2.48s
+Epoch 7/300, Loss: 13.8747, Obj: 13.3392, Eq Viol (l1): 0.000078, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 8/300, Loss: 11.3714, Obj: 10.7285, Eq Viol (l1): 0.000080, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 9/300, Loss: 8.7031, Obj: 8.0008, Eq Viol (l1): 0.000073, Ineq Viol (l1): 0.000000, Epoch time: 2.60s
+Epoch 10/300, Loss: 7.4719, Obj: 6.8386, Eq Viol (l1): 0.000072, Ineq Viol (l1): 0.000000, Epoch time: 2.55s
+Epoch 11/300, Loss: 7.2182, Obj: 6.6423, Eq Viol (l1): 0.000066, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+
+Running validation at epoch 10...
+
+VALIDATION_EPOCH_10 EVALUATION RESULTS:
+==================================================
+Obj:     6.233860e+00
+Opt Gap:      1.179410e+01 ± 3.588898e+00
+Eq Vio l1:   8.352183e-05 (max: 1.629648e-03)
+Ineq Vio l1: 2.792317e-07 (max: 2.866001e-05)
+Sol Dis:   1.643190e+02 ± 5.696637e-01
+Merit:             6.234698e+00 ± 2.081039e-03
+Avg Inf Time:  0.0725s
+==================================================
+Epoch 12/300, Loss: 7.1732, Obj: 6.5197, Eq Viol (l1): 0.000065, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 13/300, Loss: 6.8420, Obj: 6.3725, Eq Viol (l1): 0.000062, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+Epoch 14/300, Loss: 6.7752, Obj: 6.2431, Eq Viol (l1): 0.000062, Ineq Viol (l1): 0.000000, Epoch time: 2.58s
+Epoch 15/300, Loss: 6.6227, Obj: 6.0974, Eq Viol (l1): 0.000057, Ineq Viol (l1): 0.000000, Epoch time: 2.61s
+Epoch 16/300, Loss: 6.6697, Obj: 6.1024, Eq Viol (l1): 0.000052, Ineq Viol (l1): 0.000000, Epoch time: 2.64s
+Epoch 17/300, Loss: 6.4795, Obj: 5.8992, Eq Viol (l1): 0.000049, Ineq Viol (l1): 0.000000, Epoch time: 2.67s
+Epoch 18/300, Loss: 6.5227, Obj: 5.8030, Eq Viol (l1): 0.000042, Ineq Viol (l1): 0.000000, Epoch time: 2.72s
+Epoch 19/300, Loss: 6.3175, Obj: 5.6093, Eq Viol (l1): 0.000036, Ineq Viol (l1): 0.000000, Epoch time: 2.77s
+Epoch 20/300, Loss: 7.0459, Obj: 5.7931, Eq Viol (l1): 0.000045, Ineq Viol (l1): 0.000000, Epoch time: 2.76s
+Epoch 21/300, Loss: 5.8456, Obj: 4.9923, Eq Viol (l1): 0.000042, Ineq Viol (l1): 0.000000, Epoch time: 2.69s
+
+Running validation at epoch 20...
+
+VALIDATION_EPOCH_20 EVALUATION RESULTS:
+==================================================
+Obj:     4.185955e+00
+Opt Gap:      8.670464e+00 ± 2.421166e+00
+Eq Vio l1:   8.211154e-05 (max: 1.116259e-03)
+Ineq Vio l1: 3.316932e-07 (max: 2.296237e-05)
+Sol Dis:   1.720698e+02 ± 1.912575e-02
+Merit:             4.186780e+00 ± 3.970551e-02
+Avg Inf Time:  0.0752s
+==================================================
+Epoch 22/300, Loss: 5.2685, Obj: 4.3365, Eq Viol (l1): 0.000072, Ineq Viol (l1): 0.000000, Epoch time: 2.62s
+Epoch 23/300, Loss: 5.0373, Obj: 4.2062, Eq Viol (l1): 0.000052, Ineq Viol (l1): 0.000001, Epoch time: 2.67s
+Epoch 24/300, Loss: 5.0618, Obj: 4.1618, Eq Viol (l1): 0.000048, Ineq Viol (l1): 0.000000, Epoch time: 2.67s
+Epoch 25/300, Loss: 4.5358, Obj: 3.6978, Eq Viol (l1): 0.000057, Ineq Viol (l1): 0.000001, Epoch time: 2.67s
+Epoch 26/300, Loss: 4.3652, Obj: 3.5494, Eq Viol (l1): 0.000049, Ineq Viol (l1): 0.000001, Epoch time: 2.70s
+Epoch 27/300, Loss: 3.9392, Obj: 3.2242, Eq Viol (l1): 0.000045, Ineq Viol (l1): 0.000000, Epoch time: 2.70s
+Epoch 28/300, Loss: 3.6229, Obj: 2.9404, Eq Viol (l1): 0.000046, Ineq Viol (l1): 0.000001, Epoch time: 2.70s
+Epoch 29/300, Loss: 3.3881, Obj: 2.6932, Eq Viol (l1): 0.000053, Ineq Viol (l1): 0.000000, Epoch time: 2.64s
+Epoch 30/300, Loss: 3.0533, Obj: 2.3830, Eq Viol (l1): 0.000060, Ineq Viol (l1): 0.000000, Epoch time: 2.63s
+Epoch 31/300, Loss: 2.6429, Obj: 2.0623, Eq Viol (l1): 0.000068, Ineq Viol (l1): 0.000000, Epoch time: 2.56s
+
+Running validation at epoch 30...
+
+VALIDATION_EPOCH_30 EVALUATION RESULTS:
+==================================================
+Obj:     1.735608e+00
+Opt Gap:      3.947571e+00 ± 9.407730e-01
+Eq Vio l1:   8.671851e-05 (max: 1.172206e-03)
+Ineq Vio l1: 5.736317e-08 (max: 5.355549e-06)
+Sol Dis:   1.503143e+02 ± 6.251793e-01
+Merit:             1.736475e+00 ± 1.182290e-02
+Avg Inf Time:  0.0698s
+==================================================
+Epoch 32/300, Loss: 2.4043, Obj: 1.8522, Eq Viol (l1): 0.000086, Ineq Viol (l1): 0.000000, Epoch time: 2.46s
+Epoch 33/300, Loss: 2.2170, Obj: 1.7591, Eq Viol (l1): 0.000084, Ineq Viol (l1): 0.000000, Epoch time: 2.54s
+Epoch 34/300, Loss: 2.0861, Obj: 1.6968, Eq Viol (l1): 0.000086, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 35/300, Loss: 2.0280, Obj: 1.6385, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 36/300, Loss: 1.9491, Obj: 1.6036, Eq Viol (l1): 0.000084, Ineq Viol (l1): 0.000000, Epoch time: 2.37s
+Epoch 37/300, Loss: 1.9792, Obj: 1.5878, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 38/300, Loss: 1.9185, Obj: 1.5505, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 39/300, Loss: 1.8849, Obj: 1.5545, Eq Viol (l1): 0.000088, Ineq Viol (l1): 0.000000, Epoch time: 2.34s
+Epoch 40/300, Loss: 1.9009, Obj: 1.5438, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 41/300, Loss: 1.8949, Obj: 1.5333, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 40...
+
+VALIDATION_EPOCH_40 EVALUATION RESULTS:
+==================================================
+Obj:     1.347130e+00
+Opt Gap:      3.152048e+00 ± 6.101753e-01
+Eq Vio l1:   1.101323e-04 (max: 6.888435e-04)
+Ineq Vio l1: 9.643670e-08 (max: 1.309573e-05)
+Sol Dis:   1.462913e+02 ± 8.913070e-01
+Merit:             1.348233e+00 ± 9.210068e-04
+Avg Inf Time:  0.0674s
+==================================================
+Epoch 42/300, Loss: 1.9419, Obj: 1.5137, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.35s
+Epoch 43/300, Loss: 1.8394, Obj: 1.5139, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 44/300, Loss: 1.8092, Obj: 1.4857, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 45/300, Loss: 1.7952, Obj: 1.4847, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 46/300, Loss: 1.7840, Obj: 1.4652, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 47/300, Loss: 1.7966, Obj: 1.4684, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 48/300, Loss: 1.7606, Obj: 1.4539, Eq Viol (l1): 0.000090, Ineq Viol (l1): 0.000000, Epoch time: 2.33s
+Epoch 49/300, Loss: 1.7632, Obj: 1.4523, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 50/300, Loss: 1.7530, Obj: 1.4413, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 51/300, Loss: 1.7618, Obj: 1.4602, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 50...
+
+VALIDATION_EPOCH_50 EVALUATION RESULTS:
+==================================================
+Obj:     1.355097e+00
+Opt Gap:      3.166783e+00 ± 6.335045e-01
+Eq Vio l1:   1.098484e-04 (max: 6.798396e-04)
+Ineq Vio l1: 8.883900e-08 (max: 9.964075e-06)
+Sol Dis:   1.464070e+02 ± 9.263669e-01
+Merit:             1.356197e+00 ± 1.318583e-03
+Avg Inf Time:  0.0647s
+==================================================
+Epoch 52/300, Loss: 1.7789, Obj: 1.4410, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 53/300, Loss: 1.7687, Obj: 1.4459, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 54/300, Loss: 1.7477, Obj: 1.4417, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 55/300, Loss: 1.7379, Obj: 1.4449, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 56/300, Loss: 1.7135, Obj: 1.4144, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 57/300, Loss: 1.7259, Obj: 1.4251, Eq Viol (l1): 0.000091, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 58/300, Loss: 1.6966, Obj: 1.4083, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 59/300, Loss: 1.7174, Obj: 1.4308, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 60/300, Loss: 1.7447, Obj: 1.4175, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 61/300, Loss: 1.7415, Obj: 1.4492, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 60...
+
+VALIDATION_EPOCH_60 EVALUATION RESULTS:
+==================================================
+Obj:     1.354779e+00
+Opt Gap:      3.163684e+00 ± 6.371587e-01
+Eq Vio l1:   9.722709e-05 (max: 1.134338e-03)
+Ineq Vio l1: 1.300192e-07 (max: 3.394898e-05)
+Sol Dis:   1.465187e+02 ± 8.930195e-01
+Merit:             1.355753e+00 ± 5.817667e-03
+Avg Inf Time:  0.0619s
+==================================================
+Epoch 62/300, Loss: 1.7112, Obj: 1.4132, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 63/300, Loss: 1.7437, Obj: 1.4434, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 64/300, Loss: 1.7345, Obj: 1.4188, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 65/300, Loss: 1.7095, Obj: 1.4239, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 66/300, Loss: 1.7027, Obj: 1.4153, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 67/300, Loss: 1.7041, Obj: 1.4042, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 68/300, Loss: 1.6769, Obj: 1.3974, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 69/300, Loss: 1.6764, Obj: 1.3977, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 70/300, Loss: 1.7253, Obj: 1.3973, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 71/300, Loss: 1.7215, Obj: 1.4229, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 70...
+
+VALIDATION_EPOCH_70 EVALUATION RESULTS:
+==================================================
+Obj:     1.457531e+00
+Opt Gap:      3.328740e+00 ± 6.575174e-01
+Eq Vio l1:   9.262489e-05 (max: 7.558065e-04)
+Ineq Vio l1: 1.438244e-07 (max: 1.912885e-05)
+Sol Dis:   1.469961e+02 ± 9.186997e-01
+Merit:             1.458458e+00 ± 6.588459e-03
+Avg Inf Time:  0.0584s
+==================================================
+Epoch 72/300, Loss: 1.6621, Obj: 1.3863, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 73/300, Loss: 1.7520, Obj: 1.4280, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 74/300, Loss: 1.7004, Obj: 1.4043, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 75/300, Loss: 1.7647, Obj: 1.4174, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 76/300, Loss: 1.6759, Obj: 1.4013, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 77/300, Loss: 1.6678, Obj: 1.3963, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 78/300, Loss: 1.6475, Obj: 1.3788, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 79/300, Loss: 1.6582, Obj: 1.3833, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 80/300, Loss: 1.6426, Obj: 1.3810, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 81/300, Loss: 1.6779, Obj: 1.3854, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 80...
+
+VALIDATION_EPOCH_80 EVALUATION RESULTS:
+==================================================
+Obj:     1.310457e+00
+Opt Gap:      3.075346e+00 ± 5.763411e-01
+Eq Vio l1:   9.375493e-05 (max: 1.192697e-03)
+Ineq Vio l1: 8.902475e-08 (max: 7.333284e-06)
+Sol Dis:   1.460724e+02 ± 9.522437e-01
+Merit:             1.311395e+00 ± 1.069339e-04
+Avg Inf Time:  0.0635s
+==================================================
+Epoch 82/300, Loss: 1.6610, Obj: 1.3806, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 83/300, Loss: 1.6788, Obj: 1.3898, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 84/300, Loss: 1.6633, Obj: 1.3876, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 85/300, Loss: 1.6626, Obj: 1.3897, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 86/300, Loss: 1.6417, Obj: 1.3685, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 87/300, Loss: 1.6461, Obj: 1.3847, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 88/300, Loss: 1.6562, Obj: 1.3833, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 89/300, Loss: 1.6441, Obj: 1.3672, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 90/300, Loss: 1.6399, Obj: 1.3727, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 91/300, Loss: 1.6413, Obj: 1.3691, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 90...
+
+VALIDATION_EPOCH_90 EVALUATION RESULTS:
+==================================================
+Obj:     1.284466e+00
+Opt Gap:      3.009915e+00 ± 5.463475e-01
+Eq Vio l1:   9.233521e-05 (max: 6.146444e-04)
+Ineq Vio l1: 1.356780e-07 (max: 1.397281e-05)
+Sol Dis:   1.462377e+02 ± 9.614023e-01
+Merit:             1.285391e+00 ± 1.031331e-03
+Avg Inf Time:  0.0635s
+==================================================
+Epoch 92/300, Loss: 1.6094, Obj: 1.3596, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 93/300, Loss: 1.6409, Obj: 1.3868, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 94/300, Loss: 1.6181, Obj: 1.3546, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 95/300, Loss: 1.6260, Obj: 1.3646, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 96/300, Loss: 1.6391, Obj: 1.3652, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 97/300, Loss: 1.6260, Obj: 1.3651, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 98/300, Loss: 1.6508, Obj: 1.3703, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.39s
+Epoch 99/300, Loss: 1.6402, Obj: 1.3908, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 100/300, Loss: 1.6145, Obj: 1.3540, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 101/300, Loss: 1.6040, Obj: 1.3645, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+
+Running validation at epoch 100...
+
+VALIDATION_EPOCH_100 EVALUATION RESULTS:
+==================================================
+Obj:     1.275041e+00
+Opt Gap:      3.010078e+00 ± 5.642892e-01
+Eq Vio l1:   1.022978e-04 (max: 6.813853e-04)
+Ineq Vio l1: 6.235912e-08 (max: 8.380578e-06)
+Sol Dis:   1.462244e+02 ± 9.491542e-01
+Merit:             1.276064e+00 ± 1.024110e-03
+Avg Inf Time:  0.0633s
+==================================================
+Epoch 102/300, Loss: 1.6638, Obj: 1.3723, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 103/300, Loss: 1.6231, Obj: 1.3665, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 104/300, Loss: 1.6179, Obj: 1.3620, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 105/300, Loss: 1.6189, Obj: 1.3588, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 106/300, Loss: 1.6471, Obj: 1.3824, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 107/300, Loss: 1.6156, Obj: 1.3512, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 108/300, Loss: 1.5943, Obj: 1.3497, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 109/300, Loss: 1.6325, Obj: 1.3609, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 110/300, Loss: 1.5808, Obj: 1.3403, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 111/300, Loss: 1.5944, Obj: 1.3480, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 110...
+
+VALIDATION_EPOCH_110 EVALUATION RESULTS:
+==================================================
+Obj:     1.307688e+00
+Opt Gap:      3.034916e+00 ± 5.563048e-01
+Eq Vio l1:   8.632283e-05 (max: 7.473995e-04)
+Ineq Vio l1: 1.010266e-07 (max: 9.118803e-06)
+Sol Dis:   1.461640e+02 ± 9.606145e-01
+Merit:             1.308552e+00 ± 2.152694e-03
+Avg Inf Time:  0.0630s
+==================================================
+Epoch 112/300, Loss: 1.6796, Obj: 1.3848, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 113/300, Loss: 1.6370, Obj: 1.3764, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 114/300, Loss: 1.5925, Obj: 1.3485, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 115/300, Loss: 1.6547, Obj: 1.3735, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 116/300, Loss: 1.5862, Obj: 1.3436, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 117/300, Loss: 1.6145, Obj: 1.3650, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 118/300, Loss: 1.6430, Obj: 1.3401, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 119/300, Loss: 1.5857, Obj: 1.3433, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 120/300, Loss: 1.6102, Obj: 1.3543, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 121/300, Loss: 1.6149, Obj: 1.3561, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 120...
+
+VALIDATION_EPOCH_120 EVALUATION RESULTS:
+==================================================
+Obj:     1.325016e+00
+Opt Gap:      3.079353e+00 ± 5.551806e-01
+Eq Vio l1:   9.209820e-05 (max: 1.049952e-03)
+Ineq Vio l1: 1.386827e-07 (max: 1.656503e-05)
+Sol Dis:   1.466931e+02 ± 9.838392e-01
+Merit:             1.325938e+00 ± 6.164047e-03
+Avg Inf Time:  0.0621s
+==================================================
+Epoch 122/300, Loss: 1.6043, Obj: 1.3424, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 123/300, Loss: 1.6122, Obj: 1.3629, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 124/300, Loss: 1.6092, Obj: 1.3460, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 125/300, Loss: 1.5946, Obj: 1.3635, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 126/300, Loss: 1.5948, Obj: 1.3431, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 127/300, Loss: 1.5633, Obj: 1.3375, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 128/300, Loss: 1.5930, Obj: 1.3459, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 129/300, Loss: 1.5840, Obj: 1.3399, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 130/300, Loss: 1.6181, Obj: 1.3612, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 131/300, Loss: 1.6006, Obj: 1.3730, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+
+Running validation at epoch 130...
+
+VALIDATION_EPOCH_130 EVALUATION RESULTS:
+==================================================
+Obj:     1.492328e+00
+Opt Gap:      3.493023e+00 ± 8.262503e-01
+Eq Vio l1:   8.332371e-05 (max: 1.364498e-03)
+Ineq Vio l1: 1.373189e-07 (max: 1.609887e-05)
+Sol Dis:   1.468466e+02 ± 9.561595e-01
+Merit:             1.493162e+00 ± 1.790283e-03
+Avg Inf Time:  0.0608s
+==================================================
+Epoch 132/300, Loss: 1.6073, Obj: 1.3454, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 133/300, Loss: 1.5804, Obj: 1.3282, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 134/300, Loss: 1.5709, Obj: 1.3303, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 135/300, Loss: 1.5900, Obj: 1.3391, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 136/300, Loss: 1.6006, Obj: 1.3464, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 137/300, Loss: 1.6209, Obj: 1.3523, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.32s
+Epoch 138/300, Loss: 1.5912, Obj: 1.3578, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 139/300, Loss: 1.5916, Obj: 1.3372, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 140/300, Loss: 1.5614, Obj: 1.3320, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 141/300, Loss: 1.5649, Obj: 1.3219, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 140...
+
+VALIDATION_EPOCH_140 EVALUATION RESULTS:
+==================================================
+Obj:     1.283563e+00
+Opt Gap:      3.027148e+00 ± 5.706878e-01
+Eq Vio l1:   1.062823e-04 (max: 6.271303e-04)
+Ineq Vio l1: 1.456790e-07 (max: 2.220097e-05)
+Sol Dis:   1.457713e+02 ± 9.618704e-01
+Merit:             1.284627e+00 ± 6.498373e-04
+Avg Inf Time:  0.0629s
+==================================================
+Epoch 142/300, Loss: 1.5588, Obj: 1.3243, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 143/300, Loss: 1.5479, Obj: 1.3161, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 144/300, Loss: 1.5723, Obj: 1.3325, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 145/300, Loss: 1.5899, Obj: 1.3345, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 146/300, Loss: 1.6120, Obj: 1.3502, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 147/300, Loss: 1.5706, Obj: 1.3160, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 148/300, Loss: 1.5915, Obj: 1.3467, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 149/300, Loss: 1.5968, Obj: 1.3349, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 150/300, Loss: 1.5839, Obj: 1.3283, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 151/300, Loss: 1.6278, Obj: 1.3463, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+
+Running validation at epoch 150...
+
+VALIDATION_EPOCH_150 EVALUATION RESULTS:
+==================================================
+Obj:     1.287879e+00
+Opt Gap:      3.047763e+00 ± 5.828050e-01
+Eq Vio l1:   1.005050e-04 (max: 8.064033e-04)
+Ineq Vio l1: 2.220868e-07 (max: 1.916461e-05)
+Sol Dis:   1.461331e+02 ± 9.666940e-01
+Merit:             1.288886e+00 ± 2.365219e-03
+Avg Inf Time:  0.0629s
+==================================================
+Epoch 152/300, Loss: 1.5710, Obj: 1.3456, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 153/300, Loss: 1.6486, Obj: 1.3785, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 154/300, Loss: 1.6317, Obj: 1.3660, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 155/300, Loss: 1.5489, Obj: 1.3221, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 156/300, Loss: 1.6203, Obj: 1.3463, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 157/300, Loss: 1.6008, Obj: 1.3567, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 158/300, Loss: 1.5835, Obj: 1.3380, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 159/300, Loss: 1.6058, Obj: 1.3336, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 160/300, Loss: 1.5647, Obj: 1.3322, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 161/300, Loss: 1.5681, Obj: 1.3393, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 160...
+
+VALIDATION_EPOCH_160 EVALUATION RESULTS:
+==================================================
+Obj:     1.271096e+00
+Opt Gap:      2.983665e+00 ± 5.354509e-01
+Eq Vio l1:   9.553399e-05 (max: 6.783894e-04)
+Ineq Vio l1: 1.213121e-07 (max: 1.786912e-05)
+Sol Dis:   1.462322e+02 ± 9.563871e-01
+Merit:             1.272053e+00 ± 9.002760e-04
+Avg Inf Time:  0.0629s
+==================================================
+Epoch 162/300, Loss: 1.5498, Obj: 1.3164, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 163/300, Loss: 1.5410, Obj: 1.3142, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 164/300, Loss: 1.5882, Obj: 1.3417, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 165/300, Loss: 1.5848, Obj: 1.3363, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.38s
+Epoch 166/300, Loss: 1.5792, Obj: 1.3308, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 167/300, Loss: 1.5369, Obj: 1.3049, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 168/300, Loss: 1.5467, Obj: 1.3148, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 169/300, Loss: 1.5448, Obj: 1.3086, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 170/300, Loss: 1.5653, Obj: 1.3274, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 171/300, Loss: 1.5505, Obj: 1.3154, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 170...
+
+VALIDATION_EPOCH_170 EVALUATION RESULTS:
+==================================================
+Obj:     1.329570e+00
+Opt Gap:      3.132948e+00 ± 6.037913e-01
+Eq Vio l1:   9.392796e-05 (max: 1.024796e-03)
+Ineq Vio l1: 1.169363e-07 (max: 1.626828e-05)
+Sol Dis:   1.460878e+02 ± 9.513271e-01
+Merit:             1.330510e+00 ± 5.349909e-03
+Avg Inf Time:  0.0606s
+==================================================
+Epoch 172/300, Loss: 1.5510, Obj: 1.3249, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 173/300, Loss: 1.5325, Obj: 1.3013, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 174/300, Loss: 1.5435, Obj: 1.3150, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 175/300, Loss: 1.5738, Obj: 1.3329, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 176/300, Loss: 1.5527, Obj: 1.3167, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 177/300, Loss: 1.5650, Obj: 1.3192, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 178/300, Loss: 1.5776, Obj: 1.3272, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 179/300, Loss: 1.5434, Obj: 1.3132, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 180/300, Loss: 1.5528, Obj: 1.3120, Eq Viol (l1): 0.000089, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+Epoch 181/300, Loss: 1.5336, Obj: 1.3096, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 180...
+
+VALIDATION_EPOCH_180 EVALUATION RESULTS:
+==================================================
+Obj:     1.308755e+00
+Opt Gap:      3.078539e+00 ± 5.906997e-01
+Eq Vio l1:   1.017110e-04 (max: 1.157817e-03)
+Ineq Vio l1: 3.282490e-07 (max: 2.900533e-05)
+Sol Dis:   1.464584e+02 ± 9.603484e-01
+Merit:             1.309776e+00 ± 3.010986e-03
+Avg Inf Time:  0.0609s
+==================================================
+Epoch 182/300, Loss: 1.5432, Obj: 1.3105, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 183/300, Loss: 1.5354, Obj: 1.3081, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 184/300, Loss: 1.5366, Obj: 1.3081, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 185/300, Loss: 1.5449, Obj: 1.3168, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 186/300, Loss: 1.5609, Obj: 1.3216, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.31s
+Epoch 187/300, Loss: 1.5517, Obj: 1.3134, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 188/300, Loss: 1.5587, Obj: 1.3316, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 189/300, Loss: 1.5533, Obj: 1.3148, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 190/300, Loss: 1.5458, Obj: 1.3148, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 191/300, Loss: 1.5473, Obj: 1.3174, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 190...
+
+VALIDATION_EPOCH_190 EVALUATION RESULTS:
+==================================================
+Obj:     1.278771e+00
+Opt Gap:      3.031104e+00 ± 5.553191e-01
+Eq Vio l1:   9.130662e-05 (max: 9.628123e-04)
+Ineq Vio l1: 8.651696e-08 (max: 1.366223e-05)
+Sol Dis:   1.461720e+02 ± 9.762035e-01
+Merit:             1.279684e+00 ± 2.130855e-03
+Avg Inf Time:  0.0630s
+==================================================
+Epoch 192/300, Loss: 1.5122, Obj: 1.2968, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 193/300, Loss: 1.5178, Obj: 1.3062, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 194/300, Loss: 1.5369, Obj: 1.3164, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 195/300, Loss: 1.5524, Obj: 1.3221, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 196/300, Loss: 1.5497, Obj: 1.3286, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 197/300, Loss: 1.5274, Obj: 1.3010, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 198/300, Loss: 1.5144, Obj: 1.2950, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 199/300, Loss: 1.5638, Obj: 1.3153, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 200/300, Loss: 1.5478, Obj: 1.3185, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 201/300, Loss: 1.5536, Obj: 1.3188, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 200...
+
+VALIDATION_EPOCH_200 EVALUATION RESULTS:
+==================================================
+Obj:     1.318633e+00
+Opt Gap:      3.148045e+00 ± 6.224229e-01
+Eq Vio l1:   1.149234e-04 (max: 1.365773e-03)
+Ineq Vio l1: 1.931625e-07 (max: 3.542922e-05)
+Sol Dis:   1.462799e+02 ± 9.673896e-01
+Merit:             1.319784e+00 ± 4.727056e-03
+Avg Inf Time:  0.0606s
+==================================================
+Epoch 202/300, Loss: 1.5369, Obj: 1.3116, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 203/300, Loss: 1.5133, Obj: 1.2924, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 204/300, Loss: 1.5233, Obj: 1.3024, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 205/300, Loss: 1.5404, Obj: 1.3123, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 206/300, Loss: 1.5181, Obj: 1.2966, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 207/300, Loss: 1.5210, Obj: 1.2960, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 208/300, Loss: 1.5226, Obj: 1.3043, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 209/300, Loss: 1.5365, Obj: 1.3059, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 210/300, Loss: 1.5920, Obj: 1.3473, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 211/300, Loss: 1.5534, Obj: 1.3218, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+
+Running validation at epoch 210...
+
+VALIDATION_EPOCH_210 EVALUATION RESULTS:
+==================================================
+Obj:     1.273327e+00
+Opt Gap:      3.015571e+00 ± 5.660020e-01
+Eq Vio l1:   1.178518e-04 (max: 8.902733e-04)
+Ineq Vio l1: 9.216210e-08 (max: 8.470716e-06)
+Sol Dis:   1.464696e+02 ± 9.879666e-01
+Merit:             1.274506e+00 ± 3.340017e-03
+Avg Inf Time:  0.0630s
+==================================================
+Epoch 212/300, Loss: 1.5647, Obj: 1.3176, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 213/300, Loss: 1.5605, Obj: 1.3171, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 214/300, Loss: 1.5562, Obj: 1.3147, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 215/300, Loss: 1.5425, Obj: 1.3092, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 216/300, Loss: 1.5278, Obj: 1.2967, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 217/300, Loss: 1.5329, Obj: 1.3014, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 218/300, Loss: 1.5210, Obj: 1.3066, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 219/300, Loss: 1.5438, Obj: 1.3123, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 220/300, Loss: 1.5347, Obj: 1.3026, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 221/300, Loss: 1.5324, Obj: 1.3128, Eq Viol (l1): 0.000115, Ineq Viol (l1): 0.000000, Epoch time: 2.22s
+
+Running validation at epoch 220...
+
+VALIDATION_EPOCH_220 EVALUATION RESULTS:
+==================================================
+Obj:     1.249671e+00
+Opt Gap:      2.960780e+00 ± 5.401890e-01
+Eq Vio l1:   1.257939e-04 (max: 1.039455e-03)
+Ineq Vio l1: 1.846342e-07 (max: 1.602080e-05)
+Sol Dis:   1.457059e+02 ± 9.750408e-01
+Merit:             1.250930e+00 ± 2.562023e-03
+Avg Inf Time:  0.0637s
+==================================================
+Epoch 222/300, Loss: 1.4971, Obj: 1.2951, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 223/300, Loss: 1.5095, Obj: 1.2989, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 224/300, Loss: 1.5519, Obj: 1.3091, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 225/300, Loss: 1.5355, Obj: 1.3144, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 226/300, Loss: 1.4986, Obj: 1.2864, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 227/300, Loss: 1.4966, Obj: 1.2897, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 228/300, Loss: 1.5298, Obj: 1.2951, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 229/300, Loss: 1.5364, Obj: 1.3148, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 230/300, Loss: 1.5814, Obj: 1.3208, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 231/300, Loss: 1.5803, Obj: 1.3124, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.30s
+
+Running validation at epoch 230...
+
+VALIDATION_EPOCH_230 EVALUATION RESULTS:
+==================================================
+Obj:     1.269920e+00
+Opt Gap:      3.000347e+00 ± 5.738954e-01
+Eq Vio l1:   1.112429e-04 (max: 6.054681e-04)
+Ineq Vio l1: 1.972654e-07 (max: 2.576379e-05)
+Sol Dis:   1.460037e+02 ± 9.173888e-01
+Merit:             1.271035e+00 ± 5.895664e-03
+Avg Inf Time:  0.0643s
+==================================================
+Epoch 232/300, Loss: 1.5438, Obj: 1.3017, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 233/300, Loss: 1.5058, Obj: 1.2923, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 234/300, Loss: 1.5458, Obj: 1.3004, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 235/300, Loss: 1.5596, Obj: 1.3164, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 236/300, Loss: 1.5398, Obj: 1.2987, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 237/300, Loss: 1.5326, Obj: 1.3007, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 238/300, Loss: 1.4933, Obj: 1.2879, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 239/300, Loss: 1.5588, Obj: 1.3213, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 240/300, Loss: 1.5688, Obj: 1.3274, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 241/300, Loss: 1.5510, Obj: 1.3086, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 240...
+
+VALIDATION_EPOCH_240 EVALUATION RESULTS:
+==================================================
+Obj:     1.250694e+00
+Opt Gap:      2.968751e+00 ± 5.381277e-01
+Eq Vio l1:   1.089873e-04 (max: 6.727641e-04)
+Ineq Vio l1: 1.790393e-07 (max: 2.501618e-05)
+Sol Dis:   1.459686e+02 ± 9.793154e-01
+Merit:             1.251785e+00 ± 2.544979e-03
+Avg Inf Time:  0.0646s
+==================================================
+Epoch 242/300, Loss: 1.5057, Obj: 1.2866, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 243/300, Loss: 1.5033, Obj: 1.2927, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 244/300, Loss: 1.5256, Obj: 1.2969, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 245/300, Loss: 1.5476, Obj: 1.3206, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 246/300, Loss: 1.5900, Obj: 1.3230, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 247/300, Loss: 1.5780, Obj: 1.3230, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 248/300, Loss: 1.5213, Obj: 1.3048, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 249/300, Loss: 1.5217, Obj: 1.2873, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 250/300, Loss: 1.5262, Obj: 1.2926, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 251/300, Loss: 1.5103, Obj: 1.2943, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+
+Running validation at epoch 250...
+
+VALIDATION_EPOCH_250 EVALUATION RESULTS:
+==================================================
+Obj:     1.268998e+00
+Opt Gap:      2.985556e+00 ± 5.422479e-01
+Eq Vio l1:   9.325844e-05 (max: 9.015251e-04)
+Ineq Vio l1: 8.297421e-08 (max: 2.007497e-05)
+Sol Dis:   1.460312e+02 ± 9.738882e-01
+Merit:             1.269931e+00 ± 1.985656e-03
+Avg Inf Time:  0.0630s
+==================================================
+Epoch 252/300, Loss: 1.5211, Obj: 1.2850, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 253/300, Loss: 1.5391, Obj: 1.3091, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 254/300, Loss: 1.5054, Obj: 1.2953, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 255/300, Loss: 1.5005, Obj: 1.2959, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 256/300, Loss: 1.5585, Obj: 1.3088, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 257/300, Loss: 1.5274, Obj: 1.3074, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 258/300, Loss: 1.5375, Obj: 1.3033, Eq Viol (l1): 0.000092, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 259/300, Loss: 1.5067, Obj: 1.2856, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 260/300, Loss: 1.5208, Obj: 1.2992, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 261/300, Loss: 1.5830, Obj: 1.3302, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+
+Running validation at epoch 260...
+
+VALIDATION_EPOCH_260 EVALUATION RESULTS:
+==================================================
+Obj:     1.247987e+00
+Opt Gap:      2.951734e+00 ± 5.358936e-01
+Eq Vio l1:   1.106986e-04 (max: 9.755495e-04)
+Ineq Vio l1: 9.275870e-08 (max: 1.083554e-05)
+Sol Dis:   1.460392e+02 ± 9.928952e-01
+Merit:             1.249095e+00 ± 1.390506e-03
+Avg Inf Time:  0.0634s
+==================================================
+Epoch 262/300, Loss: 1.5150, Obj: 1.2882, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.37s
+Epoch 263/300, Loss: 1.4947, Obj: 1.2930, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 264/300, Loss: 1.5203, Obj: 1.2954, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 265/300, Loss: 1.5118, Obj: 1.2924, Eq Viol (l1): 0.000107, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 266/300, Loss: 1.4932, Obj: 1.2821, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 267/300, Loss: 1.5019, Obj: 1.2750, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 268/300, Loss: 1.4909, Obj: 1.2869, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 269/300, Loss: 1.5089, Obj: 1.2899, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 270/300, Loss: 1.5346, Obj: 1.3024, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 271/300, Loss: 1.5121, Obj: 1.2865, Eq Viol (l1): 0.000097, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+
+Running validation at epoch 270...
+
+VALIDATION_EPOCH_270 EVALUATION RESULTS:
+==================================================
+Obj:     1.311633e+00
+Opt Gap:      3.036137e+00 ± 5.366460e-01
+Eq Vio l1:   8.845586e-05 (max: 7.285014e-04)
+Ineq Vio l1: 1.043294e-07 (max: 7.682223e-06)
+Sol Dis:   1.462541e+02 ± 9.543017e-01
+Merit:             1.312519e+00 ± 8.014227e-04
+Avg Inf Time:  0.0608s
+==================================================
+Epoch 272/300, Loss: 1.5134, Obj: 1.2869, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 273/300, Loss: 1.5040, Obj: 1.2927, Eq Viol (l1): 0.000101, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 274/300, Loss: 1.5361, Obj: 1.2957, Eq Viol (l1): 0.000111, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 275/300, Loss: 1.5293, Obj: 1.3159, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 276/300, Loss: 1.5070, Obj: 1.2868, Eq Viol (l1): 0.000095, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 277/300, Loss: 1.5068, Obj: 1.2901, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 278/300, Loss: 1.5169, Obj: 1.2905, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 279/300, Loss: 1.5078, Obj: 1.2982, Eq Viol (l1): 0.000104, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 280/300, Loss: 1.5008, Obj: 1.2822, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 281/300, Loss: 1.4988, Obj: 1.2830, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 280...
+
+VALIDATION_EPOCH_280 EVALUATION RESULTS:
+==================================================
+Obj:     1.282524e+00
+Opt Gap:      3.007420e+00 ± 5.540593e-01
+Eq Vio l1:   8.683440e-05 (max: 1.044877e-03)
+Ineq Vio l1: 9.217827e-08 (max: 7.089635e-06)
+Sol Dis:   1.462743e+02 ± 9.578102e-01
+Merit:             1.283393e+00 ± 5.222348e-03
+Avg Inf Time:  0.0631s
+==================================================
+Epoch 282/300, Loss: 1.5195, Obj: 1.3002, Eq Viol (l1): 0.000109, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 283/300, Loss: 1.4985, Obj: 1.2805, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 284/300, Loss: 1.5143, Obj: 1.3058, Eq Viol (l1): 0.000102, Ineq Viol (l1): 0.000000, Epoch time: 2.23s
+Epoch 285/300, Loss: 1.5046, Obj: 1.2721, Eq Viol (l1): 0.000098, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 286/300, Loss: 1.5074, Obj: 1.3018, Eq Viol (l1): 0.000114, Ineq Viol (l1): 0.000000, Epoch time: 2.21s
+Epoch 287/300, Loss: 1.4819, Obj: 1.2693, Eq Viol (l1): 0.000099, Ineq Viol (l1): 0.000000, Epoch time: 2.27s
+Epoch 288/300, Loss: 1.5098, Obj: 1.2957, Eq Viol (l1): 0.000105, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 289/300, Loss: 1.5091, Obj: 1.2902, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 290/300, Loss: 1.4899, Obj: 1.2838, Eq Viol (l1): 0.000094, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 291/300, Loss: 1.5185, Obj: 1.2965, Eq Viol (l1): 0.000108, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+
+Running validation at epoch 290...
+
+VALIDATION_EPOCH_290 EVALUATION RESULTS:
+==================================================
+Obj:     1.279789e+00
+Opt Gap:      2.991675e+00 ± 5.259165e-01
+Eq Vio l1:   1.273268e-04 (max: 9.871099e-04)
+Ineq Vio l1: 2.478011e-07 (max: 2.254776e-05)
+Sol Dis:   1.461909e+02 ± 9.784758e-01
+Merit:             1.281065e+00 ± 1.636258e-03
+Avg Inf Time:  0.0605s
+==================================================
+Epoch 292/300, Loss: 1.5061, Obj: 1.2921, Eq Viol (l1): 0.000100, Ineq Viol (l1): 0.000000, Epoch time: 2.26s
+Epoch 293/300, Loss: 1.5127, Obj: 1.2966, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 294/300, Loss: 1.5088, Obj: 1.2856, Eq Viol (l1): 0.000096, Ineq Viol (l1): 0.000000, Epoch time: 2.28s
+Epoch 295/300, Loss: 1.4936, Obj: 1.2735, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.36s
+Epoch 296/300, Loss: 1.4970, Obj: 1.2856, Eq Viol (l1): 0.000093, Ineq Viol (l1): 0.000000, Epoch time: 2.29s
+Epoch 297/300, Loss: 1.5123, Obj: 1.2857, Eq Viol (l1): 0.000103, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 298/300, Loss: 1.5255, Obj: 1.2983, Eq Viol (l1): 0.000110, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+Epoch 299/300, Loss: 1.5406, Obj: 1.2929, Eq Viol (l1): 0.000109, Ineq Viol (l1): 0.000000, Epoch time: 2.25s
+Epoch 300/300, Loss: 1.5003, Obj: 1.2910, Eq Viol (l1): 0.000106, Ineq Viol (l1): 0.000000, Epoch time: 2.24s
+
+Training completed in 704.00 seconds.
+
+============================================================
+COMPREHENSIVE TEST EVALUATION WITH DETAILED RESULTS
+============================================================
+Testing with batch sizes: [256, 512]
+
+Evaluating with batch size: 256 (with detailed results)
+
+TEST_BS256 EVALUATION RESULTS:
+==================================================
+Obj:     1.267794e+00
+Opt Gap:      3.658252e+00 ± 1.379596e+00
+Eq Vio l1:   9.347659e-05 (max: 8.456476e-04)
+Ineq Vio l1: 2.115890e-07 (max: 1.582199e-05)
+Sol Dis:   1.465461e+02 ± 1.344182e+00
+Merit:             1.268731e+00 ± 5.467374e-02
+Avg Inf Time:  0.0514s
+==================================================
+
+Evaluating with batch size: 512 (with detailed results)
+
+TEST_BS512 EVALUATION RESULTS:
+==================================================
+Obj:     1.269235e+00
+Opt Gap:      3.621121e+00 ± 6.799558e-01
+Eq Vio l1:   1.055097e-04 (max: 1.070871e-03)
+Ineq Vio l1: 2.280746e-07 (max: 2.324612e-05)
+Sol Dis:   1.465625e+02 ± 1.074298e+00
+Merit:             1.270292e+00 ± 3.299613e-02
+Avg Inf Time:  0.0579s
+==================================================
+
+TEST BATCH SIZE COMPARISON:
+================================================================================
+Batch Size   Objective    Opt Gap      Eq Viol      Ineq Viol    Time (s)  
+--------------------------------------------------------------------------------
+256          1.2678e+00   3.6583e+00   9.3477e-05   2.1159e-07   0.41      
+512          1.2692e+00   3.6211e+00   1.0551e-04   2.2807e-07   0.23      
+================================================================================
+
+Saving model and results to: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-154950_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630
+✓ Model saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-154950_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630/model.pt
+✓ Detailed results saved: results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-154950_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630/results.pkl
+
+Files saved (or attempted):
+  - model.pt (model weights and architecture)
+  - results.pkl (training history, metrics, detailed test results)
+Training and testing completed in 706.60 seconds
+Done!!!
