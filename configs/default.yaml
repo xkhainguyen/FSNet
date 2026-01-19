@@ -17,8 +17,6 @@ penalty:
   obj_weight: 1.0
   eq_pen_weight: 10.0
   ineq_pen_weight: 10.0
-  val_tol: 1.0e-7
-  test_val_tol: 1.0e-9
   lr: 0.0001
   lr_decay: 0.9
   lr_decay_step: 100 #3000
@@ -31,8 +29,6 @@ adaptive_penalty:
   eq_pen_weight: 10.0
   ineq_pen_weight: 10.0
   increasing_rate: 2.0
-  val_tol: 1.0e-7
-  test_val_tol: 1.0e-9
   lr: 0.0001
   lr_decay: 0.9
   lr_decay_step: 100 #3000
@@ -67,7 +63,7 @@ DC3:
   eq_pen_weight: 1.0
   ineq_pen_weight: 100.0
   corr_lr: 1.0e-6
-  max_corr_steps: 20
+  max_corr_steps: 50
   corr_momentum: 0.5
 
 projection:
@@ -98,8 +94,6 @@ sup_pen:
   obj_weight: 0.1
   eq_pen_weight: 10.0
   ineq_pen_weight: 10.0
-  val_tol: 1.0e-7
-  test_val_tol: 1.0e-9
   decay_tol_step: 100
   memory_size: 30   #convex 10 is okay, nonconvex: 20-30
   max_iter: 50

@@ -106,8 +106,8 @@ class Evaluator:
     def _compute_merit(self, obj, eq_vio, ineq_vio):
         """Compute merit function value."""
         obj_weight = 1
-        eq_weight = 10
-        ineq_weight = 10
+        eq_weight = 1e6
+        ineq_weight = 1e6
         return obj_weight * obj + eq_weight * eq_vio + ineq_weight * ineq_vio
     
     def _compute_batch_metrics(self, X_batch, Y_final, Y_true):

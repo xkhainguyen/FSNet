@@ -602,9 +602,14 @@ class Trainer:
         return epoch_metrics
     
     def _initialize_params(self) -> None:
+        if self.config_method['eq_pen_weight']:
+            print(f"Equality penalty weight: {self.config_method['eq_pen_weight']}")
+        if self.config_method['ineq_pen_weight']:
+            print(f"Inequality penalty weight: {self.config_method['ineq_pen_weight']}")
         if self.method == 'adaptive_penalty' or self.method == 'sup_pen':
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
             self.adaptive_ineq_weight = self.config_method['ineq_pen_weight']
+
            
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
@@ -665,7 +670,6 @@ class Trainer:
             model_save_content['config']['dropout'] = self.config['dropout']  # Ensure dropout is set correctly
             self.model = create_model(self.opt_problem, self.method, model_save_content['config'])
             self.model.load_state_dict(model_save_content['model_state_dict'])
-            self.config_method['val_tol'] = self.config_method['test_val_tol'] 
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
         

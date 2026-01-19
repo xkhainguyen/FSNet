@@ -10,18 +10,18 @@ fsnet_ft_sup_trainsize7000_over_sublevel = np.array([
         "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
         "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
     ],
-    [
-        "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-    ],  # penalty
-    [
-        "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-    ], # 0.0 penalty
+    # [
+    #     "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    # ],  # penalty
+    # [
+    #     "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    # ],  # 0.0 penalty
     [
         "20260114-090924_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-053054_sup_seedseed0_model_210",
         "20260114-095319_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-053054_sup_seedseed0_model_210",
@@ -61,18 +61,18 @@ fsnet_ft_sup_pen_trainsize7000_over_sublevel = np.array([
         "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
         "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
     ],
-    [
-        "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-        "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-    ], # 0.0 penalty
-    [
-        "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-        "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
-    ],  # penalty
+    # [
+    #     "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    # ],  # 0.0 penalty
+    # [
+    #     "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    # ],  # penalty
     [
         "20260114-062152_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
         "20260114-070402_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
@@ -105,6 +105,7 @@ fsnet_ft_sup_pen_trainsize7000_over_sublevel = np.array([
     ]  # 4.0
 ])  # matrix of shape (num_ckpt, num_seeds)
 
+# how much do we need data (data weight)
 fsnet_ft_sup_pen_trainsize7000_over_sublevel2 = np.array([
     [
         "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
@@ -123,7 +124,7 @@ fsnet_ft_sup_pen_trainsize7000_over_sublevel2 = np.array([
         "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
         "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
         "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
-    ], # 0.0 penalty
+    ],  # 0.0 penalty
     [
         "20260114-065152_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-060752_sup_seedpen_model_990",
         "20260114-073226_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-060752_sup_seedpen_model_990",
@@ -135,14 +136,67 @@ fsnet_ft_sup_pen_trainsize7000_over_sublevel2 = np.array([
         "20260115-151210_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_380",
         "20260115-152425_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_380",
         "20260115-152450_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_380",
-    ], # 1.5 10.0
+    ],  # 1.5 10.0
     [
         "20260115-153755_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
         "20260115-153756_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
         "20260115-154949_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
         "20260115-154950_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
-    ] # 1.5 100.0
+    ],  # 1.5 100.0
 ])  # matrix of shape (num_ckpt, num_seeds)
+
+# how much do we need data (data weight)
+fsnet_ft_sup_pen_over_sublevel3 = np.array([
+    [
+        "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+    ],
+    [
+        "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+        "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+        "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+        "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    ],  # penalty
+    # [
+    #     "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    # ],  # 0.0 penalty
+    # [
+    #     "20260114-062152_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
+    #     "20260114-070402_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
+    #     "20260114-084153_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
+    #     "20260114-092335_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051920_sup_seedpen_model_990",
+    # ],  # 0.5
+    # [
+    #     "20260115-174555_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-173954_sup_seedpen_model_450",
+    #     "20260115-175810_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-173954_sup_seedpen_model_450",
+    #     "20260115-181026_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-173954_sup_seedpen_model_450",
+    #     "20260115-182240_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-173954_sup_seedpen_model_450",
+    # ],  # 0.5 10.0
+    # [
+    #     "20260115-174614_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-180115_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-181603_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-183054_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    # ],  # 0.5 100.0
+    [
+        "20260116-031254_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-034156_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-040759_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-043934_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    ],  # 0.5 800
+    # [
+    #     "20260116-052255_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-051557_sup_seedpen_model_390",
+    #     "20260116-053625_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-051557_sup_seedpen_model_390",
+    #     "20260116-054957_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-051557_sup_seedpen_model_390",
+    #     "20260116-060327_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-051557_sup_seedpen_model_390",
+    # ], # 5 1000
+])  # matrix of shape (num_ckpt, num_seeds)
+
 
 fsnet_ft_sup_990_trainsize7000_over_sublevel = np.array([
     [
@@ -180,99 +234,296 @@ fsnet_ft_sup_990_trainsize7000_over_sublevel = np.array([
         "20260114-193622_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-170518_sup_seedseed0_model_990",
         "20260114-194117_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-170518_sup_seedseed0_model_990",
         "20260114-202219_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-170518_sup_seedseed0_model_990",
-    ]  # 4.0
+    ],  # 4.0
 ])  # matrix of shape (num_ckpt, num_seeds)
 
-
-#######################################
-#######################################
-
-fsnet_ft_sup_subopt2_m10_trainsize7000_over_ckpt = np.array([
+fsnet_ft_sup_pen_w100_trainsize7000_over_sublevel = np.array([
     [
-        "20260107-024219_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
-        "20260107-034140_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
-        "20260107-032119_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
-        "20260108-155633_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+    ],
+    # [
+    #     "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    # ],  # penalty
+    # [
+    #     "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    # ],  # 0.0 penalty
+    # [
+    #     "20260115-174614_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-180115_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-181603_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260115-183054_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    # ],  # 0.5 100.0
+    [
+        "20260117-203130_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-203130_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-204610_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-204622_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    ],
+    #     [
+    #         "20260118-051412_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_990",
+    # "20260118-051957_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_990",
+    # "20260118-060930_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_990",
+    # "20260118-061932_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_990",
+    #     ], #0.5
+    [
+        "20260115-153755_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
+        "20260115-153756_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
+        "20260115-154949_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
+        "20260115-154950_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-145229_sup_seedpen_model_630",
+    ],  # 1.5 100.0
+    # [
+    #     "20260118-143534_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-145229_sup_seedpen_model_990",
+    # "20260118-143534_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-145229_sup_seedpen_model_990",
+    # "20260118-144908_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-145229_sup_seedpen_model_990",
+    # "20260118-144911_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-145229_sup_seedpen_model_990",
+    # ],
+    # [
+    #     "20260115-190256_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+    #     "20260115-192056_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+    #     "20260115-193354_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+    #     "20260115-201054_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+    # ],  # 2.0
+    [
+        "20260117-211630_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+        "20260117-213054_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+        "20260117-214509_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+        "20260117-215918_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_430",
+    ],
+    #     [
+    #         "20260118-050045_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_990",
+    # "20260118-050530_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_990",
+    # "20260118-055607_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_990",
+    # "20260118-060443_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184954_sup_seedpen_model_990",
+    #     ], # 2.0
+    [
+        "20260115-190316_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+        "20260115-193658_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+        "20260115-194926_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+        "20260115-202821_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+    ],  # 3.0 100.0
+    # [
+    #     "20260118-023637_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-025007_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-030333_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-031656_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    # ],
+    #     [
+    # "20260118-044720_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    # "20260118-045108_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    # "20260118-054241_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    # "20260118-055022_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     ], # 3.0
+    # [
+    #     "20260115-191756_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+    #     "20260115-195323_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+    #     "20260115-200427_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+    #     "20260115-204303_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+    # ],  # 4.0 100.0
+    [
+        "20260117-200230_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+        "20260117-200230_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+        "20260117-201630_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+        "20260117-201644_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_400",
+    ],  # 4.0
+    # [
+    #     "20260118-043331_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-043649_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-052857_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    #     "20260118-053539_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+    # ], # 4.0
+    [
+        "20260117-174228_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_430",
+        "20260117-174228_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_430",
+        "20260117-175720_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_430",
+        "20260117-175809_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_430",
+    ],  # 10.0
+    # [
+    #     "20260118-150337_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_990",
+    # "20260118-150337_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_990",
+    # "20260118-151724_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_990",
+    # "20260118-151812_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_990",
+    # ],
+])  # matrix of shape (num_ckpt, num_seeds)
+
+fsnet_ft_sup_pen_w100_ratio05_trainsize7000_over_nlabel = np.array([
+    [
+        "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
     ],
     [
-        "20260107-044919_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_60",
-        "20260107-050307_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_60",
-        "20260107-051636_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_60",
-        "20260108-003033_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_60",
-    ],
+        "20260116-031253_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_970",
+        "20260116-034002_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_970",
+        "20260116-041155_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_970",
+        "20260116-043620_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_970",
+    ],  # 50
     [
-        "20260107-053006_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_400",
-        "20260107-054450_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_400",
-        "20260107-055920_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_400",
-        "20260108-004411_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260106-202959_model_400",
+        "20260116-032612_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022757_sup_seedpen_model_780",
+        "20260116-035349_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022757_sup_seedpen_model_780",
+        "20260116-042406_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022757_sup_seedpen_model_780",
+        "20260116-044833_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022757_sup_seedpen_model_780",
+    ],  # 200
+    [
+        "20260116-031254_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-034156_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-040759_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+        "20260116-043934_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    ],  # 800
+    [
+        "20260116-032722_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022847_sup_seedpen_model_920",
+        "20260116-035634_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022847_sup_seedpen_model_920",
+        "20260116-042343_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022847_sup_seedpen_model_920",
+        "20260116-045512_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022847_sup_seedpen_model_920",
+    ],  # 3000
+    [
+        "20260117-203130_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-203130_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-204610_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+        "20260117-204622_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
     ],
 ])  # matrix of shape (num_ckpt, num_seeds)
 
-fsnet_ft_sup_trainsize7000_over_ckpt = np.array([
+fsnet_ft_sup_pen_w100_ratio05_trainsize7000_over_ckpt = np.array([
     [
-        "20260107-024219_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
-        "20260107-034140_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
-        "20260107-032119_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
-        "20260108-155633_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
     ],
+    # [
+    #     "20260116-141744_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_4990",
+    #     "20260116-142658_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_4990",
+    #     "20260116-143218_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_4990",
+    #     "20260116-144136_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_4990",
+    # ],
+    # [
+    #     "20260116-065548_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_4990",
+    #     "20260116-065632_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_4990",
+    #     "20260116-072437_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_4990",
+    #     "20260116-072507_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_4990",
+    # ],
+    # [
+    #     "20260116-153100_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_4990",
+    #     "20260116-154643_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_4990",
+    #     "20260116-160153_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_4990",
+    #     "20260116-161648_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_4990",
+    # ],
+    # [
+    #     "20260116-123509_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_2580",
+    #     "20260116-124950_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_2580",
+    #     "20260116-130432_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_2580",
+    #     "20260116-131913_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-122715_sup_seedpen_model_2580",
+    # ],
+    # [
+    #     "20260116-064002_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_2170",
+    #     "20260116-064055_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_2170",
+    #     "20260116-070856_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_2170",
+    #     "20260116-070932_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-061857_sup_seedpen_model_2170",
+    # ]
+    # [
+    #     "20260116-153100_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_980",
+    #     "20260116-154546_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_980",
+    #     "20260116-160033_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_980",
+    #     "20260116-161522_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260116-151545_sup_seedpen_model_980",
+    # ],
     [
-        "20260107-044819_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_70",
-        "20260107-050629_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_70",
-        "20260107-052110_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_70",
-        "20260108-005832_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_70",
+        "20260118-023637_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+        "20260118-025007_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+        "20260118-030333_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
+        "20260118-031656_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_990",
     ],
-    [
-        "20260107-053746_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_400",
-        "20260107-055248_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_400",
-        "20260107-060833_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_400",
-        "20260108-011202_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260107-043823_model_400",
-    ],
+    # [
+    #     "20260117-185928_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+    #     "20260117-185930_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+    #     "20260117-191324_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+    #     "20260117-191337_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150",
+    # ],  # 3.0 100.0
+
 ])  # matrix of shape (num_ckpt, num_seeds)
 
-fsnet_ft_sup_pen_subopt2_1_trainsize7000_over_ckpt = np.array([
+fsnet_ft_sup_pen_w100_ratio05_trainsize7000_over_ckpt2 = np.array([
     [
-        "20260107-024219_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
-        "20260107-034140_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
-        "20260107-032119_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
-        "20260108-155633_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+        "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+        "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
     ],
     [
-        "20260108-014627_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260108-014039_model_230",
-        "20260108-020001_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260108-014039_model_230",
-        "20260108-021338_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260108-014039_model_230",
-        "20260108-022723_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260108-014039_model_230",
+        "20260118-033729_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_1990",
+        "20260118-033731_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_1990",
+        "20260118-040558_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_1990",
+        "20260118-040703_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_1990",
     ],
+    [
+        "20260118-035147_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_120",
+        "20260118-035151_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_120",
+        "20260118-041928_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_120",
+        "20260118-042119_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260118-032632_sup_seedpen_model_120",
+    ],
+
 ])  # matrix of shape (num_ckpt, num_seeds)
 
-######################################
-# Train size 1000
+mse_pen_w100_ratio05_trainsize800 = np.array([
+    [
+        "20260116-022657_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5",
+        "20260116-150032_MLP_sup_pen_seed1_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5",
+        "20260116-150125_MLP_sup_pen_seed2_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5",
+        "20260116-150217_MLP_sup_pen_seed3_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5",
+    ],
+    [
+        "20260116-170915_MLP_sup_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0",
+        "20260116-171222_MLP_sup_seed1_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0",
+        "20260116-171528_MLP_sup_seed2_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0",
+        "20260116-171834_MLP_sup_seed3_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0",
+    ]
+])
 
-fsnet_ft_sup_subopt2_1_trainsize1000_over_ckpt = np.array([
+# how much do we need data (data weight)
+main_ft_sup_pen_over_method = np.array([
+    # [
+    #     "20260118-172439_MLP_penalty_seed2_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-172757_MLP_penalty_seed3_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-174600_MLP_penalty_seed0_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-174916_MLP_penalty_seed1_nepochs1000_lr0.0001_trainsize7000",
+    # ],
+    # [
+    #     "20260118-172633_MLP_penalty_seed2_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-172946_MLP_penalty_seed3_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-174602_MLP_penalty_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-174918_MLP_penalty_seed1_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    # ],
+    # [
+    #     "20260118-175812_MLP_adaptive_penalty_seed0_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180127_MLP_adaptive_penalty_seed1_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180441_MLP_adaptive_penalty_seed2_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180755_MLP_adaptive_penalty_seed3_nepochs1000_lr0.0001_trainsize7000",
+    # ],
+    # [
+    #     "20260118-175817_MLP_adaptive_penalty_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-180136_MLP_adaptive_penalty_seed1_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-180454_MLP_adaptive_penalty_seed2_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    #     "20260118-180813_MLP_adaptive_penalty_seed3_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
+    # ],
     [
-        "20260107-024219_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
-        "20260107-034140_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
-        "20260107-032119_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
-        "20260108-155633_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+        "20260118-225115_MLP_DC3_seed3_nepochs1000_lr0.0001_trainsize7000",
+        "20260118-230024_MLP_DC3_seed2_nepochs1000_lr0.0001_trainsize7000",
+        "20260118-222424_MLP_DC3_seed0_nepochs1000_lr0.0001_trainsize7000",
+        "20260118-223637_MLP_DC3_seed1_nepochs1000_lr0.0001_trainsize7000",
     ],
     [
-        "20260108-041148_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-042644_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-044204_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-045711_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-    ],
-])  # matrix of shape (num_ckpt, num_seeds)
-
-fsnet_ft_sup_subopt2_1_trainsize1000_over_ckpt = np.array([
-    [
-        "20260107-024219_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
-        "20260107-034140_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
-        "20260107-032119_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
-        "20260108-155633_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
-    ],
-    [
-        "20260108-041148_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-042644_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-044204_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-        "20260108-045711_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260108-031328_model_280",
-    ],
+        "20260118-225653_MLP_DC3_seed2_nepochs1000_lr0.0001_trainsize7000_finetune_20260118-184700_sup_seedpartial_model_230",
+        "20260118-230534_MLP_DC3_seed3_nepochs1000_lr0.0001_trainsize7000_finetune_20260118-184700_sup_seedpartial_model_230",
+        "20260118-223717_MLP_DC3_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260118-184700_sup_seedpartial_model_230",
+        "20260118-224813_MLP_DC3_seed1_nepochs1000_lr0.0001_trainsize7000_finetune_20260118-184700_sup_seedpartial_model_230",
+    ]
 ])  # matrix of shape (num_ckpt, num_seeds)
