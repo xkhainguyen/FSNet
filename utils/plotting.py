@@ -566,7 +566,7 @@ def show_table(results, batch_size=512):
     metrics = data['metrics']
     row = {
         'Batch Size': batch_size,
-        'Opt Gap Mean': f"{metrics['opt_gap_mean']:.2%}",
+        'Opt Gap Mean': f"{metrics['objective']:.2f}",
         # 'Opt Gap Std': f"{metrics['opt_gap_std']:.4f}",
         # 'Opt Gap Max': f"{metrics['opt_gap_max']:.4f}",
         'Eq Violation Mean': f"{metrics['eq_violation_l1_mean']:.2e}",

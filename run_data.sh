@@ -27,15 +27,22 @@ echo "=============================================="
 
 
 
-for seed in 2 3; do
+for seed in 0 1 2; do
     python main.py \
         --method FSNet \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
-        --lr 0.0001  \
+        --lr 0.00005  \
         --seed $seed \
-        --num_epochs 300 \
-        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260116-051557_MLP_sup_pen_seed0_nepochs1000_lr2e-05_trainsize7000_subopt_3_0.5/model_390.pt
+        --num_epochs 300
+    # python main.py \
+    #     --method FSNet \
+    #     --prob_type nonsmooth_nonconvex \
+    #     --prob_name socp \
+    #     --lr 0.00005  \
+    #     --seed 0 \
+    #     --num_epochs 300 \
+    #     --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-184556_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_3.0/model_150.pt
 done
 
 python main.py \

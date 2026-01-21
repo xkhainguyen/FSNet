@@ -681,19 +681,6 @@ class Trainer:
             fused=True
         )
 
-        # if self.config['checkpoint'] or self.config['method'] in ['sup', 'sup_pen', 'sup_partial']:
-        #     warmup_steps = len(train_loader)
-        #     total_steps = len(train_loader) * self.config_method['num_epochs']
-        #     s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-        #     s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
-        #     self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
-        # else:
-        #     self.scheduler = optim.lr_scheduler.StepLR(
-        #         self.optimizer, 
-        #         step_size=self.config_method['lr_decay_step'], 
-        #         gamma=self.config_method['lr_decay']
-        #     )
-
         warmup_steps = len(train_loader)
         total_steps = len(train_loader) * self.config_method['num_epochs']
         s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
@@ -718,12 +705,12 @@ class Trainer:
             epoch_end = time.time()
        
             # Log metrics
-            print(f"Epoch {epoch + 1}/{self.config_method['num_epochs']}, "
-                  f"Loss: {epoch_metrics['loss']:.4f}, "
-                  f"Obj: {epoch_metrics.get('obj', 0):.4f}, "
+            print(f"Ep {epoch + 1}/{self.config_method['num_epochs']}, "
+                  f"Loss: {epoch_metrics['loss']:.2f}, "
+                  f"Obj: {epoch_metrics.get('obj', 0):.2f}, "
                   f"Eq Viol (l1): {epoch_metrics.get('eq_violation_l1', 0):.6f}, "
                   f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
-                  f"Epoch time: {epoch_end - epoch_start:.2f}s")
+                  f"Ep T: {epoch_end - epoch_start:.2f}s")
 
             # Evaluate on validation set
             if (epoch) % self.config['eval_step'] == 0:
