@@ -514,12 +514,12 @@ main_ft_sup_pen_over_method = np.array([
     #     "20260118-174602_MLP_penalty_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
     #     "20260118-174918_MLP_penalty_seed1_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
     # ],
-    [
-        "20260118-175812_MLP_adaptive_penalty_seed0_nepochs1000_lr0.0001_trainsize7000",
-        "20260118-180127_MLP_adaptive_penalty_seed1_nepochs1000_lr0.0001_trainsize7000",
-        "20260118-180441_MLP_adaptive_penalty_seed2_nepochs1000_lr0.0001_trainsize7000",
-        "20260118-180755_MLP_adaptive_penalty_seed3_nepochs1000_lr0.0001_trainsize7000",
-    ],
+    # [
+    #     "20260118-175812_MLP_adaptive_penalty_seed0_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180127_MLP_adaptive_penalty_seed1_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180441_MLP_adaptive_penalty_seed2_nepochs1000_lr0.0001_trainsize7000",
+    #     "20260118-180755_MLP_adaptive_penalty_seed3_nepochs1000_lr0.0001_trainsize7000",
+    # ],
     # [
     #     "20260118-175817_MLP_adaptive_penalty_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
     #     "20260118-180136_MLP_adaptive_penalty_seed1_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940",
@@ -538,12 +538,12 @@ main_ft_sup_pen_over_method = np.array([
     #     "20260119-150035_MLP_adaptive_penalty_seed3_nepochs1000_lr0.00015_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
     #     "20260119-150532_MLP_adaptive_penalty_seed0_nepochs1000_lr0.00015_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200"
     # ],
-    [
-        "20260119-155724_MLP_adaptive_penalty_seed3_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
-        "20260119-170031_MLP_adaptive_penalty_seed0_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
-        "20260119-170045_MLP_adaptive_penalty_seed2_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
-        "20260119-170348_MLP_adaptive_penalty_seed1_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
-    ],
+    # [
+    #     "20260119-155724_MLP_adaptive_penalty_seed3_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
+    #     "20260119-170031_MLP_adaptive_penalty_seed0_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
+    #     "20260119-170045_MLP_adaptive_penalty_seed2_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
+    #     "20260119-170348_MLP_adaptive_penalty_seed1_nepochs1000_lr0.00013_trainsize7000_finetune_20260116-022657_sup_seedpen_model_200",
+    # ],
     #     [
     #         "20260118-225115_MLP_DC3_seed3_nepochs1000_lr0.0001_trainsize7000",
     #         "20260118-230024_MLP_DC3_seed2_nepochs1000_lr0.0001_trainsize7000",
@@ -578,4 +578,37 @@ train_with_merit = np.array([
         "20260119-211051_MLP_FSNet_seed1_nepochs300_lr5e-05_trainsize7000",
         "20260119-211230_MLP_FSNet_seed2_nepochs300_lr5e-05_trainsize7000",
     ]
+])
+
+fsnet_pen = np.array([
+    #     [
+    #     "20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000",
+    #     "20260115-013345_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000",
+    #     "20260115-012025_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000",
+    #     "20260115-013254_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000",
+    # ],
+    # [
+    #     "20260115-022127_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-022527_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023352_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    #     "20260115-023737_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260115-021622_penalty_seedseed0_model_990",
+    # ],  # 0.0 penalty
+    # [
+    #     "20260114-224213_MLP_FSNet_seed2_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-224213_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225544_MLP_FSNet_seed3_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    #     "20260114-225547_MLP_FSNet_seed1_nepochs300_lr0.0002_trainsize7000_finetune_20260114-051731_penalty_seedseed1_model_990",
+    # ],  # penalty
+    # [
+    #     "20260117-203130_MLP_FSNet_seed2_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260117-203130_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260117-204610_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    #     "20260117-204622_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260115-174154_sup_seedpen_model_900",
+    # ],  # 0.5 100.0
+    [
+        "20260126-231016_MLP_semi_seed0_nepochs300_lr0.0001_trainsize7000_subopt_3_0.5",
+        "20260126-231016_MLP_semi_seed2_nepochs300_lr0.0001_trainsize7000_subopt_3_0.5",
+        "20260126-232302_MLP_semi_seed3_nepochs300_lr0.0001_trainsize7000_subopt_3_0.5",
+        "20260126-232607_MLP_semi_seed1_nepochs300_lr0.0001_trainsize7000_subopt_3_0.5",
+    ],  # semi-supervised
 ])

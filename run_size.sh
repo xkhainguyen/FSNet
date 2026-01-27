@@ -125,17 +125,17 @@ echo "=============================================="
 # done
 
 
-# python main.py \
-#     --method sup_pen \
-#     --prob_type nonsmooth_nonconvex \
-#     --prob_name socp \
-#     --train_size 800 \
-#     --num_epochs 5000 \
-#     --lr 0.00005 \
-#     --seed 0 \
-#     --en_subopt 3 \
-#     --subopt_ratio 0.5 \
-#     --save_intermediate True
+python main.py \
+    --method sup_pen \
+    --prob_type nonsmooth_nonconvex \
+    --prob_name socp \
+    --train_size 7000 \
+    --num_epochs 1000 \
+    --lr 0.00005 \
+    --seed 0 \
+    --en_subopt 3 \
+    --subopt_ratio 0.5 \
+    --save_intermediate True
 
 # for seed in 0; do
 #     python main.py \

@@ -145,8 +145,10 @@ def create_parser(arg_list=None):
 #         return merit
 #     return eval_merit
 
-
 def make_eval_merit(base_trainer):
+    return base_trainer.evaluator.evaluate_merit
+
+def make_loss_merit(base_trainer):
     return base_trainer.evaluator.evaluate_loss
 
 # -----------------------------------------------------------------------------
@@ -303,7 +305,8 @@ if __name__ == "__main__":
         num_workers=0,
     )
 
-    eval_merit = make_eval_merit(base_trainer)
+    eval_value = make_eval_merit(base_trainer)
+    # eval_value = make_loss_merit(base_trainer)
 
     # # Load model_A0
     # args, config = create_parser([
@@ -335,7 +338,7 @@ if __name__ == "__main__":
     X, Y, Z, dx, dy = compute_merit_surface_2d(
         model_B0,
         test_loader,
-        eval_merit,
+        eval_value,
         xmin=-1, xmax=1, xnum=51,
         ymin=-1, ymax=1, ynum=51,
         ignore="biasbn",
@@ -345,6 +348,6 @@ if __name__ == "__main__":
     )
 
     os.makedirs("figures", exist_ok=True)
-    npz_dir = f"figures/model_vanilla_loss_surface_data1.npz"
+    npz_dir = f"figures/model_vanilla_merit_surface_data2101.npz"
     np.savez(npz_dir, X=X, Y=Y, Z=Z)
     print(f"Saved surface data to: {npz_dir}")

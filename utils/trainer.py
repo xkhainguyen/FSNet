@@ -65,7 +65,7 @@ def load_instance(config):
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
 
-    if method == "sup" or method == "sup_partial" or method == "sup_pen":
+    if method == "sup" or method == "sup_partial" or method == "sup_pen" or method == "S3Net" or method == "semi":
         if config['en_subopt'] == 1:
             dataset_filepath = dataset_filepath + f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
         if config['en_subopt'] == 2:
@@ -378,7 +378,7 @@ class Trainer:
                 print("Enabling penalty terms")
             self.en_penalty = True
 
-        if epoch_metrics['epoch'] > 3:#0.2 * self.config['num_epochs']:
+        if epoch_metrics['epoch'] > -1:#0.2 * self.config['num_epochs']:
             if self.en_feasibility == False:
                 print("Enabling feasibility seeking")
             self.en_feasibility = True
@@ -409,10 +409,10 @@ class Trainer:
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        sup_weight = 1.0
+        sup_weight = 2.0
 
-        if self.en_penalty:
-            sup_weight *= 0.5
+        # if self.en_penalty:
+        #     sup_weight *= 0.5
 
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
@@ -602,10 +602,6 @@ class Trainer:
         return epoch_metrics
     
     def _initialize_params(self) -> None:
-        if self.config_method['eq_pen_weight']:
-            print(f"Equality penalty weight: {self.config_method['eq_pen_weight']}")
-        if self.config_method['ineq_pen_weight']:
-            print(f"Inequality penalty weight: {self.config_method['ineq_pen_weight']}")
         if self.method == 'adaptive_penalty' or self.method == 'sup_pen':
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
             self.adaptive_ineq_weight = self.config_method['ineq_pen_weight']

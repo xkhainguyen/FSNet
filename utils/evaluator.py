@@ -22,15 +22,6 @@ class Evaluator:
 
     @torch.no_grad()
     def evaluate_batch(self, model, input_batch):
-        """
-        Return PER-SAMPLE metrics for a batch, as tensors of shape [B] on CPU.
-
-        Output keys (CPU tensors):
-          - objective
-          - eq_violation_l1
-          - ineq_violation_l1
-          (plus other per-sample metrics if you want)
-        """
         model.eval()
 
         X_batch = input_batch.to(DEVICE)
@@ -97,11 +88,48 @@ class Evaluator:
                 + self.config_method["ineq_pen_weight"] * ineq_l2
             )
 
-            total_loss += loss.mean().item()
+            total_loss += loss.sum().item()
             total_samples += X_batch.size(0)
 
         return total_loss / max(1, total_samples)
 
+    @torch.no_grad()
+    def evaluate_merit(self, model, data_loader):
+        model.eval()
+
+        total_merit = 0.0
+        total_samples = 0
+
+        for X_batch, _Y_true in data_loader:
+            X_batch = X_batch.to(DEVICE, non_blocking=True)
+
+            # Forward pass
+            Y_pred = model(X_batch)
+            Y_pred_scaled = self.data.scale(Y_pred)
+
+            # Method-specific post-processing (may enable grad internally)
+            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+
+            # Constraint residuals on pre-postprocess prediction
+            eq_resid = self.data.eq_resid(X_batch, Y_final)        # [B, meq]
+            ineq_resid = self.data.ineq_resid(X_batch, Y_final)    # [B, mineq]
+
+            eq_l1 = eq_resid.abs().sum(dim=1)                         # [B]
+            ineq_l1 = ineq_resid.abs().sum(dim=1)                     # [B]
+
+            # Objective on post-processed solution
+            obj_pred = self.data.obj_fn(Y_final)                         # [B]
+
+            merit = (
+                1.0 * obj_pred
+                + 1e5 * eq_l1
+                + 1e5 * ineq_l1
+            )
+
+            total_merit += merit.sum().item()
+            total_samples += X_batch.size(0)
+
+        return total_merit / max(1, total_samples)
     
     @torch.no_grad()
     def evaluate(self, model, data_loader, split_name="eval", return_detailed=False):
@@ -223,6 +251,7 @@ class Evaluator:
             'objective': obj_pred.mean().item(),
             'objective_max': obj_pred.max().item(),
             'true_objective': obj_true.mean().item(),
+            'true_objective_max': obj_true.max().item(),
             'opt_gap_mean': opt_gap.mean().item(),
             'opt_gap_std': opt_gap.std().item(),
             'opt_gap_max': opt_gap.max().item(),
