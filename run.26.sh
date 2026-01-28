@@ -25,9 +25,9 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 0 1; do
+for seed in 2 3; do
     python main.py \
-        --method semi \
+        --method S3Net \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
         --lr 0.0001  \

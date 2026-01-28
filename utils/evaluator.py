@@ -13,9 +13,9 @@ torch.set_default_dtype(torch.float64)
 class Evaluator:
     """Separate evaluator class for model evaluation."""
     
-    def __init__(self, data, method, config):
+    def __init__(self, opt_problem, method, config):
         """Initialize evaluator."""
-        self.data = data
+        self.opt_problem = opt_problem
         self.method = method
         self.config = config
         self.config_method = config[method]
@@ -24,22 +24,24 @@ class Evaluator:
     def evaluate_batch(self, model, input_batch):
         model.eval()
 
+        time_start = time.time()
         X_batch = input_batch.to(DEVICE)
 
         # Forward pass
         Y_pred = model(X_batch)
-        Y_pred_scaled = self.data.scale(Y_pred)
+        Y_pred_scaled = self.opt_problem.scale(Y_pred)
 
         # Method-specific post-processing
         # NOTE: your _post_process_predictions is @torch.enable_grad()
         # but that's fine: it will run with grad enabled even inside no_grad.
         Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+        time_end = time.time()
 
         # Per-sample objective / violations
-        obj_pred = self.data.obj_fn(Y_final)          # [B]
+        obj_pred = self.opt_problem.obj_fn(Y_final)          # [B]
 
-        eq_resid = self.data.eq_resid(X_batch, Y_final)     # [B, meq]
-        ineq_resid = self.data.ineq_resid(X_batch, Y_final) # [B, mineq]
+        eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)     # [B, meq]
+        ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final) # [B, mineq]
 
         eq_l1 = eq_resid.abs().sum(dim=1)          # [B]
         ineq_l1 = ineq_resid.abs().sum(dim=1)      # [B]
@@ -49,6 +51,7 @@ class Evaluator:
             "objective": obj_pred.detach().to("cpu", dtype=torch.float32),
             "eq_violation_l1": eq_l1.detach().to("cpu", dtype=torch.float32),
             "ineq_violation_l1": ineq_l1.detach().to("cpu", dtype=torch.float32),
+            "sol_time": time_end - time_start,
         }
 
     @torch.no_grad()
@@ -63,11 +66,11 @@ class Evaluator:
 
             # Forward pass
             Y_pred = model(X_batch)
-            Y_pred_scaled = self.data.scale(Y_pred)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
 
             # Constraint residuals on pre-postprocess prediction
-            eq_resid = self.data.eq_resid(X_batch, Y_pred_scaled)        # [B, meq]
-            ineq_resid = self.data.ineq_resid(X_batch, Y_pred_scaled)    # [B, mineq]
+            eq_resid = self.opt_problem.eq_resid(X_batch, Y_pred_scaled)        # [B, meq]
+            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled)    # [B, mineq]
 
             eq_l2 = eq_resid.square().sum(dim=1)                         # [B]
             ineq_l2 = ineq_resid.square().sum(dim=1)                     # [B]
@@ -76,7 +79,7 @@ class Evaluator:
             Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
 
             # Objective on post-processed solution
-            obj_pred = self.data.obj_fn(Y_final)                         # [B]
+            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
 
             # Optional distance regularizer
             distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square().mean()
@@ -105,20 +108,20 @@ class Evaluator:
 
             # Forward pass
             Y_pred = model(X_batch)
-            Y_pred_scaled = self.data.scale(Y_pred)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
 
             # Method-specific post-processing (may enable grad internally)
             Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
 
             # Constraint residuals on pre-postprocess prediction
-            eq_resid = self.data.eq_resid(X_batch, Y_final)        # [B, meq]
-            ineq_resid = self.data.ineq_resid(X_batch, Y_final)    # [B, mineq]
+            eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)        # [B, meq]
+            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)    # [B, mineq]
 
             eq_l1 = eq_resid.abs().sum(dim=1)                         # [B]
             ineq_l1 = ineq_resid.abs().sum(dim=1)                     # [B]
 
             # Objective on post-processed solution
-            obj_pred = self.data.obj_fn(Y_final)                         # [B]
+            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
 
             merit = (
                 1.0 * obj_pred
@@ -159,7 +162,7 @@ class Evaluator:
             
             # Forward pass
             Y_pred = model(X_batch)
-            Y_pred_scaled = self.data.scale(Y_pred)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
             
             # Method-specific post-processing
             Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
@@ -200,17 +203,17 @@ class Evaluator:
         """Apply method-specific post-processing."""
         if self.method == "FSNet" or self.method == "S3Net" or self.method == 'semi':
             return nondiff_lbfgs_solve(
-                X_batch, Y_pred_scaled, self.data,
+                X_batch, Y_pred_scaled, self.opt_problem,
                 val_tol=self.config_method.get('test_val_tol', 1e-6),
                 memory=self.config_method.get('memory_size', 20),
                 max_iter=self.config_method.get('max_iter', 20),
                 scale=self.config_method.get('scale', 1)
             )
         elif self.method == "DC3" or self.method == "sup_partial":
-            Y_completion = self.data.complete_partial(X_batch, Y_pred_scaled)
-            return grad_steps(self.data, X_batch, Y_completion, self.config)
+            Y_completion = self.opt_problem.complete_partial(X_batch, Y_pred_scaled)
+            return grad_steps(self.opt_problem, X_batch, Y_completion, self.config)
         elif self.method == "projection":
-            return self.data.qpth_projection(X_batch, Y_pred_scaled)
+            return self.opt_problem.qpth_projection(X_batch, Y_pred_scaled)
         else:
             return Y_pred_scaled
     
@@ -224,12 +227,12 @@ class Evaluator:
     def _compute_batch_metrics(self, X_batch, Y_final, Y_true):
         """Compute comprehensive metrics for a batch."""
         # Objective values
-        obj_pred = self.data.obj_fn(Y_final)
-        obj_true = self.data.obj_fn(Y_true)
+        obj_pred = self.opt_problem.obj_fn(Y_final)
+        obj_true = self.opt_problem.obj_fn(Y_true)
         
         # Constraint violations
-        eq_resid = self.data.eq_resid(X_batch, Y_final)
-        ineq_resid = self.data.ineq_resid(X_batch, Y_final)
+        eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)
+        ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)
         
         eq_violation_l2 = eq_resid.square().sum(dim=1)
         ineq_violation_l2 = ineq_resid.square().sum(dim=1)
