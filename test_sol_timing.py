@@ -163,7 +163,7 @@ def make_eval_serial_time(base_trainer):
 if __name__ == "__main__":
     # Build base_trainer (for evaluator + datasets)
     args, config = create_parser([
-        "--method", "penalty",
+        "--method", "FSNet",
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
     ])
@@ -175,12 +175,19 @@ if __name__ == "__main__":
 
     # Load model_A0
     args, config = create_parser([
-        "--method", "penalty",
+        "--method", "FSNet",
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
         "--checkpoint",
-        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260118-172633_MLP_penalty_seed2_nepochs1000_lr0.0001_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940/model.pt",
+        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-012027_MLP_FSNet_seed0_nepochs300_lr0.0001_trainsize7000/model.pt",
     ])
+    # args, config = create_parser([
+    #     "--method", "FSNet",
+    #     "--prob_type", "nonsmooth_nonconvex",
+    #     "--prob_name", "socp",
+    #     "--checkpoint",
+    #     "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260116-031254_MLP_FSNet_seed0_nepochs300_lr0.0002_trainsize7000_finetune_20260116-022657_sup_seedpen_model_940/model.pt",
+    # ])
     opt_problem, result_save_dir = load_instance(config)
     trainer_dummy = Trainer(opt_problem=opt_problem, config=config, save_dir=result_save_dir)
     model = trainer_dummy.train()
@@ -189,8 +196,18 @@ if __name__ == "__main__":
     # Pick device
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # print time per sample
-    time_parallel = eval_parallel_time(model)
-    time_serial = eval_serial_time(model)
-    print(f"Parallel time: {time_parallel:.6f} seconds")
-    print(f"Serial time: {time_serial:.6f} seconds")
+    # print time per sample, run 4 times and take average of the last 3
+    n_runs = 4
+    parallel_times = []
+    serial_times = []
+    for run in range(n_runs):
+        p_time = eval_parallel_time(model)
+        s_time = eval_serial_time(model)
+        print(f"Run {run+1}: Parallel time = {p_time:.4f}s, Serial time = {s_time:.4f}s")
+        parallel_times.append(p_time)
+        serial_times.append(s_time)
+    # print mean and std
+    parallel_times = np.array(parallel_times[1:])
+    serial_times = np.array(serial_times[1:])
+    print(f"Average Parallel time: {parallel_times.mean():.4f}s ± {parallel_times.std():.4f}s")
+    print(f"Average Serial time: {serial_times.mean():.4f}s ± {serial_times.std():.4f}s")
