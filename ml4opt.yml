@@ -266,4 +266,3 @@ dependencies:
       - torchaudio==2.8.0
       - torchvision==0.23.0
       - triton==3.4.0
-prefix: /mnt/home/khain/miniconda3/envs/ml4opt
