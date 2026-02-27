@@ -11,8 +11,11 @@ Supports:
 """
 
 import argparse
+import glob
 import logging
+import os
 import yaml
+import yaml as _yaml
 import torch
 import time
 
@@ -59,12 +62,40 @@ def load_model_from_checkpoint(ckpt_path, opt_problem):
     return model, config
 
 
+def resolve_checkpoints(run_dir):
+    """Given a run directory, return a list of checkpoint paths.
+
+    - If ``members/member_*.pt`` exist, return them sorted (ensemble from members).
+    - Otherwise return ``model.pt`` (single model or saved EnsembleMLP).
+    """
+    members_pattern = os.path.join(run_dir, "members", "member_[0-9]*.pt")
+    # Filter out intermediate epoch checkpoints (keep only member_N.pt)
+    member_files = sorted(
+        [f for f in glob.glob(members_pattern)
+         if os.path.basename(f).startswith("member_") and "_epoch_" not in os.path.basename(f)]
+    )
+    if member_files:
+        log.info("Found %d member checkpoints in %s", len(member_files), run_dir)
+        return member_files
+
+    model_pt = os.path.join(run_dir, "model.pt")
+    if os.path.isfile(model_pt):
+        return [model_pt]
+
+    raise FileNotFoundError(f"No model.pt or members/member_*.pt found in {run_dir}")
+
+
 def create_eval_parser():
     parser = argparse.ArgumentParser(description='Evaluate saved model checkpoints')
 
-    parser.add_argument('--checkpoints', type=str, nargs='+', required=True,
-                        help='One or more .pt checkpoint paths. '
-                             'Multiple single-model checkpoints are combined into an ensemble.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--run_dir', type=str,
+                       help='Path to a training run directory. Auto-discovers '
+                            'members/member_*.pt (ensemble) or model.pt (single).')
+    group.add_argument('--checkpoints', type=str, nargs='+',
+                       help='One or more .pt checkpoint paths. '
+                            'Multiple single-model checkpoints are combined into an ensemble.')
+
     parser.add_argument('--config', type=str, default=None,
                         help='Override YAML config (default: use config saved in checkpoint)')
 
@@ -86,13 +117,75 @@ def create_eval_parser():
     return parser
 
 
+def _build_eval_save_dir(config):
+    """Build save directory for eval results.
+
+    Format: ``results/.../TIMESTAMP_eval_METHOD_seed_SEED[_ensN_POST_AGG]``
+    """
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    prob_type = config['prob_type']
+    prob_name = config['prob_name']
+    method = config['method']
+    seed = config.get('seed', 0)
+
+    tag = f"{timestamp}_eval_{method}_seed{seed}"
+    if config.get('ensemble_size', 1) > 1:
+        tag += (f"_ens{config['ensemble_size']}"
+                f"_{config.get('ensemble_post', 'pre')}"
+                f"_{config.get('ensemble_agg', 'mean')}")
+
+    prob_str = f"{prob_name.upper()}Problem"
+    first_ckpt = config.get('_first_checkpoint_path', '')
+    for p in first_ckpt.split(os.sep):
+        if 'Problem' in p:
+            prob_str = p
+            break
+
+    return os.path.join('results', prob_type, prob_name, prob_str, tag)
+
+
+def _save_eval_results(save_dir, config, batch_size_results, eval_time):
+    """Save test_summary.yaml and config.yaml for an eval run."""
+    os.makedirs(save_dir, exist_ok=True)
+
+    serialisable = {k: v for k, v in config.items() if not k.startswith('_')}
+    with open(os.path.join(save_dir, 'config.yaml'), 'w') as f:
+        _yaml.dump(serialisable, f, default_flow_style=False, sort_keys=False)
+
+    summary = {
+        'method': config['method'],
+        'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+        'eval_time_seconds': round(eval_time, 2),
+        'ensemble_size': config.get('ensemble_size', 1),
+        'ensemble_post': config.get('ensemble_post', 'pre'),
+        'ensemble_agg': config.get('ensemble_agg', 'mean'),
+        'checkpoints': config.get('_checkpoint_paths', []),
+    }
+    bs_metrics = {}
+    for bs, result in batch_size_results.items():
+        if 'error' in result:
+            bs_metrics[int(bs)] = {'error': result['error']}
+        else:
+            bs_metrics[int(bs)] = {
+                k: round(float(v), 8) for k, v in result['metrics'].items()
+            }
+    summary['test'] = bs_metrics
+
+    with open(os.path.join(save_dir, 'test_summary.yaml'), 'w') as f:
+        _yaml.dump(summary, f, default_flow_style=False, sort_keys=False)
+
+    log.info("Eval results saved to: %s", save_dir)
+
+
 def main():
     parser = create_eval_parser()
     args = parser.parse_args()
 
     setup_logging()
 
-    first_ckpt = torch.load(args.checkpoints[0], map_location='cpu')
+    checkpoints = args.checkpoints or resolve_checkpoints(args.run_dir)
+
+    first_ckpt = torch.load(checkpoints[0], map_location='cpu')
     config = first_ckpt['config']
 
     if args.config:
@@ -103,6 +196,9 @@ def main():
     config['ensemble_post'] = args.ensemble_post
     config['ensemble_agg'] = args.ensemble_agg
     config['wandb'] = args.wandb
+    config['_eval_only'] = True
+    config['_checkpoint_paths'] = checkpoints
+    config['_first_checkpoint_path'] = checkpoints[0]
     if args.test_batch_sizes:
         config['test_batch_sizes'] = args.test_batch_sizes
 
@@ -114,12 +210,12 @@ def main():
 
     opt_problem, _ = load_instance(config)
 
-    if len(args.checkpoints) == 1:
-        model, _ = load_model_from_checkpoint(args.checkpoints[0], opt_problem)
+    if len(checkpoints) == 1:
+        model, _ = load_model_from_checkpoint(checkpoints[0], opt_problem)
     else:
-        log.info("Loading %d checkpoints as ad-hoc ensemble", len(args.checkpoints))
+        log.info("Loading %d checkpoints as ensemble", len(checkpoints))
         members = []
-        for ckpt_path in args.checkpoints:
+        for ckpt_path in checkpoints:
             m, ckpt_cfg = load_single_model(ckpt_path, opt_problem)
             if ckpt_cfg['prob_type'] != prob_type or ckpt_cfg['prob_name'] != prob_name:
                 raise ValueError(
@@ -130,7 +226,7 @@ def main():
                      len(members), ckpt_path, ckpt_cfg['method'], ckpt_cfg.get('seed', '?'))
         model = EnsembleMLP(members).to(DEVICE)
         config['ensemble_size'] = len(members)
-        log.info("Created ad-hoc EnsembleMLP with %d members", len(members))
+        log.info("Created EnsembleMLP with %d members", len(members))
 
     model.eval()
 
@@ -140,7 +236,8 @@ def main():
             run_name = args.wandb_run_name or f"eval_{prob_type}_{prob_name}_{method}"
             wandb.init(
                 project=args.wandb_project, entity=args.wandb_entity,
-                name=run_name, tags=args.wandb_tags, config=config)
+                name=run_name, tags=args.wandb_tags,
+                config={k: v for k, v in config.items() if not k.startswith('_')})
         except ImportError:
             log.warning("wandb not installed, skipping")
             config['wandb'] = False
@@ -165,6 +262,9 @@ def main():
         model, opt_problem.test_dataset, test_batch_sizes, "test")
     eval_time = time.time() - start_time
     log.info("Evaluation completed in %.2fs", eval_time)
+
+    eval_save_dir = _build_eval_save_dir(config)
+    _save_eval_results(eval_save_dir, config, batch_size_results, eval_time)
 
     if config.get('wandb', False):
         import wandb

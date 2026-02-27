@@ -95,7 +95,10 @@ def load_instance(config):
             except AttributeError:
                 pass
 
-    # ---- build save directory ----
+    # ---- build save directory (skip for eval-only runs) ----
+    if config.get('_eval_only'):
+        return opt_problem, None
+
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     if config['ablation']:
         result_save_dir = os.path.join(
@@ -103,7 +106,15 @@ def load_instance(config):
             f"{config['network']}_{method}",
             f"dist_{config['FSNet']['dist_weight']}_diff_{config['FSNet']['max_diff_iter']}")
     else:
-        run_name = f"{method}_seed{seed}_{timestamp}"
+        lr_str = f"{config[method]['lr']:.0e}".replace("+", "")
+        run_name = (f"{timestamp}_{method}_seed{seed}"
+                    f"_e{config[method]['num_epochs']}"
+                    f"_lr{lr_str}"
+                    f"_n{train_size}")
+        if config.get('ensemble_size', 1) > 1:
+            run_name += (f"_ens{config['ensemble_size']}"
+                         f"_{config.get('ensemble_mode', 'vanilla')}"
+                         f"_{config.get('ensemble_post', 'pre')}")
         if en_subopt != 0:
             run_name += f"_subopt{en_subopt}_{config['subopt_ratio']}"
         if config['checkpoint']:
@@ -962,9 +973,6 @@ class Trainer:
             all_val_history.extend(hist_v)
             member_models.append(copy.deepcopy(self.model))
 
-            if self.save_dir:
-                self._save_member_checkpoint(f"member_{i}", epoch="final")
-
         training_time = time.time() - train_start
         log.info("Vanilla ensemble completed in %.2fs (%d members)", training_time, M)
 
@@ -1033,9 +1041,6 @@ class Trainer:
             snapshots.append(copy.deepcopy(self.model))
             snap_epoch = pretrain_epochs + (snap_idx + 1) * cycle_length
             log.info("Snapshot %d/%d collected at epoch %d", snap_idx + 1, M, snap_epoch)
-
-            if self.save_dir:
-                self._save_member_checkpoint(f"member_{snap_idx}", epoch="final")
 
         training_time = time.time() - train_start
         log.info("FGE completed in %.2fs (%d snapshots)", training_time, M)
