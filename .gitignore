@@ -201,3 +201,4 @@ results/nonconvex/
 results/convex/
 logs/
 figures/
+wandb/

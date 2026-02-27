@@ -3,7 +3,11 @@ import pickle
 import time
 import os 
 from typing import Dict, Tuple
-# import wandb 
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -591,7 +595,7 @@ class Trainer:
                 epoch_metrics[key] += value
             epoch_metrics['loss'] += loss.mean().item()
         
-        self.scheduler.step()
+            self.scheduler.step()
         
         # Average metrics
         num_batches = len(train_loader)
@@ -601,6 +605,10 @@ class Trainer:
             
         return epoch_metrics
     
+    @property
+    def use_wandb(self):
+        return self.config.get('wandb', False) and WANDB_AVAILABLE
+
     def _initialize_params(self) -> None:
         if self.method == 'adaptive_penalty' or self.method == 'sup_pen':
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
@@ -680,7 +688,7 @@ class Trainer:
         warmup_steps = len(train_loader)
         total_steps = len(train_loader) * self.config_method['num_epochs']
         s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
+        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
         self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
 
         print(f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, num_epochs: {self.config_method['num_epochs']}\n")
@@ -708,11 +716,40 @@ class Trainer:
                   f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
                   f"Ep T: {epoch_end - epoch_start:.2f}s")
 
+            if self.use_wandb:
+                wandb.log({
+                    'epoch': epoch,
+                    'train/loss': epoch_metrics['loss'],
+                    'train/objective': epoch_metrics.get('obj', 0),
+                    'train/eq_violation_l1': epoch_metrics.get('eq_violation_l1', 0),
+                    'train/ineq_violation_l1': epoch_metrics.get('ineq_violation_l1', 0),
+                    'train/eq_violation_l2': epoch_metrics.get('eq_violation', 0),
+                    'train/ineq_violation_l2': epoch_metrics.get('ineq_violation', 0),
+                    'train/distance': epoch_metrics.get('distance', 0),
+                    'train/epoch_time': epoch_end - epoch_start,
+                    'lr': self.optimizer.param_groups[0]['lr'],
+                })
+
             # Evaluate on validation set
             if (epoch) % self.config['eval_step'] == 0:
                 print(f"\nRunning validation at epoch {epoch}...")
                 val_metrics = self.evaluator.evaluate(self.model, val_loader, f"validation_epoch_{epoch}")
                 val_history.append({**val_metrics, 'epoch': epoch})
+
+                if self.use_wandb:
+                    wandb.log({
+                        'epoch': epoch,
+                        'val/objective': val_metrics.get('objective', 0),
+                        'val/opt_gap_mean': val_metrics.get('opt_gap_mean', 0),
+                        'val/opt_gap_max': val_metrics.get('opt_gap_max', 0),
+                        'val/eq_violation_l1': val_metrics.get('eq_violation_l1_mean', 0),
+                        'val/ineq_violation_l1': val_metrics.get('ineq_violation_l1_mean', 0),
+                        'val/eq_violation_l2': val_metrics.get('eq_violation_l2_mean', 0),
+                        'val/ineq_violation_l2': val_metrics.get('ineq_violation_l2_mean', 0),
+                        'val/merit_mean': val_metrics.get('merit_mean', 0),
+                        'val/solution_distance': val_metrics.get('solution_distance_mean', 0),
+                        'val/inference_time': val_metrics.get('avg_inference_time', 0),
+                    })
 
                 # Save all results with detailed information
                 if self.save_dir and self.config['save_intermediate']:
@@ -746,6 +783,31 @@ class Trainer:
                 'batch_size_comparison': batch_size_results,
                 'detailed_results_all_batch_sizes': all_detailed_results
             }
+
+            if self.use_wandb:
+                for bs, result in batch_size_results.items():
+                    if 'error' not in result:
+                        metrics = result['metrics']
+                        wandb.log({
+                            f'test/bs{bs}/objective': metrics.get('objective', 0),
+                            f'test/bs{bs}/opt_gap_mean': metrics.get('opt_gap_mean', 0),
+                            f'test/bs{bs}/opt_gap_max': metrics.get('opt_gap_max', 0),
+                            f'test/bs{bs}/eq_violation_l1': metrics.get('eq_violation_l1_mean', 0),
+                            f'test/bs{bs}/ineq_violation_l1': metrics.get('ineq_violation_l1_mean', 0),
+                            f'test/bs{bs}/merit_mean': metrics.get('merit_mean', 0),
+                            f'test/bs{bs}/solution_distance': metrics.get('solution_distance_mean', 0),
+                            f'test/bs{bs}/total_time': metrics.get('total_time', 0),
+                        })
+                first_valid = next((r['metrics'] for r in batch_size_results.values() if 'error' not in r), None)
+                if first_valid:
+                    wandb.summary.update({
+                        'test/objective': first_valid.get('objective', 0),
+                        'test/opt_gap_mean': first_valid.get('opt_gap_mean', 0),
+                        'test/eq_violation_l1': first_valid.get('eq_violation_l1_mean', 0),
+                        'test/ineq_violation_l1': first_valid.get('ineq_violation_l1_mean', 0),
+                        'test/merit_mean': first_valid.get('merit_mean', 0),
+                        'test/solution_distance': first_valid.get('solution_distance_mean', 0),
+                    })
         else:
             print("No test dataset available")
             final_test_results = {}
@@ -835,3 +897,17 @@ class Trainer:
         print(f"\nFiles saved (or attempted):")
         print(f"  - {model_filename} (model weights and architecture)")
         print(f"  - {results_filename} (training history, metrics, detailed test results)")
+
+        if self.use_wandb:
+            try:
+                artifact = wandb.Artifact(
+                    f"model-{self.config.get('prob_type','')}-{self.config.get('prob_name','')}-{self.method}",
+                    type='model',
+                    metadata={'training_time': training_time},
+                )
+                artifact.add_file(model_filepath)
+                wandb.log_artifact(artifact)
+                wandb.summary['training_time_seconds'] = training_time
+                print(f"  - W&B artifact logged")
+            except Exception as e:
+                print(f"  - W&B artifact logging failed: {e}")
