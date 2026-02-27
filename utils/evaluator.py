@@ -192,16 +192,20 @@ class Evaluator:
         """
         Get final prediction, handling ensemble post-processing modes.
 
-        "pre"  = ens(NNs) + Opt : average raw NN outputs, post-process once.
-        "post" = ens(NNs + Opts): post-process each member, then aggregate.
+        "pre"  = agg(NNs) + Opt : aggregate raw NN outputs, post-process once.
+        "post" = agg(NNs + Opts): post-process each member, then aggregate.
 
-        Falls back to the standard single-model path for non-ensemble models
-        or when ensemble_post == "pre".
+        Falls back to the standard single-model path for non-ensemble models.
         """
-        ensemble_post = self.config.get('ensemble_post', 'pre')
+        if not isinstance(model, EnsembleMLP):
+            Y_pred = model(X_batch)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
+            return self._post_process_predictions(X_batch, Y_pred_scaled)
 
-        if isinstance(model, EnsembleMLP) and ensemble_post == 'post':
-            all_preds = model.forward_all(X_batch)  # (M, B, out)
+        ensemble_post = self.config.get('ensemble_post', 'pre')
+        all_preds = model.forward_all(X_batch)  # (M, B, out)
+
+        if ensemble_post == 'post':
             finals = []
             for i in range(all_preds.shape[0]):
                 y_scaled = self.opt_problem.scale(all_preds[i])
@@ -209,9 +213,10 @@ class Evaluator:
                 finals.append(y_final)
             return self._aggregate_predictions(finals, X_batch)
 
-        Y_pred = model(X_batch)
-        Y_pred_scaled = self.opt_problem.scale(Y_pred)
-        return self._post_process_predictions(X_batch, Y_pred_scaled)
+        scaled = [self.opt_problem.scale(all_preds[i])
+                  for i in range(all_preds.shape[0])]
+        aggregated = self._aggregate_predictions(scaled, X_batch)
+        return self._post_process_predictions(X_batch, aggregated)
 
     def _aggregate_predictions(self, finals, X_batch):
         """

@@ -223,8 +223,7 @@ def main():
     if config['wandb']:
         if not WANDB_AVAILABLE:
             raise ImportError("wandb is not installed. Install it with: pip install wandb")
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        run_name = config['wandb_run_name'] or f"{timestamp}_{config['method']}"
+        run_name = config['wandb_run_name'] or os.path.basename(result_save_dir)
         wandb.init(
             project=config['wandb_project'],
             entity=config['wandb_entity'],

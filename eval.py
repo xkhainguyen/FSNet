@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 
 def load_single_model(ckpt_path, opt_problem):
     """Load a single MLP from a checkpoint file."""
-    ckpt = torch.load(ckpt_path, map_location=DEVICE)
+    ckpt = torch.load(ckpt_path, map_location=DEVICE, weights_only=False)
     config = ckpt['config']
     method = config['method']
     model = create_model(opt_problem, method, config)
@@ -40,7 +40,7 @@ def load_single_model(ckpt_path, opt_problem):
 
 def load_model_from_checkpoint(ckpt_path, opt_problem):
     """Load a model from a checkpoint, auto-detecting single vs ensemble."""
-    ckpt = torch.load(ckpt_path, map_location=DEVICE)
+    ckpt = torch.load(ckpt_path, map_location=DEVICE, weights_only=False)
     config = ckpt['config']
     state_dict = ckpt['model_state_dict']
 
@@ -99,6 +99,8 @@ def create_eval_parser():
     parser.add_argument('--config', type=str, default=None,
                         help='Override YAML config (default: use config saved in checkpoint)')
 
+    parser.add_argument('--ensemble_size', type=int, default=None,
+                        help='Use only the first N members (default: all)')
     parser.add_argument('--ensemble_post', type=str, default='pre', choices=['pre', 'post'],
                         help='"pre" = ens(NNs)+Opt, "post" = ens(NNs+Opts)')
     parser.add_argument('--ensemble_agg', type=str, default='mean',
@@ -185,7 +187,15 @@ def main():
 
     checkpoints = args.checkpoints or resolve_checkpoints(args.run_dir)
 
-    first_ckpt = torch.load(checkpoints[0], map_location='cpu')
+    if args.ensemble_size is not None:
+        if args.ensemble_size > len(checkpoints):
+            log.warning("--ensemble_size %d > available checkpoints (%d), using all",
+                        args.ensemble_size, len(checkpoints))
+        else:
+            checkpoints = checkpoints[:args.ensemble_size]
+            log.info("Using first %d of %d checkpoints", args.ensemble_size, len(checkpoints))
+
+    first_ckpt = torch.load(checkpoints[0], map_location='cpu', weights_only=False)
     config = first_ckpt['config']
 
     if args.config:

@@ -642,7 +642,7 @@ class Trainer:
 
         if self.config['checkpoint']:
             log.info("Loading checkpoint: %s", self.config['checkpoint'])
-            ckpt = torch.load(self.config['checkpoint'], map_location=DEVICE)
+            ckpt = torch.load(self.config['checkpoint'], map_location=DEVICE, weights_only=False)
             ckpt['config']['dropout'] = self.config['dropout']
             self.model = create_model(self.opt_problem, self.method, ckpt['config'])
             self.model.load_state_dict(ckpt['model_state_dict'])
