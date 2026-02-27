@@ -42,7 +42,7 @@ data = {'Q':Q,
         'YU':U,
         'XL':XL,
         'XU':XU,
-        'Y':[]}
+        'Y_subopt':[]}
 Y = []
 for n in range(num_examples):
     Xi = X[n]
@@ -100,7 +100,7 @@ for n in range(num_examples):
     if n % 1000 == 0:
         print("Example {}: Objective value: {}".format(n, res['f'].full().flatten()[0]))
 
-data['Y'] = np.array(Y)
+data['Y_subopt'] = np.array(Y)
 
 
 i = 0
@@ -119,7 +119,7 @@ print('best_det', det_min)
 data['best_partial'] = best_partial
 
 
-with open("datasets/nonsmooth_nonconvex/socp/random{}_socp_dataset_var{}_ineq{}_eq{}_ex{}_tol1e0".format(seed, num_var, num_ineq, num_eq, num_examples), 'wb') as f:
+with open("datasets/nonsmooth_nonconvex/socp/random{}_socp_dataset_var{}_ineq{}_eq{}_ex{}asdasdas".format(seed, num_var, num_ineq, num_eq, num_examples), 'wb') as f:
     pickle.dump(data, f)
 
 print("Finished generating data!")

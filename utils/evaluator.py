@@ -13,12 +13,126 @@ torch.set_default_dtype(torch.float64)
 class Evaluator:
     """Separate evaluator class for model evaluation."""
     
-    def __init__(self, data, method, config):
+    def __init__(self, opt_problem, method, config):
         """Initialize evaluator."""
-        self.data = data
+        self.opt_problem = opt_problem
         self.method = method
         self.config = config
         self.config_method = config[method]
+
+    @torch.no_grad()
+    def evaluate_batch(self, model, input_batch):
+        model.eval()
+
+        time_start = time.time()
+        X_batch = input_batch.to(DEVICE)
+
+        # Forward pass
+        Y_pred = model(X_batch)
+        Y_pred_scaled = self.opt_problem.scale(Y_pred)
+
+        # Method-specific post-processing
+        # NOTE: your _post_process_predictions is @torch.enable_grad()
+        # but that's fine: it will run with grad enabled even inside no_grad.
+        Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+        time_end = time.time()
+
+        # Per-sample objective / violations
+        obj_pred = self.opt_problem.obj_fn(Y_final)          # [B]
+
+        eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)     # [B, meq]
+        ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final) # [B, mineq]
+
+        eq_l1 = eq_resid.abs().sum(dim=1)          # [B]
+        ineq_l1 = ineq_resid.abs().sum(dim=1)      # [B]
+
+        # Return CPU tensors so caller can aggregate/scatter_add efficiently
+        return {
+            "objective": obj_pred.detach().to("cpu", dtype=torch.float32),
+            "eq_violation_l1": eq_l1.detach().to("cpu", dtype=torch.float32),
+            "ineq_violation_l1": ineq_l1.detach().to("cpu", dtype=torch.float32),
+            "sol_time": time_end - time_start,
+        }
+
+    @torch.no_grad()
+    def evaluate_loss(self, model, data_loader):
+        model.eval()
+
+        total_loss = 0.0
+        total_samples = 0
+
+        for X_batch, _Y_true in data_loader:
+            X_batch = X_batch.to(DEVICE, non_blocking=True)
+
+            # Forward pass
+            Y_pred = model(X_batch)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
+
+            # Constraint residuals on pre-postprocess prediction
+            eq_resid = self.opt_problem.eq_resid(X_batch, Y_pred_scaled)        # [B, meq]
+            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled)    # [B, mineq]
+
+            eq_l2 = eq_resid.square().sum(dim=1)                         # [B]
+            ineq_l2 = ineq_resid.square().sum(dim=1)                     # [B]
+
+            # Method-specific post-processing (may enable grad internally)
+            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+
+            # Objective on post-processed solution
+            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
+
+            # Optional distance regularizer
+            distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square().mean()
+
+            loss = (
+                self.config_method["obj_weight"] * obj_pred
+                + self.config_method["dist_weight"] * distance
+                + self.config_method["eq_pen_weight"] * eq_l2
+                + self.config_method["ineq_pen_weight"] * ineq_l2
+            )
+
+            total_loss += loss.sum().item()
+            total_samples += X_batch.size(0)
+
+        return total_loss / max(1, total_samples)
+
+    @torch.no_grad()
+    def evaluate_merit(self, model, data_loader):
+        model.eval()
+
+        total_merit = 0.0
+        total_samples = 0
+
+        for X_batch, _Y_true in data_loader:
+            X_batch = X_batch.to(DEVICE, non_blocking=True)
+
+            # Forward pass
+            Y_pred = model(X_batch)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
+
+            # Method-specific post-processing (may enable grad internally)
+            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+
+            # Constraint residuals on pre-postprocess prediction
+            eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)        # [B, meq]
+            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)    # [B, mineq]
+
+            eq_l1 = eq_resid.abs().sum(dim=1)                         # [B]
+            ineq_l1 = ineq_resid.abs().sum(dim=1)                     # [B]
+
+            # Objective on post-processed solution
+            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
+
+            merit = (
+                1.0 * obj_pred
+                + 1e5 * eq_l1
+                + 1e5 * ineq_l1
+            )
+
+            total_merit += merit.sum().item()
+            total_samples += X_batch.size(0)
+
+        return total_merit / max(1, total_samples)
     
     @torch.no_grad()
     def evaluate(self, model, data_loader, split_name="eval", return_detailed=False):
@@ -48,7 +162,7 @@ class Evaluator:
             
             # Forward pass
             Y_pred = model(X_batch)
-            Y_pred_scaled = self.data.scale(Y_pred)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
             
             # Method-specific post-processing
             Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
@@ -89,29 +203,36 @@ class Evaluator:
         """Apply method-specific post-processing."""
         if self.method == "FSNet" or self.method == "S3Net" or self.method == 'semi':
             return nondiff_lbfgs_solve(
-                X_batch, Y_pred_scaled, self.data,
+                X_batch, Y_pred_scaled, self.opt_problem,
                 val_tol=self.config_method.get('test_val_tol', 1e-6),
                 memory=self.config_method.get('memory_size', 20),
                 max_iter=self.config_method.get('max_iter', 20),
                 scale=self.config_method.get('scale', 1)
             )
         elif self.method == "DC3" or self.method == "sup_partial":
-            Y_completion = self.data.complete_partial(X_batch, Y_pred_scaled)
-            return grad_steps(self.data, X_batch, Y_completion, self.config)
+            Y_completion = self.opt_problem.complete_partial(X_batch, Y_pred_scaled)
+            return grad_steps(self.opt_problem, X_batch, Y_completion, self.config)
         elif self.method == "projection":
-            return self.data.qpth_projection(X_batch, Y_pred_scaled)
+            return self.opt_problem.qpth_projection(X_batch, Y_pred_scaled)
         else:
             return Y_pred_scaled
+    
+    def _compute_merit(self, obj, eq_vio, ineq_vio):
+        """Compute merit function value."""
+        obj_weight = 1
+        eq_weight = 1e6
+        ineq_weight = 1e6
+        return obj_weight * obj + eq_weight * eq_vio + ineq_weight * ineq_vio
     
     def _compute_batch_metrics(self, X_batch, Y_final, Y_true):
         """Compute comprehensive metrics for a batch."""
         # Objective values
-        obj_pred = self.data.obj_fn(Y_final)
-        obj_true = self.data.obj_fn(Y_true)
+        obj_pred = self.opt_problem.obj_fn(Y_final)
+        obj_true = self.opt_problem.obj_fn(Y_true)
         
         # Constraint violations
-        eq_resid = self.data.eq_resid(X_batch, Y_final)
-        ineq_resid = self.data.ineq_resid(X_batch, Y_final)
+        eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)
+        ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)
         
         eq_violation_l2 = eq_resid.square().sum(dim=1)
         ineq_violation_l2 = ineq_resid.square().sum(dim=1)
@@ -124,15 +245,25 @@ class Evaluator:
         opt_gap = (obj_pred - obj_true) / obj_true.abs()         
         # Solution distance
         solution_distance = torch.norm(Y_final - Y_true, dim=1).square()
-        
+
+        merit = self._compute_merit(obj_pred, eq_violation_l1, ineq_violation_l1)
+
+        # Merit metrics
         return {
             # Objective metrics
             'objective': obj_pred.mean().item(),
+            'objective_max': obj_pred.max().item(),
             'true_objective': obj_true.mean().item(),
+            'true_objective_max': obj_true.max().item(),
             'opt_gap_mean': opt_gap.mean().item(),
             'opt_gap_std': opt_gap.std().item(),
             'opt_gap_max': opt_gap.max().item(),
             'opt_gap_min': opt_gap.min().item(),
+
+            'merit_mean': merit.mean().item(),
+            'merit_std': merit.std().item(),
+            'merit_max': merit.max().item(),
+            'merit_min': merit.min().item(),
             
             # Constraint violations (L2)
             'eq_violation_l2_mean': eq_violation_l2.mean().item(),
@@ -180,13 +311,14 @@ class Evaluator:
         """Print evaluation summary."""
         print(f"\n{split_name.upper()} EVALUATION RESULTS:")
         print("=" * 50)
-        print(f"Objective Value:     {metrics.get('objective', 0):.6e}")
-        print(f"True Objective:      {metrics.get('true_objective', 0):.6e}")
-        print(f"Optimality Gap:      {metrics.get('opt_gap_mean', 0):.6e} ± {metrics.get('opt_gap_std', 0):.6e}")
-        print(f"Eq Violation l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
-        print(f"Ineq Violation l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
-        print(f"Solution Distance:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
-        print(f"Avg Inference Time:  {metrics.get('avg_inference_time', 0):.4f}s")
+        print(f"Obj:     {metrics.get('objective', 0):.6e}")
+        print(f"Opt Gap:      {metrics.get('opt_gap_mean', 0):.6e} ± {metrics.get('opt_gap_std', 0):.6e}")
+        print(f"Eq Vio l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
+        print(f"Ineq Vio l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
+        print(f"Sol Dis:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
+        print(f"Merit:             {metrics.get('merit_mean', 0):.6e} ± {metrics.get('merit_std', 0):.6e}")
+        print(f"Avg Inf Time:  {metrics.get('avg_inference_time', 0):.4f}s")
+
         print("=" * 50)
     
     def evaluate_multiple_batch_sizes(self, model, dataset, batch_sizes, split_name="test"):

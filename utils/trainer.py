@@ -58,51 +58,65 @@ def load_instance(config):
     
     # Construct filepath using consistent pattern
     seed_data = 2025
-    filepath = os.path.join(
+    dataset_filepath = os.path.join(
         'datasets', 
         prob_type, 
         prob_name,
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
-    if config['en_subopt']:
-        filepath += f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
 
-    # Load dataset
-    print("\nLoading dataset from:", filepath, '\n')
-    with open(filepath, 'rb') as f:
+    if method == "sup" or method == "sup_partial" or method == "sup_pen" or method == "S3Net" or method == "semi":
+        if config['en_subopt'] == 1:
+            dataset_filepath = dataset_filepath + f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
+        if config['en_subopt'] == 2:
+            if config['subopt_ratio'] == 1:
+                dataset_filepath = dataset_filepath + f'_tol1e0_ready'
+            if config['subopt_ratio'] == -10:
+                dataset_filepath = dataset_filepath + f'_tol1em1_ready'
+        if config['en_subopt'] == 3:
+            dataset_filepath = dataset_filepath + f'_maxt{config["subopt_ratio"]}_ready'
+
+    print("Loading  dataset from:", dataset_filepath, '\n')
+    with open(dataset_filepath, 'rb') as f:
         dataset = pickle.load(f)
-    
-    # Create problem instance using the appropriate class
-    data = problem_names[prob_name](dataset, train_size, val_size, test_size, seed, en_subopt)
 
-    data.device = DEVICE
+    # Create problem instance using the appropriate class
+    opt_problem = problem_names[prob_name](dataset, train_size, val_size, test_size, seed, en_subopt) 
+
+    opt_problem.device = DEVICE
     print("Running on: ", DEVICE)
-    for attr in dir(data):
-        var = getattr(data, attr)
+    for attr in dir(opt_problem):
+        var = getattr(opt_problem, attr)
         if torch.is_tensor(var):
             try:
-                setattr(data, attr, var.to(DEVICE))
+                setattr(opt_problem, attr, var.to(DEVICE))
             except AttributeError:
                 pass
 
     if config['ablation'] == True:
-        result_save_dir = os.path.join('ablation_results', prob_type, prob_name, str(data), config['network'] + '_' + config['method'], 'dist_'+ str(config['FSNet']['dist_weight']) + '_diff_' + str(config['FSNet']['max_diff_iter']))
+        result_save_dir = os.path.join('ablation_results', prob_type, prob_name, str(opt_problem), config['network'] + '_' + config['method'], 'dist_'+ str(config['FSNet']['dist_weight']) + '_diff_' + str(config['FSNet']['max_diff_iter']))
     else:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        result_save_dir = os.path.join('results', prob_type, prob_name, str(data), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_dropout' + str(config['dropout']))
+        result_save_dir = os.path.join('results', prob_type, prob_name, str(opt_problem), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_nepochs' + str(config[config['method']]['num_epochs']) + '_lr' + str(config[config['method']]['lr']) + '_trainsize' + str(train_size))
+
+        if config['en_subopt'] != 0:
+            result_save_dir += f"_subopt_{config['en_subopt']}_{config['subopt_ratio']}"
+
         if config['checkpoint']:
             # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
             ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
+            ckpt_method = config['checkpoint'].split('/')[4].split('_')[2]
+            ckpt_seed = config['checkpoint'].split('/')[4].split('_')[3]
             ckpt_number = config['checkpoint'].split('_')[-1].split('.')[0]
-            result_save_dir += f"_finetune_{ckpt_date}_model_{ckpt_number}"
+            result_save_dir += f"_finetune_{ckpt_date}_{ckpt_method}_seed{ckpt_seed}_model_{ckpt_number}"
 
     if not os.path.exists(result_save_dir):
         os.makedirs(result_save_dir)
     
-    return data, result_save_dir
+    return opt_problem, result_save_dir
 
 
-def create_model(data, method, config):
+def create_model(opt_problem, method, config):
     """Creates and returns a neural network model."""
     
     hidden_dim = config["hidden_dim"]
@@ -112,33 +126,33 @@ def create_model(data, method, config):
 
     if network == 'MLP':
         if method == "DC3" or method == "sup_partial":
-            out_dim = data.partial_vars.shape[0]
-            model = MLP(data.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
+            out_dim = opt_problem.partial_vars.shape[0]
+            model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
         else:
-            model = MLP(data.xdim, hidden_dim, data.ydim, num_layers=num_layers, dropout=dropout)
+            model = MLP(opt_problem.xdim, hidden_dim, opt_problem.ydim, num_layers=num_layers, dropout=dropout)
     else:
         raise ValueError(f"Unknown model type: {model}")
     return model.to(DEVICE)
 
 
 class Trainer:
-    def __init__(self, data, config, save_dir=None):
-        """Initializes the Trainer with data, method, and configuration."""
-        self.data = data
+    def __init__(self, opt_problem, config, save_dir=None):
+        """Initializes the Trainer with opt_problem, method, and configuration."""
+        self.opt_problem = opt_problem
         self.method = config['method']
         self.config = config
         self.save_dir = save_dir
         
         self.config_method = config[self.method]
-        self.evaluator = Evaluator(data, self.method, config)
+        self.evaluator = Evaluator(opt_problem, self.method, config)
         self.en_feasibility = False
         self.en_penalty = False
         
         self._initialize_params()
 
-    def compute_batch_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_true: torch.Tensor, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+    def compute_batch_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_label: torch.Tensor, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the loss and additional metrics."""
-        Y_pred_scaled = self.data.scale(Y_pred)
+        Y_pred_scaled = self.opt_problem.scale(Y_pred)
         metrics = {}
         if self.method == "penalty":
             return self._penalty_loss(X_batch, Y_pred_scaled, metrics)
@@ -147,15 +161,15 @@ class Trainer:
         elif self.method == "FSNet":
             return self._fsnet_loss(X_batch, Y_pred_scaled, metrics)
         elif self.method == "S3Net":            
-            return self._s3net_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._s3net_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "semi":            
-            return self._semi_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._semi_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "sup":
-            return self._sup_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._sup_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "sup_partial":
-            return self._sup_partial_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._sup_partial_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "sup_pen":
-            return self._sup_pen_loss(X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics)
+            return self._sup_pen_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "DC3": 
             return self._dc3_loss(X_batch, Y_pred_scaled, metrics)            
         elif self.method == "projection":
@@ -164,12 +178,12 @@ class Trainer:
 
     def _penalty_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the penalty loss."""
-        obj = self.data.obj_fn(Y_pred_scaled)
-        eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        obj = self.opt_problem.obj_fn(Y_pred_scaled)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
     
         loss = self.config_method['obj_weight'] * obj + \
                self.config_method['eq_pen_weight'] * eq_violation + \
@@ -186,12 +200,11 @@ class Trainer:
 
     def _adaptive_penalty_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the adaptive penalty loss."""
-        obj = self.data.obj_fn(Y_pred_scaled)
-        eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
+        obj = self.opt_problem.obj_fn(Y_pred_scaled)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
 
         loss = self.config_method['obj_weight'] * obj + \
                self.adaptive_eq_weight * eq_violation + \
@@ -199,7 +212,7 @@ class Trainer:
 
         with torch.no_grad():
             self.adaptive_eq_weight = torch.clamp(self.adaptive_eq_weight + self.config_method['increasing_rate'] * eq_violation.mean(), min=0.0, max=self.config_method['eq_pen_weight_max'])
-            self.adtaptive_ineq_weight = torch.clamp(self.adaptive_ineq_weight + self.config_method['increasing_rate'] * ineq_violation.mean(), min=0.0, max=self.config_method['ineq_pen_weight_max'])
+            self.adaptive_ineq_weight = torch.clamp(self.adaptive_ineq_weight + self.config_method['increasing_rate'] * ineq_violation.mean(), min=0.0, max=self.config_method['ineq_pen_weight_max'])
             if self.adaptive_eq_weight >= self.config_method['eq_pen_weight_max']:
                 self.adaptive_eq_weight = self.config_method['eq_pen_weight_max']/2
             if self.adaptive_ineq_weight >= self.config_method['ineq_pen_weight_max']:
@@ -216,25 +229,25 @@ class Trainer:
     
     def _fsnet_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the FSNet loss."""
-        pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
         # Feasibility refinement using hybrid L-BFGS
         Y_final = hybrid_lbfgs_solve(
             X_batch,
             Y_pred_scaled,
-            self.data,
+            self.opt_problem,
             val_tol=self.config_method['val_tol'],
             memory=self.config_method['memory_size'],
             max_iter=self.config_method['max_iter'],
             max_diff_iter=self.config_method['max_diff_iter'],
             scale=self.config_method['scale'],
         )
-        obj = self.data.obj_fn(Y_final)
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        obj = self.opt_problem.obj_fn(Y_final)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square().mean()
 
@@ -257,16 +270,16 @@ class Trainer:
         })
         return loss, metrics
 
-    def _sup_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+    def _sup_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
 
         Y_final = Y_pred_scaled
             
-        obj = self.data.obj_fn(Y_final)
+        obj = self.opt_problem.obj_fn(Y_final)
         
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
@@ -275,7 +288,7 @@ class Trainer:
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
 
-        loss = huber(Y_final - Y_true).mean(dim=1)  # [B]
+        loss = huber(Y_final - Y_label).mean(dim=1)  # [B]
 
         metrics.update({
             'obj': obj.mean().item(),
@@ -287,7 +300,7 @@ class Trainer:
         })
         return loss, metrics
 
-    def _sup_partial_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+    def _sup_partial_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         Y_final = Y_pred_scaled
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
@@ -302,7 +315,7 @@ class Trainer:
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
 
-        loss = huber(Y_final - Y_true[:, self.data.partial_vars]).mean(dim=1)  # [B]
+        loss = huber(Y_final - Y_label[:, self.opt_problem.partial_vars]).mean(dim=1)  # [B]
 
         metrics.update({
             'obj': obj.mean().item(),
@@ -314,29 +327,29 @@ class Trainer:
         })
         return loss, metrics
     
-    def _sup_pen_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
-        pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+    def _sup_pen_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+        pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
         Y_final = Y_pred_scaled
             
-        obj = self.data.obj_fn(Y_final)
+        obj = self.opt_problem.obj_fn(Y_final)
         
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        sup_weight = 1.0
+        sup_weight = 100.0 # prev 1.0
 
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
 
-        loss = sup_weight * huber(Y_final - Y_true).mean(dim=1)  # [B]
+        loss = sup_weight * huber(Y_final - Y_label).mean(dim=1)  # [B]
 
         loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation 
         loss_ineq_term = self.config_method['ineq_pen_weight'] * pre_ineq_violation
@@ -356,16 +369,16 @@ class Trainer:
         })
         return loss, metrics
     
-    def _s3net_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_true: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
-        pre_eq_violation = self.data.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        pre_ineq_violation = self.data.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+    def _s3net_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
+        pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
         if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
             if self.en_penalty == False:
                 print("Enabling penalty terms")
             self.en_penalty = True
 
-        if epoch_metrics['epoch'] > 3:#0.2 * self.config['num_epochs']:
+        if epoch_metrics['epoch'] > -1:#0.2 * self.config['num_epochs']:
             if self.en_feasibility == False:
                 print("Enabling feasibility seeking")
             self.en_feasibility = True
@@ -377,7 +390,7 @@ class Trainer:
             Y_final = hybrid_lbfgs_solve(
                 X_batch,
                 Y_pred_scaled,
-                self.data,
+                self.opt_problem,
                 val_tol=self.config_method['val_tol'],
                 memory=self.config_method['memory_size'],
                 max_iter=self.config_method['max_iter'],
@@ -387,27 +400,27 @@ class Trainer:
         else:
             Y_final = Y_pred_scaled
             
-        obj = self.data.obj_fn(Y_final)
+        obj = self.opt_problem.obj_fn(Y_final)
         
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
 
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
-        sup_weight = 1.0
+        sup_weight = 2.0
 
-        if self.en_penalty:
-            sup_weight *= 0.5
+        # if self.en_penalty:
+        #     sup_weight *= 0.5
 
         # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
-        # loss = sup_weight * ((Y_final - Y_true) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
-        loss = sup_weight * huber(Y_final - Y_true).mean(dim=1)  # [B]
-        # loss = sup_weight * ((Y_final - Y_true).abs()).mean(dim=1)  # [B]
+        # loss = sup_weight * ((Y_final - Y_label) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
+        loss = sup_weight * huber(Y_final - Y_label).mean(dim=1)  # [B]
+        # loss = sup_weight * ((Y_final - Y_label).abs()).mean(dim=1)  # [B]
 
         loss_obj_term = self.config_method['obj_weight'] * obj 
         loss_dist_term = self.config_method['dist_weight'] * distance 
@@ -433,7 +446,7 @@ class Trainer:
         })
         return loss, metrics
     
-    def _semi_loss(self, X_batch, Y_pred_scaled, Y_true, metrics, epoch_metrics):
+    def _semi_loss(self, X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics):
         if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
             if self.en_penalty == False:
                 print("Enabling penalty terms")
@@ -451,7 +464,7 @@ class Trainer:
         # --- forward feasibility refinement (DC3 / FSNet-like) ---
         if self.en_feasibility:
             Y_final = hybrid_lbfgs_solve(
-                X_batch, Y_pred_scaled, self.data,
+                X_batch, Y_pred_scaled, self.opt_problem,
                 val_tol=self.config_method['val_tol'],
                 memory=self.config_method['memory_size'],
                 max_iter=self.config_method['max_iter'],
@@ -462,13 +475,13 @@ class Trainer:
             Y_final = Y_pred_scaled
 
         # --- compute objectives and constraints ---
-        obj = self.data.obj_fn(Y_final)
-        eq_viol = self.data.eq_resid(X_batch, Y_final)
-        ineq_viol = self.data.ineq_resid(X_batch, Y_final)
+        obj = self.opt_problem.obj_fn(Y_final)
+        eq_viol = self.opt_problem.eq_resid(X_batch, Y_final)
+        ineq_viol = self.opt_problem.ineq_resid(X_batch, Y_final)
         eq_violation = eq_viol.square().sum(dim=1)
         ineq_violation = ineq_viol.square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
 
         # --- supervised subset ---
@@ -479,7 +492,7 @@ class Trainer:
         # sup_weight = np.exp(-epoch_metrics['epoch'] / (0.3 * self.config['num_epochs']))
         sup_weight = 1.0
         loss_sup = torch.zeros(B, device=X_batch.device)
-        loss_sup[idx_sup] = sup_weight * huber(Y_final[idx_sup] - Y_true[idx_sup]).mean(dim=1)
+        loss_sup[idx_sup] = sup_weight * huber(Y_final[idx_sup] - Y_label[idx_sup]).mean(dim=1)
 
         # --- self-supervised subset ---
         loss_unsup = (
@@ -507,13 +520,13 @@ class Trainer:
             
     def _dc3_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the DC3 loss."""
-        Y_completion = self.data.complete_partial(X_batch, Y_pred_scaled)
-        Y_final = grad_steps(self.data, X_batch, Y_completion, self.config)
-        obj = self.data.obj_fn(Y_final)
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        Y_completion = self.opt_problem.complete_partial(X_batch, Y_pred_scaled)
+        Y_final = grad_steps(self.opt_problem, X_batch, Y_completion, self.config)
+        obj = self.opt_problem.obj_fn(Y_final)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
         
         loss = self.config_method['obj_weight'] * obj + \
                self.config_method['eq_pen_weight'] * eq_violation + \
@@ -531,13 +544,12 @@ class Trainer:
     
     def _projection_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the projection loss."""
-        Y_final = self.data.qpth_projection(X_batch, Y_pred_scaled)
-        obj = self.data.obj_fn(Y_final)
-        eq_violation = self.data.eq_resid(X_batch, Y_final).square().sum(dim=1)
-        ineq_violation = self.data.ineq_resid(X_batch, Y_final).square().sum(dim=1)
-        eq_violation_l1 = self.data.eq_resid(X_batch, Y_final).abs().sum(dim=1)
-        ineq_violation_l1 = self.data.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
-
+        Y_final = self.opt_problem.qpth_projection(X_batch, Y_pred_scaled)
+        obj = self.opt_problem.obj_fn(Y_final)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
         distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square().mean()
 
         loss = self.config_method['obj_weight'] * obj + \
@@ -562,12 +574,12 @@ class Trainer:
         # Update method parameters if needed
         # self._update_epoch_params(epoch)
         
-        for batch_idx, (X_batch, Y_true) in enumerate(train_loader):
+        for batch_idx, (X_batch, Y_label) in enumerate(train_loader):
             X_batch = X_batch.to(DEVICE, non_blocking=True)
-            Y_true = Y_true.to(DEVICE, non_blocking=True)
+            Y_label = Y_label.to(DEVICE, non_blocking=True)
             Y_pred = self.model(X_batch)
             
-            loss, batch_metrics = self.compute_batch_loss(X_batch, Y_pred, Y_true, epoch_metrics)
+            loss, batch_metrics = self.compute_batch_loss(X_batch, Y_pred, Y_label, epoch_metrics)
             
             self.optimizer.zero_grad()
             loss.mean().backward()
@@ -593,11 +605,12 @@ class Trainer:
         if self.method == 'adaptive_penalty' or self.method == 'sup_pen':
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
             self.adaptive_ineq_weight = self.config_method['ineq_pen_weight']
+
            
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
         # FSNet tolerance decay
-        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0):
+        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0) and self.config['checkpoint'] is None:
             self.config_method['val_tol'] = np.clip(
                 self.config_method['val_tol'] / 10, 
                 a_min=1e-9, 
@@ -605,37 +618,43 @@ class Trainer:
             )
         
         # Dropout decay
-        if epoch == 100:
-            for m in self.model.modules():
-                if isinstance(m, nn.Dropout):
-                    m.p = m.p / 2
-        elif epoch == 150:
-            for m in self.model.modules():
-                if isinstance(m, nn.Dropout):
-                    m.p = 0
+        # if epoch == 100:
+        #     for m in self.model.modules():
+        #         if isinstance(m, nn.Dropout):
+        #             m.p = m.p / 2
+        # elif epoch == 150:
+        #     for m in self.model.modules():
+        #         if isinstance(m, nn.Dropout):
+        #             m.p = 0
     
  
     def train(self):
         """Main training loop with detailed results collection."""
-        train_size = len(self.data.train_dataset) 
-        if train_size == 10 or train_size == 50:
-            self.config['batch_size'] = 16
-        if train_size == 200 or train_size == 500:
-            self.config['batch_size'] = 64
-        if train_size == 1000:
-            self.config['batch_size'] = 128
-        if train_size == 5000:
-            self.config['batch_size'] = 256
+
+        # Prepare data loaders
+        batch_size = self.config['batch_size']
+        train_size = len(self.opt_problem.train_dataset)
+        if train_size <= 50:
+            batch_size = 16
+        elif train_size <= 100:
+            batch_size = 32
+        elif train_size <= 500:
+            batch_size = 64
+        elif train_size <= 1000:
+            batch_size = 128
+        elif train_size <= 5000:
+            batch_size = 256
+        self.config['batch_size'] = batch_size
         print(f"Using batch size: {self.config['batch_size']}")
 
         train_loader = DataLoader(
-            self.data.train_dataset, 
+            self.opt_problem.train_dataset, 
             batch_size=self.config['batch_size'], 
             shuffle=True, 
         )
-        
+
         val_loader = DataLoader(
-            self.data.val_dataset, 
+            self.opt_problem.val_dataset, 
             batch_size=self.config['batch_size'], 
             shuffle=False
         )
@@ -645,50 +664,33 @@ class Trainer:
             print(f"Loading model from checkpoint: {self.config['checkpoint']}")
             model_save_content = torch.load(self.config['checkpoint'], map_location=DEVICE)
             model_save_content['config']['dropout'] = self.config['dropout']  # Ensure dropout is set correctly
-            self.model = create_model(self.data, self.method, model_save_content['config'])
+            self.model = create_model(self.opt_problem, self.method, model_save_content['config'])
             self.model.load_state_dict(model_save_content['model_state_dict'])
         else:
-            self.model = create_model(self.data, self.method, self.config)
+            self.model = create_model(self.opt_problem, self.method, self.config)
         
         # Initialize optimizer and scheduler (fix the initialization issue)
         self.optimizer = optim.AdamW(
             self.model.parameters(), 
-            lr=self.config['lr'], 
+            lr=self.config_method['lr'], 
             weight_decay=0.001, 
             fused=True
         )
 
-        if self.config['checkpoint']:
-            # Phase 1: small LR (×0.1) for 10 epochs
-            adapt = optim.lr_scheduler.ConstantLR(self.optimizer, factor=0.05)
+        warmup_steps = len(train_loader)
+        total_steps = len(train_loader) * self.config_method['num_epochs']
+        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
+        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
 
-            # Phase 2: boosted LR (×5) for next 10 epochs
-            boost = optim.lr_scheduler.LambdaLR(
-                self.optimizer, 
-                lr_lambda=lambda epoch: 1.0
-            )
-
-            # Phase 3: normal decay
-            decay = optim.lr_scheduler.StepLR(self.optimizer, step_size=self.config.get('lr_decay_step', 50), gamma=self.config.get('lr_decay', 0.9))
-
-            self.scheduler = optim.lr_scheduler.SequentialLR(
-                self.optimizer,
-                schedulers=[adapt, boost, decay],
-                milestones=[10, 20]
-            )
-        else:
-            self.scheduler = optim.lr_scheduler.StepLR(
-                self.optimizer, 
-                step_size=self.config['lr_decay_step'], 
-                gamma=self.config['lr_decay']
-            )
+        print(f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, num_epochs: {self.config_method['num_epochs']}\n")
 
         # Training history
         train_history = []
         val_history = []
 
         train_start = time.time()
-        for epoch in range(self.config['num_epochs']):
+        for epoch in range(self.config_method['num_epochs']):
             self._update_epoch_params(epoch)
             epoch_start = time.time()
             
@@ -699,12 +701,12 @@ class Trainer:
             epoch_end = time.time()
        
             # Log metrics
-            print(f"Epoch {epoch + 1}/{self.config['num_epochs']}, "
-                  f"Loss: {epoch_metrics['loss']:.4f}, "
-                  f"Obj: {epoch_metrics.get('obj', 0):.4f}, "
+            print(f"Ep {epoch + 1}/{self.config_method['num_epochs']}, "
+                  f"Loss: {epoch_metrics['loss']:.2f}, "
+                  f"Obj: {epoch_metrics.get('obj', 0):.2f}, "
                   f"Eq Viol (l1): {epoch_metrics.get('eq_violation_l1', 0):.6f}, "
                   f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
-                  f"Epoch time: {epoch_end - epoch_start:.2f}s")
+                  f"Ep T: {epoch_end - epoch_start:.2f}s")
 
             # Evaluate on validation set
             if (epoch) % self.config['eval_step'] == 0:
@@ -721,7 +723,7 @@ class Trainer:
         print(f"\nTraining completed in {training_time:.2f} seconds.")
 
         # Enhanced test evaluation with multiple batch sizes and detailed results
-        if hasattr(self.data, 'test_dataset'):
+        if hasattr(self.opt_problem, 'test_dataset'):
             print("\n" + "="*60)
             print("COMPREHENSIVE TEST EVALUATION WITH DETAILED RESULTS")
             print("="*60)
@@ -734,7 +736,7 @@ class Trainer:
             # Run evaluation with all batch sizes and collect detailed results for all
             batch_size_results, all_detailed_results = self.evaluator.evaluate_multiple_batch_sizes(
                 self.model, 
-                self.data.test_dataset, 
+                self.opt_problem.test_dataset, 
                 test_batch_sizes, 
                 "test"
             )
