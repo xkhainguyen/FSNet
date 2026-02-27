@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import time
 import torch
@@ -6,6 +7,8 @@ from torch.utils.data import DataLoader
 from models.neural_networks import EnsembleMLP
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve
+
+log = logging.getLogger(__name__)
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 torch.set_default_dtype(torch.float64)
@@ -337,18 +340,17 @@ class Evaluator:
         return aggregated
     
     def _print_evaluation_summary(self, split_name, metrics):
-        """Print evaluation summary."""
-        print(f"\n{split_name.upper()} EVALUATION RESULTS:")
-        print("=" * 50)
-        print(f"Obj:     {metrics.get('objective', 0):.6e}")
-        print(f"Opt Gap:      {metrics.get('opt_gap_mean', 0):.6e} ± {metrics.get('opt_gap_std', 0):.6e}")
-        print(f"Eq Vio l1:   {metrics.get('eq_violation_l1_mean', 0):.6e} (max: {metrics.get('eq_violation_l1_max', 0):.6e})")
-        print(f"Ineq Vio l1: {metrics.get('ineq_violation_l1_mean', 0):.6e} (max: {metrics.get('ineq_violation_l1_max', 0):.6e})")
-        print(f"Sol Dis:   {metrics.get('solution_distance_mean', 0):.6e} ± {metrics.get('solution_distance_std', 0):.6e}")
-        print(f"Merit:             {metrics.get('merit_mean', 0):.6e} ± {metrics.get('merit_std', 0):.6e}")
-        print(f"Avg Inf Time:  {metrics.get('avg_inference_time', 0):.4f}s")
-
-        print("=" * 50)
+        """Log evaluation summary."""
+        log.info("%s EVALUATION RESULTS:", split_name.upper())
+        log.info("=" * 50)
+        log.info("Obj:         %.6e", metrics.get('objective', 0))
+        log.info("Opt Gap:     %.6e +/- %.6e", metrics.get('opt_gap_mean', 0), metrics.get('opt_gap_std', 0))
+        log.info("Eq Vio l1:   %.6e (max: %.6e)", metrics.get('eq_violation_l1_mean', 0), metrics.get('eq_violation_l1_max', 0))
+        log.info("Ineq Vio l1: %.6e (max: %.6e)", metrics.get('ineq_violation_l1_mean', 0), metrics.get('ineq_violation_l1_max', 0))
+        log.info("Sol Dist:    %.6e +/- %.6e", metrics.get('solution_distance_mean', 0), metrics.get('solution_distance_std', 0))
+        log.info("Merit:       %.6e +/- %.6e", metrics.get('merit_mean', 0), metrics.get('merit_std', 0))
+        log.info("Avg Inf T:   %.4fs", metrics.get('avg_inference_time', 0))
+        log.info("=" * 50)
     
     def evaluate_multiple_batch_sizes(self, model, dataset, batch_sizes, split_name="test"):
         """
@@ -367,7 +369,7 @@ class Evaluator:
         all_detailed_results = {}
         
         for batch_size in batch_sizes:
-            print(f"\nEvaluating with batch size: {batch_size} (with detailed results)")
+            log.info("Evaluating with batch_size=%d", batch_size)
             
             try:
                 # Create data loader with specific batch size
@@ -396,7 +398,7 @@ class Evaluator:
                     
             except RuntimeError as e:
                 if "out of memory" in str(e):
-                    print(f"  Batch size {batch_size} failed due to memory constraints")
+                    log.warning("Batch size %d failed (OOM)", batch_size)
                     results[batch_size] = {
                         'error': 'OOM',
                         'batch_size': batch_size
@@ -411,27 +413,24 @@ class Evaluator:
         return results, all_detailed_results
     
     def _print_batch_size_comparison(self, results, split_name):
-        """Print comparison of results across batch sizes."""
-        print(f"\n{split_name.upper()} BATCH SIZE COMPARISON:")
-        print("=" * 80)
-        print(f"{'Batch Size':<12} {'Objective':<12} {'Opt Gap':<12} {'Eq Viol':<12} {'Ineq Viol':<12} {'Time (s)':<10}")
-        print("-" * 80)
-        
+        """Log comparison of results across batch sizes."""
+        header = f"{'BS':<8} {'Obj':<12} {'OptGap':<12} {'EqViol':<12} {'IneqViol':<12} {'Time':<8}"
+        log.info("%s BATCH SIZE COMPARISON:", split_name.upper())
+        log.info("=" * 70)
+        log.info(header)
+        log.info("-" * 70)
+
         for batch_size, result in results.items():
             if 'error' in result:
-                print(f"{batch_size:<12} {'OOM':<12} {'OOM':<12} {'OOM':<12} {'OOM':<12} {'OOM':<10}")
+                log.info("%-8d OOM", batch_size)
             else:
-                metrics = result['metrics']
-                print(f"{batch_size:<12} "
-                      f"{metrics.get('objective', 0):<12.4e} "
-                      f"{metrics.get('opt_gap_mean', 0):<12.4e} "
-                      f"{metrics.get('eq_violation_l1_mean', 0):<12.4e} "
-                      f"{metrics.get('ineq_violation_l1_mean', 0):<12.4e} "
-                      f"{metrics.get('total_time', 0):<10.2f}")
-        
-        print("=" * 80)
-        
+                m = result['metrics']
+                log.info("%-8d %-12.4e %-12.4e %-12.4e %-12.4e %.2fs",
+                         batch_size,
+                         m.get('objective', 0), m.get('opt_gap_mean', 0),
+                         m.get('eq_violation_l1_mean', 0),
+                         m.get('ineq_violation_l1_mean', 0),
+                         m.get('total_time', 0))
 
-
-
+        log.info("=" * 70)
 

@@ -1,4 +1,8 @@
+import logging
+import os
+import random
 import yaml
+import numpy as np
 import torch
 import time
 import argparse
@@ -10,9 +14,53 @@ try:
 except ImportError:
     WANDB_AVAILABLE = False
 
-# Define available problem types and problems
+log = logging.getLogger(__name__)
+
 PROBLEM_TYPES = ['convex', 'nonconvex', 'nonsmooth_nonconvex']
 PROBLEM_NAMES = ['qp', 'qcqp', 'socp']
+
+
+def set_seed(seed: int) -> torch.Generator:
+    """Set all random seeds for full reproducibility. Returns a torch Generator
+    that should be passed to DataLoaders."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    g = torch.Generator()
+    g.manual_seed(seed)
+    return g
+
+
+def setup_logging(save_dir: str = None, level: int = logging.INFO):
+    """Configure root logger with console + optional file handler.
+
+    Console output is kept minimal (message only).
+    The log file gets the full format with timestamps for later analysis.
+    """
+    root = logging.getLogger()
+    root.setLevel(level)
+
+    if root.handlers:
+        return
+
+    console = logging.StreamHandler()
+    console.setFormatter(logging.Formatter("%(message)s"))
+    root.addHandler(console)
+
+    if save_dir:
+        os.makedirs(save_dir, exist_ok=True)
+        file_fmt = logging.Formatter(
+            "%(asctime)s | %(levelname)-5s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        fh = logging.FileHandler(os.path.join(save_dir, "train.log"))
+        fh.setFormatter(file_fmt)
+        root.addHandler(fh)
 
 def create_parser():
     """Create and configure the argument parser, then load and process the configuration."""
@@ -169,25 +217,24 @@ def create_parser():
     return args, config
 
 def main():
-    # Parse command-line arguments and get processed config
     args, config = create_parser()
-    
-    # Get the problem type and name from config (with defaults)
+
     prob_type = config.get('prob_type', 'Error')
     prob_name = config.get('prob_name', 'Error')
-    
-    print(f"\n======= Running for problem: {prob_type}/{prob_name} =======\n")
 
-    # Set random seeds for reproducibility
-    torch.manual_seed(config['seed'])
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(config['seed'])
+    generator = set_seed(config['seed'])
+    config['_generator'] = generator
 
-    # Initialize Weights & Biases
+    opt_problem, result_save_dir = load_instance(config)
+
+    setup_logging(save_dir=result_save_dir)
+
+    log.info("Problem: %s/%s  size=%s  seed=%d", prob_type, prob_name,
+             config['prob_size'], config['seed'])
+
     if config['wandb']:
         if not WANDB_AVAILABLE:
             raise ImportError("wandb is not installed. Install it with: pip install wandb")
-        # date time string + method
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         run_name = config['wandb_run_name'] or f"{timestamp}_{config['method']}"
         wandb.init(
@@ -195,32 +242,24 @@ def main():
             entity=config['wandb_entity'],
             name=run_name,
             tags=config['wandb_tags'],
-            config=config,
+            config={k: v for k, v in config.items() if k != '_generator'},
         )
 
-    # Load data 
-    print(f"Loading problem instance: {prob_type}/{prob_name} with size {config['prob_size']}")
-    opt_problem, result_save_dir = load_instance(config)
-    
-    # Train and test the model
-    print(f"Training model using {config['method']} method with seed {config['seed']} for {config[config['method']]['num_epochs']} epochs")
-    start_time = time.time()
-    
-    # Instantiate and use the Trainer
+    log.info("Method: %s  epochs: %d  save_dir: %s",
+             config['method'], config[config['method']]['num_epochs'], result_save_dir)
+
     trainer = Trainer(opt_problem=opt_problem, config=config, save_dir=result_save_dir)
     if config['ensemble_size'] > 1:
-        print(f"\nEnsemble training: {config['ensemble_size']} members, mode={config['ensemble_mode']}")
+        log.info("Ensemble training: %d members, mode=%s",
+                 config['ensemble_size'], config['ensemble_mode'])
         trainer.train_ensemble()
     else:
         trainer.train()
-    
-    training_time = time.time() - start_time
-    print(f"Training and testing completed in {training_time:.2f} seconds")
 
     if config['wandb']:
         wandb.finish()
 
-    print("Done!!!")
+    log.info("Done")
 
 if __name__ == "__main__":
     main()

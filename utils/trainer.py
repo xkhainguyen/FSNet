@@ -1,33 +1,47 @@
 import copy
+import logging
 import numpy as np
+import os
 import pickle
+import random
 import time
-import os 
+import yaml as _yaml
 from typing import Dict, Tuple
+
 try:
     import wandb
     WANDB_AVAILABLE = True
 except ImportError:
     WANDB_AVAILABLE = False
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import ipdb
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
 from models.neural_networks import MLP, EnsembleMLP
 from utils.evaluator import Evaluator
 
+log = logging.getLogger(__name__)
+
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 torch.set_default_dtype(torch.float64)
 
 
 def load_instance(config):
-    """Loads problem instance, data, and sets up save directory."""
+    """Loads problem instance, data, and sets up save directory.
 
-    # Load data
+    The run directory is structured as::
+
+        results/{prob_type}/{prob_name}/{prob_str}/{method}_seed{seed}_{timestamp}/
+            config.yaml   # full config snapshot (human-readable)
+            model.pt      # model weights + config (binary)
+            results.pkl   # training / test metrics (binary)
+            train.log     # log file (added by logging setup)
+    """
+
     seed = config['seed']
     method = config['method']
     train_size = config['train_size']
@@ -38,58 +52,41 @@ def load_instance(config):
     prob_name = config['prob_name']
     prob_size = config['prob_size']
 
-    # Map problem types to their corresponding problem classes
-    if prob_type == 'convex':
-        problem_names = {
-            'qp': QPProblem,
-            'qcqp': QCQPProblem,
-            'socp': SOCPProblem,
-        }
-    elif prob_type == 'nonconvex':
-        problem_names = {
-            'qp': nonconvexQPProblem,
-            'qcqp': nonconvexQCQPProblem,
-            'socp': nonconvexSOCPProblem,
-        }
-    elif prob_type == 'nonsmooth_nonconvex':
-        problem_names = {
-            'qp': nonsmooth_nonconvexQPProblem,
-            'qcqp': nonsmooth_nonconvexQCQPProblem,
-            'socp': nonsmooth_nonconvexSOCPProblem,
-        }
-    
-    if prob_name not in problem_names:
-        raise NotImplementedError(f"Problem type '{prob_type}_{prob_name}' not implemented")
-    
-    # Construct filepath using consistent pattern
+    problem_registry = {
+        'convex':              {'qp': QPProblem, 'qcqp': QCQPProblem, 'socp': SOCPProblem},
+        'nonconvex':           {'qp': nonconvexQPProblem, 'qcqp': nonconvexQCQPProblem, 'socp': nonconvexSOCPProblem},
+        'nonsmooth_nonconvex': {'qp': nonsmooth_nonconvexQPProblem, 'qcqp': nonsmooth_nonconvexQCQPProblem, 'socp': nonsmooth_nonconvexSOCPProblem},
+    }
+
+    if prob_type not in problem_registry or prob_name not in problem_registry[prob_type]:
+        raise NotImplementedError(f"Problem '{prob_type}/{prob_name}' not implemented")
+
     seed_data = 2025
     dataset_filepath = os.path.join(
-        'datasets', 
-        prob_type, 
-        prob_name,
+        'datasets', prob_type, prob_name,
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
 
-    if method == "sup" or method == "sup_partial" or method == "sup_pen" or method == "S3Net" or method == "semi":
-        if config['en_subopt'] == 1:
-            dataset_filepath = dataset_filepath + f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
-        if config['en_subopt'] == 2:
+    if method in ("sup", "sup_partial", "sup_pen", "S3Net", "semi"):
+        if en_subopt == 1:
+            dataset_filepath += f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
+        elif en_subopt == 2:
             if config['subopt_ratio'] == 1:
-                dataset_filepath = dataset_filepath + f'_tol1e0_ready'
-            if config['subopt_ratio'] == -10:
-                dataset_filepath = dataset_filepath + f'_tol1em1_ready'
-        if config['en_subopt'] == 3:
-            dataset_filepath = dataset_filepath + f'_maxt{config["subopt_ratio"]}_ready'
+                dataset_filepath += '_tol1e0_ready'
+            elif config['subopt_ratio'] == -10:
+                dataset_filepath += '_tol1em1_ready'
+        elif en_subopt == 3:
+            dataset_filepath += f'_maxt{config["subopt_ratio"]}_ready'
 
-    print("Loading  dataset from:", dataset_filepath, '\n')
+    log.info("Loading dataset: %s", dataset_filepath)
     with open(dataset_filepath, 'rb') as f:
         dataset = pickle.load(f)
 
-    # Create problem instance using the appropriate class
-    opt_problem = problem_names[prob_name](dataset, train_size, val_size, test_size, seed, en_subopt) 
+    opt_problem = problem_registry[prob_type][prob_name](
+        dataset, train_size, val_size, test_size, seed, en_subopt)
 
     opt_problem.device = DEVICE
-    print("Running on: ", DEVICE)
+    log.info("Device: %s", DEVICE)
     for attr in dir(opt_problem):
         var = getattr(opt_problem, attr)
         if torch.is_tensor(var):
@@ -98,27 +95,39 @@ def load_instance(config):
             except AttributeError:
                 pass
 
-    if config['ablation'] == True:
-        result_save_dir = os.path.join('ablation_results', prob_type, prob_name, str(opt_problem), config['network'] + '_' + config['method'], 'dist_'+ str(config['FSNet']['dist_weight']) + '_diff_' + str(config['FSNet']['max_diff_iter']))
+    # ---- build save directory ----
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    if config['ablation']:
+        result_save_dir = os.path.join(
+            'ablation_results', prob_type, prob_name, str(opt_problem),
+            f"{config['network']}_{method}",
+            f"dist_{config['FSNet']['dist_weight']}_diff_{config['FSNet']['max_diff_iter']}")
     else:
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        result_save_dir = os.path.join('results', prob_type, prob_name, str(opt_problem), timestamp + '_' + config['network'] + '_' + config['method'] + '_seed' + str(seed) + '_nepochs' + str(config[config['method']]['num_epochs']) + '_lr' + str(config[config['method']]['lr']) + '_trainsize' + str(train_size))
-
-        if config['en_subopt'] != 0:
-            result_save_dir += f"_subopt_{config['en_subopt']}_{config['subopt_ratio']}"
-
+        run_name = f"{method}_seed{seed}_{timestamp}"
+        if en_subopt != 0:
+            run_name += f"_subopt{en_subopt}_{config['subopt_ratio']}"
         if config['checkpoint']:
-            # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
-            ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
-            ckpt_method = config['checkpoint'].split('/')[4].split('_')[2]
-            ckpt_seed = config['checkpoint'].split('/')[4].split('_')[3]
-            ckpt_number = config['checkpoint'].split('_')[-1].split('.')[0]
-            result_save_dir += f"_finetune_{ckpt_date}_{ckpt_method}_seed{ckpt_seed}_model_{ckpt_number}"
+            ckpt_tag = os.path.basename(os.path.dirname(config['checkpoint']))
+            ckpt_model = os.path.splitext(os.path.basename(config['checkpoint']))[0]
+            run_name += f"_finetune_{ckpt_tag}_{ckpt_model}"
+        result_save_dir = os.path.join(
+            'results', prob_type, prob_name, str(opt_problem), run_name)
 
-    if not os.path.exists(result_save_dir):
-        os.makedirs(result_save_dir)
-    
+    os.makedirs(result_save_dir, exist_ok=True)
+
+    _save_config_yaml(config, result_save_dir)
+
     return opt_problem, result_save_dir
+
+
+def _save_config_yaml(config, save_dir):
+    """Persist a human-readable copy of the full config."""
+    serialisable = {k: v for k, v in config.items()
+                    if not k.startswith('_')}
+    path = os.path.join(save_dir, 'config.yaml')
+    with open(path, 'w') as f:
+        _yaml.dump(serialisable, f, default_flow_style=False, sort_keys=False)
+    log.info("Config saved: %s", path)
 
 
 def create_model(opt_problem, method, config):
@@ -378,20 +387,17 @@ class Trainer:
         pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
         pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
-        if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
-            if self.en_penalty == False:
-                print("Enabling penalty terms")
+        if epoch_metrics['epoch'] > -1:
+            if not self.en_penalty:
+                log.debug("Enabling penalty terms")
             self.en_penalty = True
 
-        if epoch_metrics['epoch'] > -1:#0.2 * self.config['num_epochs']:
-            if self.en_feasibility == False:
-                print("Enabling feasibility seeking")
+        if epoch_metrics['epoch'] > -1:
+            if not self.en_feasibility:
+                log.debug("Enabling feasibility seeking")
             self.en_feasibility = True
-            # self.en_penalty = True
 
         if self.en_feasibility:
-            # Feasibility refinement using hybrid L-BFGS
-            # self.config_method['max_iter'] = 50
             Y_final = hybrid_lbfgs_solve(
                 X_batch,
                 Y_pred_scaled,
@@ -416,23 +422,16 @@ class Trainer:
 
         sup_weight = 2.0
 
-        # if self.en_penalty:
-        #     sup_weight *= 0.5
-
-        # per-sample robust supervised loss
         def huber(x, delta=1e-1):
             ax = x.abs()
             return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
-        # loss = sup_weight * ((Y_final - Y_label) ** 2).sum(dim=1, keepdim=True).squeeze()  # [B, 1]
-        loss = sup_weight * huber(Y_final - Y_label).mean(dim=1)  # [B]
-        # loss = sup_weight * ((Y_final - Y_label).abs()).mean(dim=1)  # [B]
 
-        loss_obj_term = self.config_method['obj_weight'] * obj 
-        loss_dist_term = self.config_method['dist_weight'] * distance 
-        loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation 
+        loss = sup_weight * huber(Y_final - Y_label).mean(dim=1)
+
+        loss_obj_term = self.config_method['obj_weight'] * obj
+        loss_dist_term = self.config_method['dist_weight'] * distance
+        loss_eq_term = self.config_method['eq_pen_weight'] * pre_eq_violation
         loss_ineq_term = self.config_method['ineq_pen_weight'] * pre_ineq_violation
-        
-        # import ipdb; ipdb.set_trace()
 
         if self.en_penalty:
             if pre_eq_violation.mean() >= 1e3 or pre_ineq_violation.mean() >= 1e3:              
@@ -452,14 +451,14 @@ class Trainer:
         return loss, metrics
     
     def _semi_loss(self, X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics):
-        if epoch_metrics['epoch'] > -1:#0.1 * self.config['num_epochs']:
-            if self.en_penalty == False:
-                print("Enabling penalty terms")
+        if epoch_metrics['epoch'] > -1:
+            if not self.en_penalty:
+                log.debug("Enabling penalty terms")
             self.en_penalty = True
 
-        if epoch_metrics['epoch'] > -1:#0.2 * self.config['num_epochs']:
-            if self.en_feasibility == False:
-                print("Enabling feasibility seeking")
+        if epoch_metrics['epoch'] > -1:
+            if not self.en_feasibility:
+                log.debug("Enabling feasibility seeking")
             self.en_feasibility = True
 
         B = X_batch.shape[0]
@@ -574,11 +573,9 @@ class Trainer:
     def train_epoch(self, train_loader: DataLoader, epoch: int) -> Dict[str, float]:
         """Train for one epoch."""
         self.model.train()
-        epoch_metrics = {'obj': 0.0, 'loss': 0.0, 'eq_violation': 0.0, 'ineq_violation': 0.0, 'eq_violation_l1': 0.0, 'ineq_violation_l1': 0.0, 'distance': 0.0, 'epoch': epoch}
-        
-        # Update method parameters if needed
-        # self._update_epoch_params(epoch)
-        
+        epoch_metrics = {'obj': 0.0, 'loss': 0.0, 'eq_violation': 0.0, 'ineq_violation': 0.0,
+                         'eq_violation_l1': 0.0, 'ineq_violation_l1': 0.0, 'distance': 0.0, 'epoch': epoch}
+
         for batch_idx, (X_batch, Y_label) in enumerate(train_loader):
             X_batch = X_batch.to(DEVICE, non_blocking=True)
             Y_label = Y_label.to(DEVICE, non_blocking=True)
@@ -626,73 +623,25 @@ class Trainer:
                 a_max=1e-6
             )
         
-        # Dropout decay
-        # if epoch == 100:
-        #     for m in self.model.modules():
-        #         if isinstance(m, nn.Dropout):
-        #             m.p = m.p / 2
-        # elif epoch == 150:
-        #     for m in self.model.modules():
-        #         if isinstance(m, nn.Dropout):
-        #             m.p = 0
-    
- 
+
     def train(self):
         """Main training loop with detailed results collection."""
 
-        # Prepare data loaders
-        batch_size = self.config['batch_size']
-        train_size = len(self.opt_problem.train_dataset)
-        if train_size <= 50:
-            batch_size = 16
-        elif train_size <= 100:
-            batch_size = 32
-        elif train_size <= 500:
-            batch_size = 64
-        elif train_size <= 1000:
-            batch_size = 128
-        elif train_size <= 5000:
-            batch_size = 256
-        self.config['batch_size'] = batch_size
-        print(f"Using batch size: {self.config['batch_size']}")
+        train_loader, val_loader = self._prepare_data_loaders()
 
-        train_loader = DataLoader(
-            self.opt_problem.train_dataset, 
-            batch_size=self.config['batch_size'], 
-            shuffle=True, 
-        )
-
-        val_loader = DataLoader(
-            self.opt_problem.val_dataset, 
-            batch_size=self.config['batch_size'], 
-            shuffle=False
-        )
-        
-        # Initialize model
         if self.config['checkpoint']:
-            print(f"Loading model from checkpoint: {self.config['checkpoint']}")
-            model_save_content = torch.load(self.config['checkpoint'], map_location=DEVICE)
-            model_save_content['config']['dropout'] = self.config['dropout']  # Ensure dropout is set correctly
-            self.model = create_model(self.opt_problem, self.method, model_save_content['config'])
-            self.model.load_state_dict(model_save_content['model_state_dict'])
+            log.info("Loading checkpoint: %s", self.config['checkpoint'])
+            ckpt = torch.load(self.config['checkpoint'], map_location=DEVICE)
+            ckpt['config']['dropout'] = self.config['dropout']
+            self.model = create_model(self.opt_problem, self.method, ckpt['config'])
+            self.model.load_state_dict(ckpt['model_state_dict'])
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
-        
-        # Initialize optimizer and scheduler (fix the initialization issue)
-        self.optimizer = optim.AdamW(
-            self.model.parameters(), 
-            lr=self.config_method['lr'], 
-            weight_decay=0.001, 
-            fused=True
-        )
 
-        warmup_steps = len(train_loader)
-        total_steps = len(train_loader) * self.config_method['num_epochs']
-        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
-        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
+        self._init_optimizer_and_scheduler(train_loader)
 
-        print(f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, num_epochs: {self.config_method['num_epochs']}\n")
+        log.info("lr=%.2e  weight_decay=1e-3  epochs=%d",
+                 self.config_method['lr'], self.config_method['num_epochs'])
 
         # Training history
         train_history = []
@@ -709,13 +658,12 @@ class Trainer:
             train_history.append({'epoch': epoch, **epoch_metrics})
             epoch_end = time.time()
        
-            # Log metrics
-            print(f"Ep {epoch + 1}/{self.config_method['num_epochs']}, "
-                  f"Loss: {epoch_metrics['loss']:.2f}, "
-                  f"Obj: {epoch_metrics.get('obj', 0):.2f}, "
-                  f"Eq Viol (l1): {epoch_metrics.get('eq_violation_l1', 0):.6f}, "
-                  f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
-                  f"Ep T: {epoch_end - epoch_start:.2f}s")
+            log.info("Ep %d/%d  Loss=%.2f  Obj=%.2f  EqV=%.6f  IneqV=%.6f  T=%.2fs",
+                     epoch + 1, self.config_method['num_epochs'],
+                     epoch_metrics['loss'], epoch_metrics.get('obj', 0),
+                     epoch_metrics.get('eq_violation_l1', 0),
+                     epoch_metrics.get('ineq_violation_l1', 0),
+                     epoch_end - epoch_start)
 
             if self.use_wandb:
                 wandb.log({
@@ -731,9 +679,8 @@ class Trainer:
                     'lr': self.optimizer.param_groups[0]['lr'],
                 })
 
-            # Evaluate on validation set
-            if (epoch) % self.config['eval_step'] == 0:
-                print(f"\nRunning validation at epoch {epoch}...")
+            if epoch % self.config['eval_step'] == 0:
+                log.info("Validation at epoch %d", epoch)
                 val_metrics = self.evaluator.evaluate(self.model, val_loader, f"validation_epoch_{epoch}")
                 val_history.append({**val_metrics, 'epoch': epoch})
 
@@ -752,24 +699,20 @@ class Trainer:
                         'val/inference_time': val_metrics.get('avg_inference_time', 0),
                     })
 
-                # Save all results with detailed information
                 if self.save_dir and self.config['save_intermediate']:
                     self._save_model(epoch)
-        
+
         train_end = time.time()
         training_time = train_end - train_start
-        print(f"\nTraining completed in {training_time:.2f} seconds.")
+        log.info("Training completed in %.2fs", training_time)
 
-        # Enhanced test evaluation with multiple batch sizes and detailed results
         if hasattr(self.opt_problem, 'test_dataset'):
-            print("\n" + "="*60)
-            print("COMPREHENSIVE TEST EVALUATION WITH DETAILED RESULTS")
-            print("="*60)
-            
-            # Get test batch sizes from config or use defaults
+            log.info("=" * 60)
+            log.info("TEST EVALUATION")
+            log.info("=" * 60)
+
             test_batch_sizes = self.config.get('test_batch_sizes', [256, 512])
-            
-            print(f"Testing with batch sizes: {test_batch_sizes}")
+            log.info("Test batch sizes: %s", test_batch_sizes)
             
             # Run evaluation with all batch sizes and collect detailed results for all
             batch_size_results, all_detailed_results = self.evaluator.evaluate_multiple_batch_sizes(
@@ -810,11 +753,9 @@ class Trainer:
                         'test/solution_distance': first_valid.get('solution_distance_mean', 0),
                     })
         else:
-            print("No test dataset available")
+            log.warning("No test dataset available")
             final_test_results = {}
-            all_detailed_results = None
-        
-        # Save all results with detailed information
+
         if self.save_dir:
             self._save_model_and_results(
                 train_history, 
@@ -839,42 +780,38 @@ class Trainer:
             raise ValueError(f"Unknown ensemble mode: {mode}")
 
     def _prepare_data_loaders(self):
-        """Shared data loader setup used by both single and ensemble training."""
+        """Shared data loader setup used by both single and ensemble training.
+
+        Automatically adjusts batch size for small datasets and attaches a
+        seeded Generator to the train loader for reproducible shuffling.
+        """
         batch_size = self.config['batch_size']
         train_size = len(self.opt_problem.train_dataset)
-        if train_size <= 50:
-            batch_size = 16
-        elif train_size <= 100:
-            batch_size = 32
-        elif train_size <= 500:
-            batch_size = 64
-        elif train_size <= 1000:
-            batch_size = 128
-        elif train_size <= 5000:
-            batch_size = 256
+        thresholds = [(50, 16), (100, 32), (500, 64), (1000, 128), (5000, 256)]
+        for limit, bs in thresholds:
+            if train_size <= limit:
+                batch_size = bs
+                break
         self.config['batch_size'] = batch_size
+
+        generator = self.config.get('_generator', None)
 
         train_loader = DataLoader(
             self.opt_problem.train_dataset,
             batch_size=batch_size,
             shuffle=True,
+            generator=generator,
         )
         val_loader = DataLoader(
             self.opt_problem.val_dataset,
             batch_size=batch_size,
             shuffle=False,
         )
+        log.info("Batch size: %d (train_size=%d)", batch_size, train_size)
         return train_loader, val_loader
 
-    def _init_model_and_optimizer(self, train_loader, seed=None):
-        """Create a fresh model, optimizer and scheduler."""
-        if seed is not None:
-            torch.manual_seed(seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed_all(seed)
-
-        self.model = create_model(self.opt_problem, self.method, self.config)
-
+    def _init_optimizer_and_scheduler(self, train_loader):
+        """Create optimizer and LR scheduler for the current self.model."""
         self.optimizer = optim.AdamW(
             self.model.parameters(),
             lr=self.config_method['lr'],
@@ -883,12 +820,30 @@ class Trainer:
         )
         warmup_steps = len(train_loader)
         total_steps = len(train_loader) * self.config_method['num_epochs']
-        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
-        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
+        s1 = optim.lr_scheduler.LinearLR(
+            self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+        s2 = optim.lr_scheduler.CosineAnnealingLR(
+            self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
+        self.scheduler = optim.lr_scheduler.SequentialLR(
+            self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
 
-    def _run_training_loop(self, train_loader, val_loader, num_epochs, start_epoch=0, member_tag=""):
-        """Run the core training loop for *num_epochs* epochs. Returns histories."""
+    def _init_model_and_optimizer(self, train_loader, seed=None):
+        """Create a fresh model, optimizer and scheduler."""
+        if seed is not None:
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+        self.model = create_model(self.opt_problem, self.method, self.config)
+        self._init_optimizer_and_scheduler(train_loader)
+
+    def _run_training_loop(self, train_loader, val_loader, num_epochs,
+                           start_epoch=0, member_tag="", save_tag=None):
+        """Run the core training loop for *num_epochs* epochs.
+
+        Args:
+            save_tag: When set and ``save_intermediate`` is True, intermediate
+                checkpoints are written as ``{save_tag}_epoch_{epoch}.pt``.
+        """
         train_history, val_history = [], []
 
         for epoch in range(start_epoch, start_epoch + num_epochs):
@@ -900,12 +855,12 @@ class Trainer:
             train_history.append({'epoch': epoch, **epoch_metrics})
             epoch_end = time.time()
 
-            print(f"{member_tag}Ep {epoch + 1}/{start_epoch + num_epochs}, "
-                  f"Loss: {epoch_metrics['loss']:.2f}, "
-                  f"Obj: {epoch_metrics.get('obj', 0):.2f}, "
-                  f"Eq Viol (l1): {epoch_metrics.get('eq_violation_l1', 0):.6f}, "
-                  f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
-                  f"Ep T: {epoch_end - epoch_start:.2f}s")
+            log.info("%sEp %d/%d  Loss=%.2f  Obj=%.2f  EqV=%.6f  IneqV=%.6f  T=%.2fs",
+                     member_tag, epoch + 1, start_epoch + num_epochs,
+                     epoch_metrics['loss'], epoch_metrics.get('obj', 0),
+                     epoch_metrics.get('eq_violation_l1', 0),
+                     epoch_metrics.get('ineq_violation_l1', 0),
+                     epoch_end - epoch_start)
 
             if self.use_wandb:
                 wandb.log({
@@ -919,7 +874,7 @@ class Trainer:
                 })
 
             if epoch % self.config['eval_step'] == 0:
-                print(f"\n{member_tag}Running validation at epoch {epoch}...")
+                log.info("%sValidation at epoch %d", member_tag, epoch)
                 val_metrics = self.evaluator.evaluate(self.model, val_loader, f"{member_tag}val_epoch_{epoch}")
                 val_history.append({**val_metrics, 'epoch': epoch})
 
@@ -933,6 +888,9 @@ class Trainer:
                         f'{member_tag}val/merit_mean': val_metrics.get('merit_mean', 0),
                     })
 
+                if self.save_dir and self.config['save_intermediate'] and save_tag:
+                    self._save_member_checkpoint(save_tag, epoch)
+
         return train_history, val_history
 
     def _evaluate_and_save_ensemble(self, ensemble_model, train_history, val_history, training_time):
@@ -941,9 +899,9 @@ class Trainer:
         final_test_results = {}
 
         if hasattr(self.opt_problem, 'test_dataset'):
-            print("\n" + "=" * 60)
-            print("ENSEMBLE TEST EVALUATION")
-            print("=" * 60)
+            log.info("=" * 60)
+            log.info("ENSEMBLE TEST EVALUATION")
+            log.info("=" * 60)
 
             test_batch_sizes = self.config.get('test_batch_sizes', [256, 512])
             batch_size_results, all_detailed_results = self.evaluator.evaluate_multiple_batch_sizes(
@@ -988,9 +946,9 @@ class Trainer:
         train_start = time.time()
         for i in range(M):
             member_seed = base_seed + i
-            print(f"\n{'=' * 60}")
-            print(f"VANILLA ENSEMBLE: Training member {i + 1}/{M}  (seed={member_seed})")
-            print(f"{'=' * 60}")
+            log.info("=" * 60)
+            log.info("VANILLA ENSEMBLE: member %d/%d  seed=%d", i + 1, M, member_seed)
+            log.info("=" * 60)
 
             self._init_model_and_optimizer(train_loader, seed=member_seed)
             tag = f"[m{i}] "
@@ -998,13 +956,17 @@ class Trainer:
                 train_loader, val_loader,
                 num_epochs=self.config_method['num_epochs'],
                 member_tag=tag,
+                save_tag=f"member_{i}",
             )
             all_train_history.extend(hist_t)
             all_val_history.extend(hist_v)
             member_models.append(copy.deepcopy(self.model))
 
+            if self.save_dir:
+                self._save_member_checkpoint(f"member_{i}", epoch="final")
+
         training_time = time.time() - train_start
-        print(f"\nVanilla ensemble training completed in {training_time:.2f}s  ({M} members)")
+        log.info("Vanilla ensemble completed in %.2fs (%d members)", training_time, M)
 
         ensemble_model = EnsembleMLP(member_models).to(DEVICE)
         return self._evaluate_and_save_ensemble(ensemble_model, all_train_history, all_val_history, training_time)
@@ -1021,13 +983,12 @@ class Trainer:
 
         train_loader, val_loader = self._prepare_data_loaders()
 
-        print(f"\nFGE plan: {pretrain_epochs} pre-train epochs  +  {fge_epochs} snapshot epochs  "
-              f"({M} snapshots, cycle_length={cycle_length})")
+        log.info("FGE plan: %d pre-train + %d snapshot epochs (%d snapshots, cycle=%d)",
+                 pretrain_epochs, fge_epochs, M, cycle_length)
 
-        # Phase 1: pre-training with normal schedule
-        print(f"\n{'=' * 60}")
-        print("FGE PHASE 1: Pre-training")
-        print(f"{'=' * 60}")
+        log.info("=" * 60)
+        log.info("FGE PHASE 1: Pre-training")
+        log.info("=" * 60)
 
         self._init_model_and_optimizer(train_loader, seed=self.config['seed'])
 
@@ -1036,12 +997,12 @@ class Trainer:
             train_loader, val_loader,
             num_epochs=pretrain_epochs,
             member_tag="[pretrain] ",
+            save_tag="pretrain",
         )
 
-        # Phase 2: cyclical LR snapshot collection
-        print(f"\n{'=' * 60}")
-        print("FGE PHASE 2: Cyclical LR snapshot collection")
-        print(f"{'=' * 60}")
+        log.info("=" * 60)
+        log.info("FGE PHASE 2: Cyclical LR snapshot collection")
+        log.info("=" * 60)
 
         lr_max = self.config.get('fge_lr_max') or self.config_method['lr']
         lr_min = 1e-6
@@ -1064,104 +1025,171 @@ class Trainer:
                 num_epochs=cycle_length,
                 start_epoch=pretrain_epochs + snap_idx * cycle_length,
                 member_tag=tag,
+                save_tag=f"member_{snap_idx}",
             )
             hist_t.extend(h_t)
             hist_v.extend(h_v)
 
             snapshots.append(copy.deepcopy(self.model))
-            print(f"  -> Snapshot {snap_idx + 1}/{M} collected at epoch "
-                  f"{pretrain_epochs + (snap_idx + 1) * cycle_length}")
+            snap_epoch = pretrain_epochs + (snap_idx + 1) * cycle_length
+            log.info("Snapshot %d/%d collected at epoch %d", snap_idx + 1, M, snap_epoch)
+
+            if self.save_dir:
+                self._save_member_checkpoint(f"member_{snap_idx}", epoch="final")
 
         training_time = time.time() - train_start
-        print(f"\nFGE training completed in {training_time:.2f}s  ({M} snapshots)")
+        log.info("FGE completed in %.2fs (%d snapshots)", training_time, M)
 
         ensemble_model = EnsembleMLP(snapshots).to(DEVICE)
         return self._evaluate_and_save_ensemble(ensemble_model, hist_t, hist_v, training_time)
 
-    def _save_model(self, epoch: int = None):
-        """Saves the model in a .pt file."""
-        if not self.save_dir:
-            print("Save directory not specified. Skipping saving.")
-            return
-        
-        os.makedirs(self.save_dir, exist_ok=True) # Ensure save directory exists
+    def _serialisable_config(self):
+        return {k: v for k, v in self.config.items() if not k.startswith('_')}
 
-        # --- 1. Save Model File (.pt) ---
-        model_save_content = {
-            'model_state_dict': self.model.state_dict(),
-            'model_architecture_str': str(self.model), 
-            'config': self.config, # Include config for easier model reloading
+    def _build_model_payload(self, model=None):
+        """Build the dict persisted as a .pt checkpoint."""
+        model = model or self.model
+        return {
+            'model_state_dict': model.state_dict(),
+            'model_architecture_str': str(model),
+            'config': self._serialisable_config(),
         }
-        model_filename = f"model_{epoch}.pt"
-        model_filepath = os.path.join(self.save_dir, model_filename)
+
+    def _save_model(self, epoch: int = None):
+        """Save an intermediate checkpoint (model weights only)."""
+        if not self.save_dir:
+            log.warning("No save_dir set, skipping checkpoint.")
+            return
+        os.makedirs(self.save_dir, exist_ok=True)
+        filename = f"model_{epoch}.pt" if epoch is not None else "model.pt"
+        path = os.path.join(self.save_dir, filename)
         try:
-            torch.save(model_save_content, model_filepath)
-            print(f"✓ Model saved: {model_filepath}")
+            torch.save(self._build_model_payload(), path)
+            log.info("Model saved: %s", path)
         except Exception as e:
-            print(f"✗ Error saving model: {e}")
+            log.error("Error saving model: %s", e)
+
+    def _save_member_checkpoint(self, tag: str, epoch):
+        """Save an intermediate checkpoint for a single ensemble member.
+
+        Written to ``{save_dir}/members/{tag}_epoch_{epoch}.pt``.
+        """
+        if not self.save_dir:
+            return
+        members_dir = os.path.join(self.save_dir, "members")
+        os.makedirs(members_dir, exist_ok=True)
+        path = os.path.join(members_dir, f"{tag}_epoch_{epoch}.pt")
+        try:
+            torch.save(self._build_model_payload(), path)
+            log.info("Member checkpoint saved: %s", path)
+        except Exception as e:
+            log.error("Error saving member checkpoint: %s", e)
+
+    def _save_ensemble_members(self, ensemble_model):
+        """Save each member of an EnsembleMLP as a separate .pt file.
+
+        Layout::
+
+            {save_dir}/members/
+                member_0.pt
+                member_1.pt
+                ...
+        """
+        if not self.save_dir:
+            return
+        members_dir = os.path.join(self.save_dir, "members")
+        os.makedirs(members_dir, exist_ok=True)
+        for i, member in enumerate(ensemble_model.members):
+            path = os.path.join(members_dir, f"member_{i}.pt")
+            try:
+                torch.save(self._build_model_payload(model=member), path)
+                log.info("Member %d saved: %s", i, path)
+            except Exception as e:
+                log.error("Error saving member %d: %s", i, e)
 
     def _save_model_and_results(self, train_history, val_history,
                                 test_results_data, training_time):
-        """Saves the model in a .pt file and other results in a .pkl file."""
+        """Save model.pt, test_summary.yaml, and results.pkl.
+
+        Layout::
+
+            model.pt            – model weights
+            test_summary.yaml   – human-readable aggregated test metrics
+            results.pkl         – detailed per-sample test tensors only
+            members/            – (ensembles) individual member checkpoints
+        """
         if not self.save_dir:
-            print("Save directory not specified. Skipping saving.")
+            log.warning("No save_dir set, skipping save.")
             return
-        
-        os.makedirs(self.save_dir, exist_ok=True) # Ensure save directory exists
-        print(f"\nSaving model and results to: {self.save_dir}")
+        os.makedirs(self.save_dir, exist_ok=True)
+        log.info("Saving to: %s", self.save_dir)
 
-        # --- 1. Save Model File (.pt) ---
-        model_save_content = {
-            'model_state_dict': self.model.state_dict(),
-            'model_architecture_str': str(self.model), 
-            'config': self.config, # Include config for easier model reloading
-        }
-        model_filename = f"model.pt"
-        model_filepath = os.path.join(self.save_dir, model_filename)
+        # ---- model.pt ----
+        model_path = os.path.join(self.save_dir, "model.pt")
         try:
-            torch.save(model_save_content, model_filepath)
-            print(f"✓ Model saved: {model_filepath}")
+            torch.save(self._build_model_payload(), model_path)
+            log.info("Model saved: %s", model_path)
         except Exception as e:
-            print(f"✗ Error saving model: {e}")
+            log.error("Error saving model: %s", e)
 
+        if isinstance(self.model, EnsembleMLP):
+            self._save_ensemble_members(self.model)
 
-        # --- 2. Save Results File (.pkl) ---
-        results_save_content = {
-            'seed': self.config.get('seed', 'N_A'),
+        # ---- test_summary.yaml (human-readable) ----
+        summary = {
+            'seed': self.config.get('seed', 'N/A'),
             'method': self.method,
-            'config': self.config, # Full config for reference
-            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-            'training_time_seconds': training_time,
+            'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+            'training_time_seconds': round(training_time, 2),
+            'pytorch_version': torch.__version__,
+            'device': str(DEVICE),
+        }
+        if test_results_data and 'batch_size_comparison' in test_results_data:
+            bs_metrics = {}
+            for bs, result in test_results_data['batch_size_comparison'].items():
+                if 'error' in result:
+                    bs_metrics[int(bs)] = {'error': result['error']}
+                else:
+                    bs_metrics[int(bs)] = {
+                        k: round(float(v), 8)
+                        for k, v in result['metrics'].items()
+                    }
+            summary['test'] = bs_metrics
+        summary_path = os.path.join(self.save_dir, "test_summary.yaml")
+        try:
+            with open(summary_path, 'w') as f:
+                _yaml.dump(summary, f, default_flow_style=False, sort_keys=False)
+            log.info("Test summary saved: %s", summary_path)
+        except Exception as e:
+            log.error("Error saving test summary: %s", e)
+
+        # ---- results.pkl (detailed per-sample tensors) ----
+        detailed = {
             'train_history': train_history,
             'val_history': val_history,
-            'test_results': test_results_data, # This contains summary and detailed results
-            'pytorch_version': torch.__version__,
-            'device_used': str(DEVICE)
         }
-
-        results_filename = f"results.pkl"
-        results_filepath = os.path.join(self.save_dir, results_filename)
+        if test_results_data and 'detailed_results_all_batch_sizes' in test_results_data:
+            detailed['test_detailed'] = test_results_data['detailed_results_all_batch_sizes']
+        results_path = os.path.join(self.save_dir, "results.pkl")
         try:
-            with open(results_filepath, 'wb') as f:
-                pickle.dump(results_save_content, f)
-            print(f"✓ Detailed results saved: {results_filepath}")
+            with open(results_path, 'wb') as f:
+                pickle.dump(detailed, f)
+            log.info("Detailed results saved: %s", results_path)
         except Exception as e:
-            print(f"✗ Error saving results: {e}")
+            log.error("Error saving detailed results: %s", e)
 
-        print(f"\nFiles saved (or attempted):")
-        print(f"  - {model_filename} (model weights and architecture)")
-        print(f"  - {results_filename} (training history, metrics, detailed test results)")
-
+        # ---- W&B artifact ----
         if self.use_wandb:
             try:
                 artifact = wandb.Artifact(
-                    f"model-{self.config.get('prob_type','')}-{self.config.get('prob_name','')}-{self.method}",
+                    f"model-{self.config.get('prob_type','')}-"
+                    f"{self.config.get('prob_name','')}-{self.method}",
                     type='model',
                     metadata={'training_time': training_time},
                 )
-                artifact.add_file(model_filepath)
+                artifact.add_file(model_path)
                 wandb.log_artifact(artifact)
                 wandb.summary['training_time_seconds'] = training_time
-                print(f"  - W&B artifact logged")
+                log.info("W&B artifact logged")
             except Exception as e:
-                print(f"  - W&B artifact logging failed: {e}")
+                log.warning("W&B artifact logging failed: %s", e)
