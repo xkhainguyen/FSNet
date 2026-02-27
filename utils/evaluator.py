@@ -3,6 +3,7 @@ import time
 import torch
 from torch.utils.data import DataLoader
 
+from models.neural_networks import EnsembleMLP
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve
 
@@ -27,14 +28,7 @@ class Evaluator:
         time_start = time.time()
         X_batch = input_batch.to(DEVICE)
 
-        # Forward pass
-        Y_pred = model(X_batch)
-        Y_pred_scaled = self.opt_problem.scale(Y_pred)
-
-        # Method-specific post-processing
-        # NOTE: your _post_process_predictions is @torch.enable_grad()
-        # but that's fine: it will run with grad enabled even inside no_grad.
-        Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+        Y_final = self._get_final_prediction(model, X_batch)
         time_end = time.time()
 
         # Per-sample objective / violations
@@ -64,24 +58,16 @@ class Evaluator:
         for X_batch, _Y_true in data_loader:
             X_batch = X_batch.to(DEVICE, non_blocking=True)
 
-            # Forward pass
+            # Pre-post-process predictions for penalty terms
             Y_pred = model(X_batch)
             Y_pred_scaled = self.opt_problem.scale(Y_pred)
 
-            # Constraint residuals on pre-postprocess prediction
-            eq_resid = self.opt_problem.eq_resid(X_batch, Y_pred_scaled)        # [B, meq]
-            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled)    # [B, mineq]
+            eq_l2 = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+            ineq_l2 = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
 
-            eq_l2 = eq_resid.square().sum(dim=1)                         # [B]
-            ineq_l2 = ineq_resid.square().sum(dim=1)                     # [B]
+            Y_final = self._get_final_prediction(model, X_batch)
 
-            # Method-specific post-processing (may enable grad internally)
-            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
-
-            # Objective on post-processed solution
-            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
-
-            # Optional distance regularizer
+            obj_pred = self.opt_problem.obj_fn(Y_final)
             distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square().mean()
 
             loss = (
@@ -106,28 +92,17 @@ class Evaluator:
         for X_batch, _Y_true in data_loader:
             X_batch = X_batch.to(DEVICE, non_blocking=True)
 
-            # Forward pass
-            Y_pred = model(X_batch)
-            Y_pred_scaled = self.opt_problem.scale(Y_pred)
+            Y_final = self._get_final_prediction(model, X_batch)
 
-            # Method-specific post-processing (may enable grad internally)
-            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+            eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)
+            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)
 
-            # Constraint residuals on pre-postprocess prediction
-            eq_resid = self.opt_problem.eq_resid(X_batch, Y_final)        # [B, meq]
-            ineq_resid = self.opt_problem.ineq_resid(X_batch, Y_final)    # [B, mineq]
+            eq_l1 = eq_resid.abs().sum(dim=1)
+            ineq_l1 = ineq_resid.abs().sum(dim=1)
 
-            eq_l1 = eq_resid.abs().sum(dim=1)                         # [B]
-            ineq_l1 = ineq_resid.abs().sum(dim=1)                     # [B]
+            obj_pred = self.opt_problem.obj_fn(Y_final)
 
-            # Objective on post-processed solution
-            obj_pred = self.opt_problem.obj_fn(Y_final)                         # [B]
-
-            merit = (
-                1.0 * obj_pred
-                + 1e5 * eq_l1
-                + 1e5 * ineq_l1
-            )
+            merit = 1.0 * obj_pred + 1e5 * eq_l1 + 1e5 * ineq_l1
 
             total_merit += merit.sum().item()
             total_samples += X_batch.size(0)
@@ -160,12 +135,7 @@ class Evaluator:
             
             start_time = time.time()
             
-            # Forward pass
-            Y_pred = model(X_batch)
-            Y_pred_scaled = self.opt_problem.scale(Y_pred)
-            
-            # Method-specific post-processing
-            Y_final = self._post_process_predictions(X_batch, Y_pred_scaled)
+            Y_final = self._get_final_prediction(model, X_batch)
             
             batch_time = time.time() - start_time
             total_time += batch_time
@@ -179,8 +149,6 @@ class Evaluator:
             if return_detailed:
                 detailed_results.append({
                     'X': X_batch.cpu(),
-                    'Y_pred': Y_pred.cpu(),
-                    'Y_pred_scaled': Y_pred_scaled.cpu(),
                     'Y_final': Y_final.cpu(),
                     'Y_true': Y_true.cpu(),
                     'metrics': batch_metrics
@@ -216,7 +184,68 @@ class Evaluator:
             return self.opt_problem.qpth_projection(X_batch, Y_pred_scaled)
         else:
             return Y_pred_scaled
-    
+
+    def _get_final_prediction(self, model, X_batch):
+        """
+        Get final prediction, handling ensemble post-processing modes.
+
+        "pre"  = ens(NNs) + Opt : average raw NN outputs, post-process once.
+        "post" = ens(NNs + Opts): post-process each member, then aggregate.
+
+        Falls back to the standard single-model path for non-ensemble models
+        or when ensemble_post == "pre".
+        """
+        ensemble_post = self.config.get('ensemble_post', 'pre')
+
+        if isinstance(model, EnsembleMLP) and ensemble_post == 'post':
+            all_preds = model.forward_all(X_batch)  # (M, B, out)
+            finals = []
+            for i in range(all_preds.shape[0]):
+                y_scaled = self.opt_problem.scale(all_preds[i])
+                y_final = self._post_process_predictions(X_batch, y_scaled)
+                finals.append(y_final)
+            return self._aggregate_predictions(finals, X_batch)
+
+        Y_pred = model(X_batch)
+        Y_pred_scaled = self.opt_problem.scale(Y_pred)
+        return self._post_process_predictions(X_batch, Y_pred_scaled)
+
+    def _aggregate_predictions(self, finals, X_batch):
+        """
+        Aggregate post-processed predictions from ensemble members.
+
+        Strategies:
+            mean         – element-wise mean
+            median       – element-wise median
+            greedy_obj   – per-sample pick the member with the lowest objective
+            greedy_merit – per-sample pick the member with the lowest
+                           merit = obj + 1e5*(eq_viol + ineq_viol)
+        """
+        agg = self.config.get('ensemble_agg', 'mean')
+        stacked = torch.stack(finals, dim=0)  # (M, B, out)
+
+        if agg == 'mean':
+            return stacked.mean(dim=0)
+
+        if agg == 'median':
+            return stacked.median(dim=0).values
+
+        if agg in ('greedy_obj', 'greedy_merit'):
+            scores = []
+            for f in finals:
+                obj = self.opt_problem.obj_fn(f)  # (B,)
+                if agg == 'greedy_merit':
+                    eq_l1 = self.opt_problem.eq_resid(X_batch, f).abs().sum(dim=1)
+                    ineq_l1 = self.opt_problem.ineq_resid(X_batch, f).abs().sum(dim=1)
+                    obj = obj + 1e5 * (eq_l1 + ineq_l1)
+                scores.append(obj)
+            scores = torch.stack(scores, dim=0)  # (M, B)
+            best_idx = scores.argmin(dim=0)       # (B,)
+            B = stacked.shape[1]
+            return stacked[best_idx, torch.arange(B, device=stacked.device)]
+
+        raise ValueError(f"Unknown ensemble aggregation strategy: {agg}")
+
     def _compute_merit(self, obj, eq_vio, ineq_vio):
         """Compute merit function value."""
         obj_weight = 1

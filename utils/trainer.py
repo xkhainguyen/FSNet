@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import pickle
 import time
@@ -16,7 +17,7 @@ import ipdb
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
-from models.neural_networks import MLP
+from models.neural_networks import MLP, EnsembleMLP
 from utils.evaluator import Evaluator
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -823,7 +824,260 @@ class Trainer:
             )
         
         return self.model
-    
+
+    # ------------------------------------------------------------------
+    # Ensemble training
+    # ------------------------------------------------------------------
+    def train_ensemble(self):
+        """Train a deep ensemble with either vanilla or FGE mode."""
+        mode = self.config.get('ensemble_mode', 'vanilla')
+        if mode == 'vanilla':
+            return self._train_vanilla_ensemble()
+        elif mode == 'fge':
+            return self._train_fge_ensemble()
+        else:
+            raise ValueError(f"Unknown ensemble mode: {mode}")
+
+    def _prepare_data_loaders(self):
+        """Shared data loader setup used by both single and ensemble training."""
+        batch_size = self.config['batch_size']
+        train_size = len(self.opt_problem.train_dataset)
+        if train_size <= 50:
+            batch_size = 16
+        elif train_size <= 100:
+            batch_size = 32
+        elif train_size <= 500:
+            batch_size = 64
+        elif train_size <= 1000:
+            batch_size = 128
+        elif train_size <= 5000:
+            batch_size = 256
+        self.config['batch_size'] = batch_size
+
+        train_loader = DataLoader(
+            self.opt_problem.train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+        )
+        val_loader = DataLoader(
+            self.opt_problem.val_dataset,
+            batch_size=batch_size,
+            shuffle=False,
+        )
+        return train_loader, val_loader
+
+    def _init_model_and_optimizer(self, train_loader, seed=None):
+        """Create a fresh model, optimizer and scheduler."""
+        if seed is not None:
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+
+        self.model = create_model(self.opt_problem, self.method, self.config)
+
+        self.optimizer = optim.AdamW(
+            self.model.parameters(),
+            lr=self.config_method['lr'],
+            weight_decay=0.001,
+            fused=True,
+        )
+        warmup_steps = len(train_loader)
+        total_steps = len(train_loader) * self.config_method['num_epochs']
+        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
+        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
+
+    def _run_training_loop(self, train_loader, val_loader, num_epochs, start_epoch=0, member_tag=""):
+        """Run the core training loop for *num_epochs* epochs. Returns histories."""
+        train_history, val_history = [], []
+
+        for epoch in range(start_epoch, start_epoch + num_epochs):
+            self._update_epoch_params(epoch)
+            epoch_start = time.time()
+
+            self.model.train()
+            epoch_metrics = self.train_epoch(train_loader, epoch)
+            train_history.append({'epoch': epoch, **epoch_metrics})
+            epoch_end = time.time()
+
+            print(f"{member_tag}Ep {epoch + 1}/{start_epoch + num_epochs}, "
+                  f"Loss: {epoch_metrics['loss']:.2f}, "
+                  f"Obj: {epoch_metrics.get('obj', 0):.2f}, "
+                  f"Eq Viol (l1): {epoch_metrics.get('eq_violation_l1', 0):.6f}, "
+                  f"Ineq Viol (l1): {epoch_metrics.get('ineq_violation_l1', 0):.6f}, "
+                  f"Ep T: {epoch_end - epoch_start:.2f}s")
+
+            if self.use_wandb:
+                wandb.log({
+                    'epoch': epoch,
+                    f'{member_tag}train/loss': epoch_metrics['loss'],
+                    f'{member_tag}train/objective': epoch_metrics.get('obj', 0),
+                    f'{member_tag}train/eq_violation_l1': epoch_metrics.get('eq_violation_l1', 0),
+                    f'{member_tag}train/ineq_violation_l1': epoch_metrics.get('ineq_violation_l1', 0),
+                    f'{member_tag}train/distance': epoch_metrics.get('distance', 0),
+                    'lr': self.optimizer.param_groups[0]['lr'],
+                })
+
+            if epoch % self.config['eval_step'] == 0:
+                print(f"\n{member_tag}Running validation at epoch {epoch}...")
+                val_metrics = self.evaluator.evaluate(self.model, val_loader, f"{member_tag}val_epoch_{epoch}")
+                val_history.append({**val_metrics, 'epoch': epoch})
+
+                if self.use_wandb:
+                    wandb.log({
+                        'epoch': epoch,
+                        f'{member_tag}val/objective': val_metrics.get('objective', 0),
+                        f'{member_tag}val/opt_gap_mean': val_metrics.get('opt_gap_mean', 0),
+                        f'{member_tag}val/eq_violation_l1': val_metrics.get('eq_violation_l1_mean', 0),
+                        f'{member_tag}val/ineq_violation_l1': val_metrics.get('ineq_violation_l1_mean', 0),
+                        f'{member_tag}val/merit_mean': val_metrics.get('merit_mean', 0),
+                    })
+
+        return train_history, val_history
+
+    def _evaluate_and_save_ensemble(self, ensemble_model, train_history, val_history, training_time):
+        """Run test evaluation on the ensemble and save results."""
+        self.model = ensemble_model
+        final_test_results = {}
+
+        if hasattr(self.opt_problem, 'test_dataset'):
+            print("\n" + "=" * 60)
+            print("ENSEMBLE TEST EVALUATION")
+            print("=" * 60)
+
+            test_batch_sizes = self.config.get('test_batch_sizes', [256, 512])
+            batch_size_results, all_detailed_results = self.evaluator.evaluate_multiple_batch_sizes(
+                ensemble_model,
+                self.opt_problem.test_dataset,
+                test_batch_sizes,
+                "ensemble_test",
+            )
+
+            final_test_results = {
+                'batch_size_comparison': batch_size_results,
+                'detailed_results_all_batch_sizes': all_detailed_results,
+            }
+
+            if self.use_wandb:
+                first_valid = next((r['metrics'] for r in batch_size_results.values() if 'error' not in r), None)
+                if first_valid:
+                    wandb.summary.update({
+                        'ensemble_test/objective': first_valid.get('objective', 0),
+                        'ensemble_test/opt_gap_mean': first_valid.get('opt_gap_mean', 0),
+                        'ensemble_test/eq_violation_l1': first_valid.get('eq_violation_l1_mean', 0),
+                        'ensemble_test/ineq_violation_l1': first_valid.get('ineq_violation_l1_mean', 0),
+                        'ensemble_test/merit_mean': first_valid.get('merit_mean', 0),
+                        'ensemble_test/solution_distance': first_valid.get('solution_distance_mean', 0),
+                    })
+
+        if self.save_dir:
+            self._save_model_and_results(train_history, val_history, final_test_results, training_time)
+
+        return ensemble_model
+
+    # ---- Vanilla deep ensemble ----
+    def _train_vanilla_ensemble(self):
+        """Train M models from independent random initializations."""
+        M = self.config['ensemble_size']
+        base_seed = self.config['seed']
+        train_loader, val_loader = self._prepare_data_loaders()
+
+        all_train_history, all_val_history = [], []
+        member_models = []
+
+        train_start = time.time()
+        for i in range(M):
+            member_seed = base_seed + i
+            print(f"\n{'=' * 60}")
+            print(f"VANILLA ENSEMBLE: Training member {i + 1}/{M}  (seed={member_seed})")
+            print(f"{'=' * 60}")
+
+            self._init_model_and_optimizer(train_loader, seed=member_seed)
+            tag = f"[m{i}] "
+            hist_t, hist_v = self._run_training_loop(
+                train_loader, val_loader,
+                num_epochs=self.config_method['num_epochs'],
+                member_tag=tag,
+            )
+            all_train_history.extend(hist_t)
+            all_val_history.extend(hist_v)
+            member_models.append(copy.deepcopy(self.model))
+
+        training_time = time.time() - train_start
+        print(f"\nVanilla ensemble training completed in {training_time:.2f}s  ({M} members)")
+
+        ensemble_model = EnsembleMLP(member_models).to(DEVICE)
+        return self._evaluate_and_save_ensemble(ensemble_model, all_train_history, all_val_history, training_time)
+
+    # ---- Fast Geometric Ensembling ----
+    def _train_fge_ensemble(self):
+        """Pre-train one model, then collect snapshots with cyclical LR."""
+        M = self.config['ensemble_size']
+        pretrain_ratio = self.config.get('fge_pretrain_ratio', 0.8)
+        total_epochs = self.config_method['num_epochs']
+        pretrain_epochs = int(total_epochs * pretrain_ratio)
+        fge_epochs = total_epochs - pretrain_epochs
+        cycle_length = max(1, fge_epochs // M)
+
+        train_loader, val_loader = self._prepare_data_loaders()
+
+        print(f"\nFGE plan: {pretrain_epochs} pre-train epochs  +  {fge_epochs} snapshot epochs  "
+              f"({M} snapshots, cycle_length={cycle_length})")
+
+        # Phase 1: pre-training with normal schedule
+        print(f"\n{'=' * 60}")
+        print("FGE PHASE 1: Pre-training")
+        print(f"{'=' * 60}")
+
+        self._init_model_and_optimizer(train_loader, seed=self.config['seed'])
+
+        train_start = time.time()
+        hist_t, hist_v = self._run_training_loop(
+            train_loader, val_loader,
+            num_epochs=pretrain_epochs,
+            member_tag="[pretrain] ",
+        )
+
+        # Phase 2: cyclical LR snapshot collection
+        print(f"\n{'=' * 60}")
+        print("FGE PHASE 2: Cyclical LR snapshot collection")
+        print(f"{'=' * 60}")
+
+        lr_max = self.config.get('fge_lr_max') or self.config_method['lr']
+        lr_min = 1e-6
+        snapshots = []
+        steps_per_epoch = len(train_loader)
+
+        for snap_idx in range(M):
+            self.scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+                self.optimizer,
+                T_0=cycle_length * steps_per_epoch,
+                T_mult=1,
+                eta_min=lr_min,
+            )
+            for g in self.optimizer.param_groups:
+                g['lr'] = lr_max
+
+            tag = f"[fge-snap{snap_idx}] "
+            h_t, h_v = self._run_training_loop(
+                train_loader, val_loader,
+                num_epochs=cycle_length,
+                start_epoch=pretrain_epochs + snap_idx * cycle_length,
+                member_tag=tag,
+            )
+            hist_t.extend(h_t)
+            hist_v.extend(h_v)
+
+            snapshots.append(copy.deepcopy(self.model))
+            print(f"  -> Snapshot {snap_idx + 1}/{M} collected at epoch "
+                  f"{pretrain_epochs + (snap_idx + 1) * cycle_length}")
+
+        training_time = time.time() - train_start
+        print(f"\nFGE training completed in {training_time:.2f}s  ({M} snapshots)")
+
+        ensemble_model = EnsembleMLP(snapshots).to(DEVICE)
+        return self._evaluate_and_save_ensemble(ensemble_model, hist_t, hist_v, training_time)
+
     def _save_model(self, epoch: int = None):
         """Saves the model in a .pt file."""
         if not self.save_dir:

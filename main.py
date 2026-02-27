@@ -58,6 +58,23 @@ def create_parser():
     parser.add_argument('--dist_weight', type=float, help='Distance weight')
     parser.add_argument('--max_diff_iter', type=int, help='Maximum number of iterations for keeping the track of gradient')
 
+    # Ensemble parameters
+    parser.add_argument('--ensemble_size', type=int, default=1,
+                        help='Number of ensemble members (1 = single model, >1 = ensemble)')
+    parser.add_argument('--ensemble_mode', type=str, default='vanilla', choices=['vanilla', 'fge'],
+                        help='Ensemble training mode: vanilla (independent inits) or fge (Fast Geometric Ensembling)')
+    parser.add_argument('--fge_pretrain_ratio', type=float, default=0.8,
+                        help='FGE: fraction of total epochs for pre-training before snapshot collection')
+    parser.add_argument('--fge_lr_max', type=float, default=None,
+                        help='FGE: max LR during cyclical phase (defaults to base lr)')
+    parser.add_argument('--ensemble_post', type=str, default='pre', choices=['pre', 'post'],
+                        help='Ensemble eval: "pre" = ens(NNs)+Opt (avg then post-process), '
+                             '"post" = ens(NNs+Opts) (post-process each then aggregate)')
+    parser.add_argument('--ensemble_agg', type=str, default='mean',
+                        choices=['mean', 'median', 'greedy_obj', 'greedy_merit'],
+                        help='Ensemble aggregation: mean, median, greedy_obj (best objective), '
+                             'greedy_merit (best merit = obj + penalty*violations)')
+
     # Weights & Biases parameters
     parser.add_argument('--wandb', action='store_true', help='Enable Weights & Biases logging')
     parser.add_argument('--wandb_project', type=str, default='FSNet', help='W&B project name')
@@ -134,6 +151,14 @@ def create_parser():
     # Ablation study flag
     config['ablation'] = args.ablation
 
+    # Ensemble
+    config['ensemble_size'] = args.ensemble_size
+    config['ensemble_mode'] = args.ensemble_mode
+    config['fge_pretrain_ratio'] = args.fge_pretrain_ratio
+    config['fge_lr_max'] = args.fge_lr_max
+    config['ensemble_post'] = args.ensemble_post
+    config['ensemble_agg'] = args.ensemble_agg
+
     # Weights & Biases
     config['wandb'] = args.wandb
     config['wandb_project'] = args.wandb_project
@@ -182,8 +207,12 @@ def main():
     start_time = time.time()
     
     # Instantiate and use the Trainer
-    trainer = Trainer(opt_problem = opt_problem, config=config, save_dir=result_save_dir)
-    trainer.train()
+    trainer = Trainer(opt_problem=opt_problem, config=config, save_dir=result_save_dir)
+    if config['ensemble_size'] > 1:
+        print(f"\nEnsemble training: {config['ensemble_size']} members, mode={config['ensemble_mode']}")
+        trainer.train_ensemble()
+    else:
+        trainer.train()
     
     training_time = time.time() - start_time
     print(f"Training and testing completed in {training_time:.2f} seconds")
