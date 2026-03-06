@@ -124,7 +124,7 @@ def create_parser():
     parser.add_argument('--ensemble_post', type=str, default='pre',
                         choices=['pre', 'post'])
     parser.add_argument('--ensemble_agg', type=str, default='mean',
-                        choices=['mean', 'median', 'greedy_obj', 'greedy_merit'])
+                        choices=['mean', 'median', 'best_obj', 'best_merit'])
 
     # W&B
     parser.add_argument('--wandb', action='store_true')

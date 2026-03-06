@@ -20,7 +20,7 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "Vanilla dir: $VANILLA_DIR"
 
 # if [ -n "$VANILLA_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval agg=$agg ---"
 #         python eval.py --run_dir "$VANILLA_DIR" --ensemble_agg $agg
 #     done
@@ -33,7 +33,7 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "Vanilla dir: $VANILLA_DIR"
 
 # if [ -n "$VANILLA_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval agg=$agg ---"
 #         python eval.py --run_dir "$VANILLA_DIR" --ensemble_agg $agg
 #     done
@@ -46,10 +46,10 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "FSNet dir: $FSNET_DIR"
 
 # post="pre"
-# agg="greedy_merit"
+# agg="best_merit"
 
 # if [ -n "$FSNET_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval ensemble_post=$post ---"
 #         python eval.py --run_dir "$FSNET_DIR" --ensemble_post $post --ensemble_agg $agg
 #     done
@@ -62,7 +62,7 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "FSNet dir: $FSNET_DIR"
 
 # if [ -n "$FSNET_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval ensemble_post=$post ---"
 #         python eval.py --run_dir "$FSNET_DIR" --ensemble_post $post --ensemble_agg $agg
 #     done
@@ -75,10 +75,10 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "FSNet dir: $FSNET_DIR"
 
 # post="pre"
-# agg="greedy_merit"
+# agg="best_merit"
 
 # if [ -n "$FSNET_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval ensemble_post=$post ---"
 #         python eval.py --run_dir "$FSNET_DIR" --ensemble_post $post --ensemble_agg $agg
 #     done
@@ -91,7 +91,7 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 # echo "FSNet dir: $FSNET_DIR"
 
 # if [ -n "$FSNET_DIR" ]; then
-#     for agg in mean median greedy_obj greedy_merit; do
+#     for agg in mean median best_obj best_merit; do
 #         echo "--- eval ensemble_post=$post ---"
 #         python eval.py --run_dir "$FSNET_DIR" --ensemble_post $post --ensemble_agg $agg
 #     done
@@ -102,7 +102,7 @@ echo "=== [ens-eval] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID ==="
 
 # ── Exp 3: agg mode sweep (reuse vanilla penalty training) ──
 
-agg="greedy_merit"
+agg="best_merit"
 size=10
 VANILLA_DIR="results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260227-153237_penalty_seed2025_e1000_lr1e-04_n7000_ens20_vanilla_pre"
 
@@ -119,7 +119,7 @@ fi
 
 # # ── Exp 3: agg mode sweep (reuse vanilla penalty training) ──
 
-# agg="greedy_merit"
+# agg="best_merit"
 # post="post"
 
 # FSNET_DIR="results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260227-025927_FSNet_seed0_e300_lr1e-04_n7000_ens5_vanilla_pre"

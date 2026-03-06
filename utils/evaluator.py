@@ -225,8 +225,8 @@ class Evaluator:
         Strategies:
             mean         – element-wise mean
             median       – element-wise median
-            greedy_obj   – per-sample pick the member with the lowest objective
-            greedy_merit – per-sample pick the member with the lowest
+            best_obj   – per-sample pick the member with the lowest objective
+            best_merit – per-sample pick the member with the lowest
                            merit = obj + 1e5*(eq_viol + ineq_viol)
         """
         agg = self.config.get('ensemble_agg', 'mean')
@@ -238,11 +238,11 @@ class Evaluator:
         if agg == 'median':
             return stacked.median(dim=0).values
 
-        if agg in ('greedy_obj', 'greedy_merit'):
+        if agg in ('best_obj', 'best_merit'):
             scores = []
             for f in finals:
                 obj = self.opt_problem.obj_fn(f)  # (B,)
-                if agg == 'greedy_merit':
+                if agg == 'best_merit':
                     eq_l1 = self.opt_problem.eq_resid(X_batch, f).abs().sum(dim=1)
                     ineq_l1 = self.opt_problem.ineq_resid(X_batch, f).abs().sum(dim=1)
                     obj = obj + 1e5 * (eq_l1 + ineq_l1)

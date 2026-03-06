@@ -101,14 +101,14 @@ Control how ensemble members are combined at evaluation time:
 | Flag | Values | Description |
 |---|---|---|
 | `--ensemble_post` | `pre` (default), `post` | `pre` = average NN outputs then post-process once. `post` = post-process each member then aggregate. |
-| `--ensemble_agg` | `mean` (default), `median`, `greedy_obj`, `greedy_merit` | Aggregation strategy. `greedy_obj` picks the member with the lowest objective per sample. `greedy_merit` picks the member with the best merit (obj + penalty * violations). |
+| `--ensemble_agg` | `mean` (default), `median`, `best_obj`, `best_merit` | Aggregation strategy. `best_obj` picks the member with the lowest objective per sample. `best_merit` picks the member with the best merit (obj + penalty * violations). |
 
 ```bash
 # Fast: average then post-process once
 python main.py ... --ensemble_post pre --ensemble_agg mean
 
 # High quality: post-process each member, pick the best per sample
-python main.py ... --ensemble_post post --ensemble_agg greedy_merit
+python main.py ... --ensemble_post post --ensemble_agg best_merit
 ```
 
 ## Evaluation
@@ -135,7 +135,7 @@ Combine any number of single-model checkpoints into an ensemble at evaluation ti
 python eval.py \
     --checkpoints model_seed0.pt model_seed1.pt model_seed2.pt \
     --ensemble_post post \
-    --ensemble_agg greedy_merit
+    --ensemble_agg best_merit
 ```
 
 ### Eval flags
@@ -145,7 +145,7 @@ python eval.py \
 | `--checkpoints` | (required) | One or more `.pt` checkpoint paths |
 | `--config` | (from checkpoint) | Override YAML config |
 | `--ensemble_post` | `pre` | `pre` or `post` (see above) |
-| `--ensemble_agg` | `mean` | `mean`, `median`, `greedy_obj`, `greedy_merit` |
+| `--ensemble_agg` | `mean` | `mean`, `median`, `best_obj`, `best_merit` |
 | `--test_batch_sizes` | (from config) | Override test batch sizes |
 
 ## Weights & Biases

@@ -24,7 +24,7 @@ VANILLA_DIR=$(latest_run nonsmooth_nonconvex "*_penalty_*_ens5_vanilla_*")
 echo "Vanilla dir: $VANILLA_DIR"
 
 if [ -n "$VANILLA_DIR" ]; then
-    for agg in median greedy_obj greedy_merit; do
+    for agg in median best_obj best_merit; do
         echo "--- eval agg=$agg ---"
         python eval.py --run_dir "$VANILLA_DIR" --ensemble_agg $agg
     done

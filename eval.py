@@ -7,7 +7,7 @@ Supports:
   - Ad-hoc ensemble from multiple single models:
       python eval.py --checkpoints model_a.pt model_b.pt model_c.pt
   - Override ensemble eval strategy:
-      python eval.py --checkpoints m1.pt m2.pt --ensemble_post post --ensemble_agg greedy_merit
+      python eval.py --checkpoints m1.pt m2.pt --ensemble_post post --ensemble_agg best_merit
 """
 
 import argparse
@@ -104,7 +104,7 @@ def create_eval_parser():
     parser.add_argument('--ensemble_post', type=str, default='pre', choices=['pre', 'post'],
                         help='"pre" = ens(NNs)+Opt, "post" = ens(NNs+Opts)')
     parser.add_argument('--ensemble_agg', type=str, default='mean',
-                        choices=['mean', 'median', 'greedy_obj', 'greedy_merit'],
+                        choices=['mean', 'median', 'best_obj', 'best_merit'],
                         help='Aggregation strategy for ensemble members')
 
     parser.add_argument('--test_batch_sizes', type=int, nargs='+', default=None,
