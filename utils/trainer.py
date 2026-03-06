@@ -848,12 +848,16 @@ class Trainer:
         self._init_optimizer_and_scheduler(train_loader)
 
     def _run_training_loop(self, train_loader, val_loader, num_epochs,
-                           start_epoch=0, member_tag="", save_tag=None):
+                           start_epoch=0, member_tag="", save_tag=None,
+                           wandb_suffix=""):
         """Run the core training loop for *num_epochs* epochs.
 
         Args:
             save_tag: When set and ``save_intermediate`` is True, intermediate
                 checkpoints are written as ``{save_tag}_epoch_{epoch}.pt``.
+            wandb_suffix: Suffix appended to wandb metric names (e.g.
+                ``"_m0"`` for vanilla ensemble members).  Keeps all members
+                in the same wandb section while giving each its own line.
         """
         train_history, val_history = [], []
 
@@ -874,14 +878,15 @@ class Trainer:
                      epoch_end - epoch_start)
 
             if self.use_wandb:
+                ws = wandb_suffix
                 wandb.log({
                     'epoch': epoch,
-                    f'{member_tag}train/loss': epoch_metrics['loss'],
-                    f'{member_tag}train/objective': epoch_metrics.get('obj', 0),
-                    f'{member_tag}train/eq_violation_l1': epoch_metrics.get('eq_violation_l1', 0),
-                    f'{member_tag}train/ineq_violation_l1': epoch_metrics.get('ineq_violation_l1', 0),
-                    f'{member_tag}train/distance': epoch_metrics.get('distance', 0),
-                    'lr': self.optimizer.param_groups[0]['lr'],
+                    f'train/loss{ws}': epoch_metrics['loss'],
+                    f'train/objective{ws}': epoch_metrics.get('obj', 0),
+                    f'train/eq_violation_l1{ws}': epoch_metrics.get('eq_violation_l1', 0),
+                    f'train/ineq_violation_l1{ws}': epoch_metrics.get('ineq_violation_l1', 0),
+                    f'train/distance{ws}': epoch_metrics.get('distance', 0),
+                    f'lr{ws}': self.optimizer.param_groups[0]['lr'],
                 })
 
             if epoch % self.config['eval_step'] == 0:
@@ -890,13 +895,14 @@ class Trainer:
                 val_history.append({**val_metrics, 'epoch': epoch})
 
                 if self.use_wandb:
+                    ws = wandb_suffix
                     wandb.log({
                         'epoch': epoch,
-                        f'{member_tag}val/objective': val_metrics.get('objective', 0),
-                        f'{member_tag}val/opt_gap_mean': val_metrics.get('opt_gap_mean', 0),
-                        f'{member_tag}val/eq_violation_l1': val_metrics.get('eq_violation_l1_mean', 0),
-                        f'{member_tag}val/ineq_violation_l1': val_metrics.get('ineq_violation_l1_mean', 0),
-                        f'{member_tag}val/merit_mean': val_metrics.get('merit_mean', 0),
+                        f'val/objective{ws}': val_metrics.get('objective', 0),
+                        f'val/opt_gap_mean{ws}': val_metrics.get('opt_gap_mean', 0),
+                        f'val/eq_violation_l1{ws}': val_metrics.get('eq_violation_l1_mean', 0),
+                        f'val/ineq_violation_l1{ws}': val_metrics.get('ineq_violation_l1_mean', 0),
+                        f'val/merit_mean{ws}': val_metrics.get('merit_mean', 0),
                     })
 
                 if self.save_dir and self.config['save_intermediate'] and save_tag:
@@ -968,6 +974,7 @@ class Trainer:
                 num_epochs=self.config_method['num_epochs'],
                 member_tag=tag,
                 save_tag=f"member_{i}",
+                wandb_suffix=f"_m{i}",
             )
             all_train_history.extend(hist_t)
             all_val_history.extend(hist_v)
