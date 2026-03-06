@@ -856,8 +856,9 @@ class Trainer:
             save_tag: When set and ``save_intermediate`` is True, intermediate
                 checkpoints are written as ``{save_tag}_epoch_{epoch}.pt``.
             wandb_suffix: Suffix appended to wandb metric names (e.g.
-                ``"_m0"`` for vanilla ensemble members).  Keeps all members
-                in the same wandb section while giving each its own line.
+                ``"_m0"`` for vanilla ensemble members).  Each metric
+                becomes its own section (e.g. ``train_loss/m0``) so that
+                members are easy to compare within one chart.
         """
         train_history, val_history = [], []
 
@@ -879,14 +880,19 @@ class Trainer:
 
             if self.use_wandb:
                 ws = wandb_suffix
+                def _k(section, name):
+                    """Build wandb key: 'section/name' or 'section_name/mX'."""
+                    if ws:
+                        return f'{section}_{name}/{ws.lstrip("_")}'
+                    return f'{section}/{name}'
                 wandb.log({
                     'epoch': epoch,
-                    f'train/loss{ws}': epoch_metrics['loss'],
-                    f'train/objective{ws}': epoch_metrics.get('obj', 0),
-                    f'train/eq_violation_l1{ws}': epoch_metrics.get('eq_violation_l1', 0),
-                    f'train/ineq_violation_l1{ws}': epoch_metrics.get('ineq_violation_l1', 0),
-                    f'train/distance{ws}': epoch_metrics.get('distance', 0),
-                    f'lr{ws}': self.optimizer.param_groups[0]['lr'],
+                    _k('train', 'loss'): epoch_metrics['loss'],
+                    _k('train', 'objective'): epoch_metrics.get('obj', 0),
+                    _k('train', 'eq_violation_l1'): epoch_metrics.get('eq_violation_l1', 0),
+                    _k('train', 'ineq_violation_l1'): epoch_metrics.get('ineq_violation_l1', 0),
+                    _k('train', 'distance'): epoch_metrics.get('distance', 0),
+                    (f'lr/{ws.lstrip("_")}' if ws else 'lr'): self.optimizer.param_groups[0]['lr'],
                 })
 
             if epoch % self.config['eval_step'] == 0:
@@ -896,13 +902,17 @@ class Trainer:
 
                 if self.use_wandb:
                     ws = wandb_suffix
+                    def _kv(section, name):
+                        if ws:
+                            return f'{section}_{name}/{ws.lstrip("_")}'
+                        return f'{section}/{name}'
                     wandb.log({
                         'epoch': epoch,
-                        f'val/objective{ws}': val_metrics.get('objective', 0),
-                        f'val/opt_gap_mean{ws}': val_metrics.get('opt_gap_mean', 0),
-                        f'val/eq_violation_l1{ws}': val_metrics.get('eq_violation_l1_mean', 0),
-                        f'val/ineq_violation_l1{ws}': val_metrics.get('ineq_violation_l1_mean', 0),
-                        f'val/merit_mean{ws}': val_metrics.get('merit_mean', 0),
+                        _kv('val', 'objective'): val_metrics.get('objective', 0),
+                        _kv('val', 'opt_gap_mean'): val_metrics.get('opt_gap_mean', 0),
+                        _kv('val', 'eq_violation_l1'): val_metrics.get('eq_violation_l1_mean', 0),
+                        _kv('val', 'ineq_violation_l1'): val_metrics.get('ineq_violation_l1_mean', 0),
+                        _kv('val', 'merit_mean'): val_metrics.get('merit_mean', 0),
                     })
 
                 if self.save_dir and self.config['save_intermediate'] and save_tag:
