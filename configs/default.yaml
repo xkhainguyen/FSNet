@@ -11,15 +11,20 @@ test_batch_sizes: [256, 512]
 eval_step: 10
 
 # ── Model ──
-hidden_dim: 1024
+network: MLP           # MLP | MoE
+hidden_dim: 512
 num_layers: 4
 dropout: 0.1
+# MoE-specific (only used when network: MoE)
+num_experts: 4         # number of expert MLPs
+top_k: 2               # experts activated per token; 0 → dense soft routing
+moe_aux_loss_weight: 0.01  # weight for load-balancing auxiliary loss
 
 # ── Shared defaults (merged into every method) ──
 # Per-method sections below only need to list overrides.
 defaults:
   lr: 0.0001
-  num_epochs: 300
+  num_epochs: 1000
   obj_weight: 1.0
   eq_pen_weight: 10.0
   ineq_pen_weight: 10.0

@@ -22,7 +22,7 @@ import time
 from main import setup_logging
 from utils.trainer import load_instance, create_model, DEVICE
 from utils.evaluator import Evaluator
-from models.neural_networks import MLP, EnsembleMLP
+from models.neural_networks import MLP, EnsembleMLP, MixtureOfExperts
 
 log = logging.getLogger(__name__)
 

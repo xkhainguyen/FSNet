@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
-from models.neural_networks import MLP, EnsembleMLP
+from models.neural_networks import MLP, EnsembleMLP, MixtureOfExperts
 from utils.evaluator import Evaluator
 
 log = logging.getLogger(__name__)
@@ -149,14 +149,23 @@ def create_model(opt_problem, method, config):
     network = config['network']
     dropout = config["dropout"]
 
-    if network == 'MLP':
-        if method == "DC3" or method == "sup_partial":
-            out_dim = opt_problem.partial_vars.shape[0]
-            model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
-        else:
-            model = MLP(opt_problem.xdim, hidden_dim, opt_problem.ydim, num_layers=num_layers, dropout=dropout)
+    if method == "DC3" or method == "sup_partial":
+        out_dim = opt_problem.partial_vars.shape[0]
     else:
-        raise ValueError(f"Unknown model type: {model}")
+        out_dim = opt_problem.ydim
+
+    if network == 'MLP':
+        model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
+    elif network == 'MoE':
+        num_experts = config.get('num_experts', 4)
+        top_k = config.get('top_k', 2)
+        model = MixtureOfExperts(
+            opt_problem.xdim, hidden_dim, out_dim,
+            num_experts=num_experts, top_k=top_k,
+            num_layers=num_layers, dropout=dropout,
+        )
+    else:
+        raise ValueError(f"Unknown network type: {network}")
     return model.to(DEVICE)
 
 
@@ -585,7 +594,8 @@ class Trainer:
         """Train for one epoch."""
         self.model.train()
         epoch_metrics = {'obj': 0.0, 'loss': 0.0, 'eq_violation': 0.0, 'ineq_violation': 0.0,
-                         'eq_violation_l1': 0.0, 'ineq_violation_l1': 0.0, 'distance': 0.0, 'epoch': epoch}
+                         'eq_violation_l1': 0.0, 'ineq_violation_l1': 0.0, 'distance': 0.0,
+                         'moe_aux_loss': 0.0, 'epoch': epoch}
 
         for batch_idx, (X_batch, Y_label) in enumerate(train_loader):
             X_batch = X_batch.to(DEVICE, non_blocking=True)
@@ -593,16 +603,22 @@ class Trainer:
             Y_pred = self.model(X_batch)
             
             loss, batch_metrics = self.compute_batch_loss(X_batch, Y_pred, Y_label, epoch_metrics)
-            
+
+            scalar_loss = loss.mean()
+            if isinstance(self.model, MixtureOfExperts):
+                moe_aux = self.config.get('moe_aux_loss_weight', 0.01) * self.model.aux_loss
+                scalar_loss = scalar_loss + moe_aux
+                batch_metrics['moe_aux_loss'] = moe_aux.item()
+
             self.optimizer.zero_grad()
-            loss.mean().backward()
+            scalar_loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
             self.optimizer.step()
-            
+
             # Accumulate metrics
             for key, value in batch_metrics.items():
                 epoch_metrics[key] += value
-            epoch_metrics['loss'] += loss.mean().item()
+            epoch_metrics['loss'] += scalar_loss.item()
         
             self.scheduler.step()
         
