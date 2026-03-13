@@ -115,6 +115,8 @@ def load_instance(config):
             run_name += (f"_ens{config['ensemble_size']}"
                          f"_{config.get('ensemble_mode', 'vanilla')}"
                          f"_{config.get('ensemble_post', 'pre')}")
+        if config.get('network') == 'MoE':
+            run_name += f"_moe{config['MoE']['num_experts']}k{config['MoE']['top_k']}_temp{config['MoE']['gate_temperature']}_noise{config['MoE']['gate_noise_std']}"
         if en_subopt != 0:
             run_name += f"_subopt{en_subopt}_{config['subopt_ratio']}"
         if config['checkpoint']:
@@ -157,11 +159,16 @@ def create_model(opt_problem, method, config):
     if network == 'MLP':
         model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
     elif network == 'MoE':
-        num_experts = config.get('num_experts', 4)
-        top_k = config.get('top_k', 2)
+        moe_cfg = config.get('MoE', {})
+        num_experts = moe_cfg.get('num_experts', config.get('num_experts', 4))
+        top_k = moe_cfg.get('top_k', config.get('top_k', 2))
+        gate_temperature = moe_cfg.get('gate_temperature', config.get('moe_gate_temperature', 1.0))
+        gate_noise_std = moe_cfg.get('gate_noise_std', config.get('moe_gate_noise_std', 0.0))
         model = MixtureOfExperts(
             opt_problem.xdim, hidden_dim, out_dim,
             num_experts=num_experts, top_k=top_k,
+            gate_temperature=gate_temperature,
+            gate_noise_std=gate_noise_std,
             num_layers=num_layers, dropout=dropout,
         )
     else:
@@ -595,7 +602,8 @@ class Trainer:
         self.model.train()
         epoch_metrics = {'obj': 0.0, 'loss': 0.0, 'eq_violation': 0.0, 'ineq_violation': 0.0,
                          'eq_violation_l1': 0.0, 'ineq_violation_l1': 0.0, 'distance': 0.0,
-                         'moe_aux_loss': 0.0, 'epoch': epoch}
+                         'moe_aux_loss': 0.0, 'moe_gate_entropy': 0.0,
+                         'moe_gate_max_prob': 0.0, 'epoch': epoch}
 
         for batch_idx, (X_batch, Y_label) in enumerate(train_loader):
             X_batch = X_batch.to(DEVICE, non_blocking=True)
@@ -606,9 +614,13 @@ class Trainer:
 
             scalar_loss = loss.mean()
             if isinstance(self.model, MixtureOfExperts):
-                moe_aux = self.config.get('moe_aux_loss_weight', 0.01) * self.model.aux_loss
+                moe_cfg = self.config.get('MoE', {})
+                moe_aux_weight = moe_cfg.get('aux_loss_weight', self.config.get('moe_aux_loss_weight', 0.01))
+                moe_aux = moe_aux_weight * self.model.aux_loss
                 scalar_loss = scalar_loss + moe_aux
                 batch_metrics['moe_aux_loss'] = moe_aux.item()
+                batch_metrics['moe_gate_entropy'] = self.model.gate_entropy.item()
+                batch_metrics['moe_gate_max_prob'] = self.model.gate_max_prob.item()
 
             self.optimizer.zero_grad()
             scalar_loss.backward()
@@ -639,6 +651,37 @@ class Trainer:
             self.adaptive_eq_weight = self.config_method['eq_pen_weight']
             self.adaptive_ineq_weight = self.config_method['ineq_pen_weight']
 
+        moe_cfg = self.config.get('MoE', {})
+        self._moe_routing_state = {
+            'warmup_epochs': int(moe_cfg.get('warmup_epochs', self.config.get('moe_warmup_epochs', 30))),
+            'start_temp': float(moe_cfg.get('start_temp', self.config.get('moe_start_temp', moe_cfg.get('gate_temperature', self.config.get('moe_gate_temperature', 1.0))))),
+            'final_temp': float(moe_cfg.get('final_temp', self.config.get('moe_final_temp', 1.0))),
+            'noise_start': float(moe_cfg.get('gate_noise_std', self.config.get('moe_gate_noise_std', 0.0))),
+            'noise_final': float(moe_cfg.get('gate_noise_final', self.config.get('moe_gate_noise_final', 0.0))),
+            'decay_epochs': int(moe_cfg.get('temp_decay_epochs', self.config.get('moe_temp_decay_epochs', 200))),
+        }
+
+    def _update_moe_routing(self, epoch: int) -> None:
+        """Stabilize MoE with dense warmup and annealed gate settings."""
+        if not isinstance(self.model, MixtureOfExperts):
+            return
+
+        st = self._moe_routing_state
+        warmup = max(st['warmup_epochs'], 0)
+        after = max(epoch - warmup, 0)
+        decay = max(st['decay_epochs'], 1)
+        frac = min(after / decay, 1.0)
+
+        gate_temp = st['start_temp'] + (st['final_temp'] - st['start_temp']) * frac
+        gate_noise = st['noise_start'] + (st['noise_final'] - st['noise_start']) * frac
+        force_dense = epoch < warmup
+
+        self.model.set_routing(
+            force_dense=force_dense,
+            gate_temperature=gate_temp,
+            gate_noise_std=gate_noise,
+        )
+
            
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
@@ -649,6 +692,7 @@ class Trainer:
                 a_min=1e-9, 
                 a_max=1e-6
             )
+        self._update_moe_routing(epoch)
         
 
     def train(self):
@@ -691,6 +735,13 @@ class Trainer:
                      epoch_metrics.get('eq_violation_l1', 0),
                      epoch_metrics.get('ineq_violation_l1', 0),
                      epoch_end - epoch_start)
+            if isinstance(self.model, MixtureOfExperts):
+                log.info("MoE  aux=%.4e  H(gate)=%.4f  maxP=%.4f  temp=%.3f  noise=%.3f",
+                         epoch_metrics.get('moe_aux_loss', 0.0),
+                         epoch_metrics.get('moe_gate_entropy', 0.0),
+                         epoch_metrics.get('moe_gate_max_prob', 0.0),
+                         float(getattr(self.model, 'gate_temperature', 1.0)),
+                         float(getattr(self.model, 'gate_noise_std', 0.0)))
 
             if self.use_wandb:
                 wandb.log({
@@ -702,6 +753,9 @@ class Trainer:
                     'train/eq_violation_l2': epoch_metrics.get('eq_violation', 0),
                     'train/ineq_violation_l2': epoch_metrics.get('ineq_violation', 0),
                     'train/distance': epoch_metrics.get('distance', 0),
+                    'train/moe_aux_loss': epoch_metrics.get('moe_aux_loss', 0),
+                    'train/moe_gate_entropy': epoch_metrics.get('moe_gate_entropy', 0),
+                    'train/moe_gate_max_prob': epoch_metrics.get('moe_gate_max_prob', 0),
                     'train/epoch_time': epoch_end - epoch_start,
                     'lr': self.optimizer.param_groups[0]['lr'],
                 })
@@ -1184,13 +1238,15 @@ class Trainer:
         }
         if test_results_data and 'batch_size_comparison' in test_results_data:
             bs_metrics = {}
-            for bs, result in test_results_data['batch_size_comparison'].items():
+            for bs in sorted(test_results_data['batch_size_comparison'], key=int):
+                result = test_results_data['batch_size_comparison'][bs]
                 if 'error' in result:
                     bs_metrics[int(bs)] = {'error': result['error']}
                 else:
+                    metrics = result['metrics']
                     bs_metrics[int(bs)] = {
-                        k: round(float(v), 8)
-                        for k, v in result['metrics'].items()
+                        k: round(float(metrics[k]), 8)
+                        for k in sorted(metrics)
                     }
             summary['test'] = bs_metrics
         summary_path = os.path.join(self.save_dir, "test_summary.yaml")

@@ -79,6 +79,44 @@ def _merge_defaults(config):
         config[method_name] = {**defaults, **method_cfg}
 
 
+def _normalize_moe_config(config):
+    """Ensure canonical nested MoE config while supporting legacy flat keys."""
+    moe = dict(config.get('MoE', {}) or {})
+
+    legacy_map = {
+        'num_experts': 'num_experts',
+        'top_k': 'top_k',
+        'moe_aux_loss_weight': 'aux_loss_weight',
+        'moe_gate_temperature': 'gate_temperature',
+        'moe_gate_noise_std': 'gate_noise_std',
+        'moe_warmup_epochs': 'warmup_epochs',
+        'moe_start_temp': 'start_temp',
+        'moe_final_temp': 'final_temp',
+        'moe_gate_noise_final': 'gate_noise_final',
+        'moe_temp_decay_epochs': 'temp_decay_epochs',
+    }
+    for legacy_key, nested_key in legacy_map.items():
+        if nested_key not in moe and legacy_key in config:
+            moe[nested_key] = config[legacy_key]
+
+    defaults = {
+        'num_experts': 4,
+        'top_k': 2,
+        'aux_loss_weight': 0.01,
+        'gate_temperature': 1.0,
+        'gate_noise_std': 0.0,
+        'warmup_epochs': 30,
+        'start_temp': 2.0,
+        'final_temp': 1.0,
+        'gate_noise_final': 0.0,
+        'temp_decay_epochs': 200,
+    }
+    for key, val in defaults.items():
+        moe.setdefault(key, val)
+
+    config['MoE'] = moe
+
+
 def create_parser():
     """Create and configure the argument parser, then load and process the configuration."""
     parser = argparse.ArgumentParser(description='Neural Network Optimization')
@@ -111,6 +149,18 @@ def create_parser():
     parser.add_argument('--hidden_dim', type=int)
     parser.add_argument('--num_layers', type=int)
     parser.add_argument('--dropout', type=float)
+    parser.add_argument('--num_experts', type=int)
+    parser.add_argument('--top_k', type=int)
+    parser.add_argument('--moe_num_experts', type=int)
+    parser.add_argument('--moe_top_k', type=int)
+    parser.add_argument('--moe_aux_loss_weight', type=float)
+    parser.add_argument('--moe_gate_temperature', type=float)
+    parser.add_argument('--moe_gate_noise_std', type=float)
+    parser.add_argument('--moe_warmup_epochs', type=int)
+    parser.add_argument('--moe_start_temp', type=float)
+    parser.add_argument('--moe_final_temp', type=float)
+    parser.add_argument('--moe_gate_noise_final', type=float)
+    parser.add_argument('--moe_temp_decay_epochs', type=int)
     parser.add_argument('--scale', type=float)
     parser.add_argument('--dist_weight', type=float)
     parser.add_argument('--max_diff_iter', type=int)
@@ -139,6 +189,7 @@ def create_parser():
         config = yaml.safe_load(f)
 
     _merge_defaults(config)
+    _normalize_moe_config(config)
 
     # ── Top-level overrides ──
     if args.method:
@@ -173,6 +224,32 @@ def create_parser():
         config['num_layers'] = args.num_layers
     if args.dropout:
         config['dropout'] = args.dropout
+
+    # MoE overrides
+    if args.moe_num_experts is not None:
+        config['MoE']['num_experts'] = args.moe_num_experts
+    elif args.num_experts is not None:
+        config['MoE']['num_experts'] = args.num_experts
+    if args.moe_top_k is not None:
+        config['MoE']['top_k'] = args.moe_top_k
+    elif args.top_k is not None:
+        config['MoE']['top_k'] = args.top_k
+    if args.moe_aux_loss_weight is not None:
+        config['MoE']['aux_loss_weight'] = args.moe_aux_loss_weight
+    if args.moe_gate_temperature is not None:
+        config['MoE']['gate_temperature'] = args.moe_gate_temperature
+    if args.moe_gate_noise_std is not None:
+        config['MoE']['gate_noise_std'] = args.moe_gate_noise_std
+    if args.moe_warmup_epochs is not None:
+        config['MoE']['warmup_epochs'] = args.moe_warmup_epochs
+    if args.moe_start_temp is not None:
+        config['MoE']['start_temp'] = args.moe_start_temp
+    if args.moe_final_temp is not None:
+        config['MoE']['final_temp'] = args.moe_final_temp
+    if args.moe_gate_noise_final is not None:
+        config['MoE']['gate_noise_final'] = args.moe_gate_noise_final
+    if args.moe_temp_decay_epochs is not None:
+        config['MoE']['temp_decay_epochs'] = args.moe_temp_decay_epochs
 
     # ── Method-specific overrides (applied to config[method] only) ──
     method = config['method']

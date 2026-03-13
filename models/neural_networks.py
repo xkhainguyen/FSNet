@@ -65,13 +65,18 @@ class MixtureOfExperts(nn.Module):
         output_dim: int,
         num_experts: int = 4,
         top_k: int = 2,
+        gate_temperature: float = 1.0,
+        gate_noise_std: float = 0.0,
         num_layers: int = 1,
         dropout: float = 0.0,
     ):
         super().__init__()
         self.num_experts = num_experts
-        self.top_k = top_k if (0 < top_k < num_experts) else num_experts  # 0 → dense
+        self.top_k = top_k if (0 < top_k < num_experts) else num_experts  # 0 -> dense
         self.sparse = (self.top_k < num_experts)
+        self.gate_temperature = gate_temperature
+        self.gate_noise_std = gate_noise_std
+        self.force_dense = False
 
         # Gating network: maps input → expert logits
         self.gate = nn.Linear(input_dim, num_experts)
@@ -85,6 +90,17 @@ class MixtureOfExperts(nn.Module):
 
         # Populated by forward(); used externally for aux-loss bookkeeping
         self.aux_loss: torch.Tensor = torch.tensor(0.0)
+        self.gate_entropy: torch.Tensor = torch.tensor(0.0)
+        self.gate_max_prob: torch.Tensor = torch.tensor(0.0)
+
+    def set_routing(self, force_dense: bool = None, gate_temperature: float = None, gate_noise_std: float = None):
+        """Runtime control for routing schedule from the trainer."""
+        if force_dense is not None:
+            self.force_dense = bool(force_dense)
+        if gate_temperature is not None:
+            self.gate_temperature = max(float(gate_temperature), 1e-3)
+        if gate_noise_std is not None:
+            self.gate_noise_std = max(float(gate_noise_std), 0.0)
 
     # ------------------------------------------------------------------
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -98,17 +114,24 @@ class MixtureOfExperts(nn.Module):
         K = self.top_k
 
         gate_logits = self.gate(x)                          # (B, E)
-        gate_soft   = F.softmax(gate_logits, dim=-1)        # (B, E)  – always computed for aux loss
+        if self.training and self.gate_noise_std > 0:
+            gate_logits = gate_logits + self.gate_noise_std * torch.randn_like(gate_logits)
+        gate_logits = gate_logits / max(self.gate_temperature, 1e-3)
+        gate_soft = F.softmax(gate_logits, dim=-1)          # (B, E)
 
         # ---- Load-balancing auxiliary loss (Switch-Transformer style) ----
         # L_aux = E * sum_i( mean_i^2 )  — minimised when routing is uniform (= 1.0)
         mean_gate = gate_soft.mean(dim=0)                   # (E,)
         self.aux_loss = E * (mean_gate ** 2).sum()
+        self.gate_entropy = (-gate_soft * torch.log(gate_soft + 1e-12)).sum(dim=-1).mean()
+        self.gate_max_prob = gate_soft.max(dim=-1).values.mean()
 
         # ---- Compute all expert outputs (B, E, out_dim) ----
         expert_outs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, E, out)
 
-        if not self.sparse:
+        use_sparse = self.sparse and (not self.force_dense)
+
+        if not use_sparse:
             # Dense routing: weighted sum over all experts
             # gate_soft: (B, E, 1) · expert_outs: (B, E, out) → (B, out)
             out = (expert_outs * gate_soft.unsqueeze(-1)).sum(dim=1)
