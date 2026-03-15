@@ -13,24 +13,27 @@ mkdir -p logs
 
 echo "=== [ens-fsnet] $(date '+%Y-%m-%d %H:%M:%S') Job=$SLURM_JOB_ID Node=$SLURM_NODELIST ==="
 
+for seed in 1; do
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --ensemble_size 5 \
+        --seed $seed \
+        --ensemble_mode vanilla \
+        --wandb \
+        --num_epochs 300 \
+        --hidden_dim 1024
+done
+
 # python main.py \
 #     --method FSNet \
 #     --prob_type nonsmooth_nonconvex \
 #     --prob_name socp \
 #     --ensemble_size 5 \
 #     --seed 100 \
-#     --ensemble_mode vanilla \
+#     --ensemble_mode fge \
 #     --wandb \
-#     --num_epochs 300 
-
-python main.py \
-    --method FSNet \
-    --prob_type nonsmooth_nonconvex \
-    --prob_name socp \
-    --ensemble_size 5 \
-    --seed 100 \
-    --ensemble_mode fge \
-    --wandb \
-    --num_epochs 600 
+#     --num_epochs 600 
 
 echo "=== [ens-fsnet] done $(date '+%Y-%m-%d %H:%M:%S') ==="

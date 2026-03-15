@@ -20,20 +20,28 @@ PROBLEM_TYPES = ['convex', 'nonconvex', 'nonsmooth_nonconvex']
 PROBLEM_NAMES = ['qp', 'qcqp', 'socp']
 
 
-def set_seed(seed: int) -> torch.Generator:
-    """Set all random seeds for full reproducibility. Returns a torch Generator
-    that should be passed to DataLoaders."""
+def set_seed(seed: int, strict: bool = False) -> torch.Generator | None:
+    """Set seeds and optionally enable strict deterministic mode.
+
+    strict=False keeps fast/non-strict CuDNN behavior, which can lead to
+    better optimisation trajectories for this task.
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
-    g = torch.Generator()
-    g.manual_seed(seed)
-    return g
+    if strict:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        g = torch.Generator()
+        g.manual_seed(seed)
+        return g
+
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
+    return None
 
 
 def setup_logging(save_dir: str = None, level: int = logging.INFO):
@@ -131,6 +139,8 @@ def create_parser():
     parser.add_argument('--prob_size', type=int, nargs='+', default=[100, 50, 50, 10000])
     parser.add_argument('--network', type=str, default='MLP')
     parser.add_argument('--seed', type=int, default=2025)
+    parser.add_argument('--strict_repro', action='store_true',
+                        help='Enable strict deterministic behavior (CuDNN deterministic + seeded DataLoader)')
     parser.add_argument('--ablation', type=bool, default=False)
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--en_subopt', type=int, default=0)
@@ -278,6 +288,7 @@ def create_parser():
     config['wandb_entity'] = args.wandb_entity
     config['wandb_run_name'] = args.wandb_run_name
     config['wandb_tags'] = args.wandb_tags
+    config['strict_repro'] = args.strict_repro
 
     return args, config
 
@@ -287,8 +298,9 @@ def main():
     prob_type = config.get('prob_type', 'Error')
     prob_name = config.get('prob_name', 'Error')
 
-    generator = set_seed(config['seed'])
-    config['_generator'] = generator
+    generator = set_seed(config['seed'], strict=config.get('strict_repro', False))
+    if generator is not None:
+        config['_generator'] = generator
 
     opt_problem, result_save_dir = load_instance(config)
 

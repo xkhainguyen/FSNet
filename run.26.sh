@@ -14,8 +14,6 @@
 source ~/.bashrc        # ensures conda is available
 conda activate ml4opt
 
-# cd ~/FSNet
-
 # ----------------------------------------
 # Run your job
 # ----------------------------------------
@@ -26,24 +24,27 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 4 5 6 7; do
-    python main.py \
-        --method FSNet \
-        --prob_type nonsmooth_nonconvex \
-        --prob_name socp \
-        --lr 0.00005  \
-        --seed $seed \
-        --hidden_dim 1024 \
-        --num_epochs 300 \
-        --wandb
+# for seed in 1 2 3; do
+#     python main.py \
+#         --method FSNet \
+#         --prob_type nonsmooth_nonconvex \
+#         --prob_name socp \
+#         --lr 0.0001  \
+#         --seed $seed \
+#         --hidden_dim 1024 \
+#         --num_epochs 300 \
+#         --network MLP \
+#         --wandb
+# done
 
+for seed in 0 1 2 3; do
     python main.py \
         --method FSNet \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
-        --lr 0.00005  \
+        --lr 0.0001  \
         --seed $seed \
-        --hidden_dim 256 \
+        --hidden_dim 512 \
         --num_epochs 300 \
         --network MoE \
         --moe_num_experts 4 --moe_top_k 2 \
