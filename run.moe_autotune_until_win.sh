@@ -13,8 +13,8 @@ conda activate ml4opt
 cd ~/orcd/scratch/FSNet
 
 RESULT_ROOT="results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000"
-EPOCHS=300
-SEED=0
+EPOCHS=200
+SEED=2025
 
 COMMON_ARGS=(
   --method FSNet
@@ -61,6 +61,7 @@ extract_metric() {
 }
 
 # 1) Baseline MLP — skip if RESUME_FROM_DIR is provided
+RESUME_FROM_DIR ="results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260313-020128_FSNet_seed2025_e300_lr1e-04_n7000"
 if [[ -n "${RESUME_FROM_DIR:-}" ]]; then
   MLP_DIR="${RESUME_FROM_DIR}"
   echo "[CASE] MLP_BASELINE (SKIPPED - using ${MLP_DIR})"

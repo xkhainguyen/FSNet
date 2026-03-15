@@ -35,17 +35,17 @@ run_case () {
   python main.py "${COMMON_ARGS[@]}" "$@"
 }
 
-# Baseline
+# # Baseline
 # run_case "MLP" --network MLP
 
-# Existing MoE-like setup
-run_case "MoE-top2-no-warmup" \
-  --network MoE \
-  --moe_num_experts 4 --moe_top_k 2 \
-  --moe_aux_loss_weight 0.01 \
-  --moe_warmup_epochs 0 \
-  --moe_gate_temperature 1.0 \
-  --moe_gate_noise_std 0.0
+# # Existing MoE-like setup
+# run_case "MoE-top2-no-warmup" \
+#   --network MoE \
+#   --moe_num_experts 4 --moe_top_k 2 \
+#   --moe_aux_loss_weight 0.01 \
+#   --moe_warmup_epochs 0 \
+#   --moe_gate_temperature 1.0 \
+#   --moe_gate_noise_std 0.0
 
 # Stabilized sparse routing
 run_case "MoE-top2-warmup-temp" \
@@ -56,13 +56,13 @@ run_case "MoE-top2-warmup-temp" \
   --moe_start_temp 2.0 --moe_final_temp 1.0 --moe_temp_decay_epochs 150 \
   --moe_gate_noise_std 0.05 --moe_gate_noise_final 0.0
 
-# Dense MoE (tests if sparsity is hurting)
-run_case "MoE-dense" \
-  --network MoE \
-  --moe_num_experts 4 --moe_top_k 0 \
-  --moe_aux_loss_weight 0.002 \
-  --moe_warmup_epochs 0 \
-  --moe_gate_temperature 1.0 \
-  --moe_gate_noise_std 0.0
+# # Dense MoE (tests if sparsity is hurting)
+# run_case "MoE-dense" \
+#   --network MoE \
+#   --moe_num_experts 4 --moe_top_k 0 \
+#   --moe_aux_loss_weight 0.002 \
+#   --moe_warmup_epochs 0 \
+#   --moe_gate_temperature 1.0 \
+#   --moe_gate_noise_std 0.0
 
 echo "All cases completed at $(date '+%Y-%m-%d %H:%M:%S')"

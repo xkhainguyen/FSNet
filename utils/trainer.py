@@ -987,7 +987,9 @@ class Trainer:
 
                 if self.save_dir and self.config['save_intermediate'] and save_tag:
                     self._save_member_checkpoint(save_tag, epoch)
-
+            
+                # if self.config['method'] == 'FSNet' and epoch > 100: # debug FSNet convergence
+                #     break
         return train_history, val_history
 
     def _evaluate_and_save_ensemble(self, ensemble_model, train_history, val_history, training_time):
@@ -1235,6 +1237,7 @@ class Trainer:
             'training_time_seconds': round(training_time, 2),
             'pytorch_version': torch.__version__,
             'device': str(DEVICE),
+            'opt_gap_unit': 'percent',
         }
         if test_results_data and 'batch_size_comparison' in test_results_data:
             bs_metrics = {}

@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH -t 06:00:00
+#SBATCH -p mit_normal_gpu,mit_preemptable
 #SBATCH --gres=gpu:l40s:1
-#SBATCH -J ml4opf
+#SBATCH -J ml4opt
 #SBATCH -o logs/%x-%A_%a.out
 #SBATCH -e logs/%x-%A_%a.err
 
@@ -13,7 +14,7 @@
 source ~/.bashrc        # ensures conda is available
 conda activate ml4opt
 
-cd ~/FSNet
+# cd ~/FSNet
 
 # ----------------------------------------
 # Run your job
@@ -25,14 +26,30 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 2 3; do
+for seed in 4 5 6 7; do
     python main.py \
-        --method S3Net \
+        --method FSNet \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
-        --lr 0.0001  \
+        --lr 0.00005  \
         --seed $seed \
+        --hidden_dim 1024 \
         --num_epochs 300 \
-        --en_subopt 3 \
-        --subopt_ratio 0.5 
+        --wandb
+
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr 0.00005  \
+        --seed $seed \
+        --hidden_dim 256 \
+        --num_epochs 300 \
+        --network MoE \
+        --moe_num_experts 4 --moe_top_k 2 \
+        --moe_aux_loss_weight 0.005 \
+        --moe_warmup_epochs 30 \
+        --moe_start_temp 2.0 --moe_final_temp 1.0 --moe_temp_decay_epochs 150 \
+        --moe_gate_noise_std 0.05 --moe_gate_noise_final 0.0 \
+        --wandb
 done

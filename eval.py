@@ -162,6 +162,7 @@ def _save_eval_results(save_dir, config, batch_size_results, eval_time):
         'ensemble_post': config.get('ensemble_post', 'pre'),
         'ensemble_agg': config.get('ensemble_agg', 'mean'),
         'checkpoints': config.get('_checkpoint_paths', []),
+        'opt_gap_unit': 'percent',
     }
     bs_metrics = {}
     for bs, result in batch_size_results.items():

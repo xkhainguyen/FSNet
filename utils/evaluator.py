@@ -278,8 +278,8 @@ class Evaluator:
         eq_violation_max = eq_resid.abs().max(dim=1)[0]
         ineq_violation_max = ineq_resid.abs().max(dim=1)[0]
         
-        # Optimality gap
-        opt_gap = (obj_pred - obj_true) / obj_true.abs()         
+        # Optimality gap in percent for consistent reporting across files.
+        opt_gap = 100.0 * (obj_pred - obj_true) / obj_true.abs()
         # Solution distance
         solution_distance = torch.norm(Y_final - Y_true, dim=1).square()
 
@@ -349,7 +349,7 @@ class Evaluator:
         log.info("%s EVALUATION RESULTS:", split_name.upper())
         log.info("=" * 50)
         log.info("Obj:         %.6e", metrics.get('objective', 0))
-        log.info("Opt Gap:     %.6e +/- %.6e", metrics.get('opt_gap_mean', 0), metrics.get('opt_gap_std', 0))
+        log.info("Opt Gap (%%): %.6e +/- %.6e", metrics.get('opt_gap_mean', 0), metrics.get('opt_gap_std', 0))
         log.info("Eq Vio l1:   %.6e (max: %.6e)", metrics.get('eq_violation_l1_mean', 0), metrics.get('eq_violation_l1_max', 0))
         log.info("Ineq Vio l1: %.6e (max: %.6e)", metrics.get('ineq_violation_l1_mean', 0), metrics.get('ineq_violation_l1_max', 0))
         log.info("Sol Dist:    %.6e +/- %.6e", metrics.get('solution_distance_mean', 0), metrics.get('solution_distance_std', 0))
