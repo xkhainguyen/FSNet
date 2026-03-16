@@ -12,7 +12,7 @@ eval_step: 10
 
 # ── Model ──
 network: MLP           # MLP | MoE
-hidden_dim: 512
+hidden_dim: 1024
 num_layers: 4
 dropout: 0.1
 # MoE-specific (only used when network: MoE)
