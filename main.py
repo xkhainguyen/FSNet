@@ -174,6 +174,9 @@ def create_parser():
     parser.add_argument('--scale', type=float)
     parser.add_argument('--dist_weight', type=float)
     parser.add_argument('--max_diff_iter', type=int)
+    parser.add_argument('--val_tol', type=float)
+    parser.add_argument('--decay_tol_step', type=int)
+    parser.add_argument('--memory_size', type=int)
 
     # Ensemble
     parser.add_argument('--ensemble_size', type=int, default=1)
@@ -269,6 +272,9 @@ def create_parser():
         'scale': args.scale,
         'dist_weight': args.dist_weight,
         'max_diff_iter': args.max_diff_iter,
+        'val_tol': args.val_tol,
+        'decay_tol_step': args.decay_tol_step,
+        'memory_size': args.memory_size,
     }
     for key, val in method_overrides.items():
         if val is not None:

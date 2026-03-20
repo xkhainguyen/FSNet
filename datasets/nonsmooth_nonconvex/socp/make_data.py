@@ -7,12 +7,14 @@ num_var = 100
 num_ineq = 50
 num_eq = 50
 num_examples = 10000
-seed = 2025
+seed = 0
 
 print("Nonsmooth nonconvex SOCP problem with {} variables, {} inequalities, {} equalities and {} examples".format(num_var, num_ineq, num_eq, num_examples))
+print("Using objective shift c: +{}".format(c))
 np.random.seed(seed)
 Q = np.diag(np.random.rand(num_var)*0.5)
 p = np.random.uniform(-1, 1, num_var)
+c = 10.0
 A = np.random.uniform(-1, 1, size=(num_eq, num_var))
 X = np.random.uniform(-1, 1, size=(num_examples, num_eq))
 XL = X.min(axis=0)
@@ -32,6 +34,7 @@ for i in range(num_ineq):
     d.append(np.linalg.norm(G[i] @ x0 + h[i], 2) - C[i].T @ x0)
 data = {'Q':Q,
         'p':p,
+        'c':c,
         'A':A,
         'X':X,
         'G':np.array(G),
@@ -49,7 +52,7 @@ for n in range(num_examples):
     y = ca.MX.sym('y_var', num_var)
     t = ca.MX.sym('t_var')
 
-    obj_func = 0.5 * ca.mtimes(y.T, ca.mtimes(Q, y)) + ca.dot(p, ca.sin(y)) + 0.1*t
+    obj_func = 0.5 * ca.mtimes(y.T, ca.mtimes(Q, y)) + ca.dot(p, ca.sin(y)) + 0.1*t + c
 
     eq_constraints = A @ y - Xi
     soc = ca.dot(y, y) - t**2

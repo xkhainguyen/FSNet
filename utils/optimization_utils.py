@@ -134,6 +134,7 @@ class QPProblem(BaseProblem):
         self.A = torch.tensor(dataset['A'])
         self.G = torch.tensor(dataset['G'])
         self.h = torch.tensor(dataset['h'])
+        self.c = 20.0 #torch.tensor(dataset['c'])
 
         self.xdim = dataset['X'].shape[1]
         self.ydim = dataset['Q'].shape[0]
@@ -155,7 +156,7 @@ class QPProblem(BaseProblem):
         )
 
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * Y).sum(dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * Y).sum(dim=1) + self.c
     
     def eq_resid(self, X, Y):
         return Y @ self.A.T - X
@@ -274,7 +275,7 @@ class nonconvexQPProblem(QPProblem):
         )
     
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = torch.sin(Y) @ self.G.T - self.h.view(1, -1)*(torch.cos(X))
@@ -291,7 +292,7 @@ class nonconvexQCQPProblem(QCQPProblem):
         )
     
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) 
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = []    
@@ -312,7 +313,7 @@ class nonconvexSOCPProblem(SOCPProblem):
         )
     
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = []
@@ -336,7 +337,7 @@ class nonsmooth_nonconvexQPProblem(QPProblem):
         )
     
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = torch.sin(Y) @ self.G.T - self.h.view(1, -1)*(torch.cos(X))
@@ -353,7 +354,7 @@ class nonsmooth_nonconvexQCQPProblem(QCQPProblem):
         )
     
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = []    
@@ -372,7 +373,7 @@ class nonsmooth_nonconvexSOCPProblem(SOCPProblem):
             str(self.ydim), str(self.nineq), str(self.neq), str(self.num)
         )
     def obj_fn(self, Y):
-        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1)
+        return (0.5 * (Y @ self.Q) * Y + self.p * torch.sin(Y)).sum(dim=1) + 0.1*torch.norm(Y, dim=1) + self.c
     
     def ineq_resid(self, X, Y):
         res = []
