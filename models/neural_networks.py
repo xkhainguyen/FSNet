@@ -103,16 +103,8 @@ class MixtureOfExperts(nn.Module):
             self.gate_noise_std = max(float(gate_noise_std), 0.0)
 
     # ------------------------------------------------------------------
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward pass with optional sparse top-K routing.
-
-        Returns:
-            Tensor of shape ``(B, output_dim)``.
-        """
-        B = x.shape[0]
-        E = self.num_experts
-        K = self.top_k
-
+    def _compute_gates(self, x: torch.Tensor):
+        """Compute gate logits/probabilities and update routing diagnostics."""
         gate_logits = self.gate(x)                          # (B, E)
         if self.training and self.gate_noise_std > 0:
             gate_logits = gate_logits + self.gate_noise_std * torch.randn_like(gate_logits)
@@ -122,30 +114,45 @@ class MixtureOfExperts(nn.Module):
         # ---- Load-balancing auxiliary loss (Switch-Transformer style) ----
         # L_aux = E * sum_i( mean_i^2 )  — minimised when routing is uniform (= 1.0)
         mean_gate = gate_soft.mean(dim=0)                   # (E,)
-        self.aux_loss = E * (mean_gate ** 2).sum()
+        self.aux_loss = self.num_experts * (mean_gate ** 2).sum()
         self.gate_entropy = (-gate_soft * torch.log(gate_soft + 1e-12)).sum(dim=-1).mean()
         self.gate_max_prob = gate_soft.max(dim=-1).values.mean()
+        return gate_logits, gate_soft
 
-        # ---- Compute all expert outputs (B, E, out_dim) ----
+    def forward_candidates(self, x: torch.Tensor):
+        """Return routed candidate outputs and routing weights.
+
+        Returns:
+            out: Aggregated MoE output, shape (B, out).
+            candidates: Candidate expert outputs considered by router, shape (B, K, out).
+            topk_idx: Expert indices for each candidate, shape (B, K).
+            topk_weights: Routing weights over candidates, shape (B, K).
+        """
+        gate_logits, gate_soft = self._compute_gates(x)
         expert_outs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, E, out)
 
         use_sparse = self.sparse and (not self.force_dense)
-
         if not use_sparse:
-            # Dense routing: weighted sum over all experts
-            # gate_soft: (B, E, 1) · expert_outs: (B, E, out) → (B, out)
-            out = (expert_outs * gate_soft.unsqueeze(-1)).sum(dim=1)
+            candidates = expert_outs
+            topk_weights = gate_soft
+            B = x.shape[0]
+            topk_idx = torch.arange(self.num_experts, device=x.device).unsqueeze(0).expand(B, -1)
         else:
-            # Sparse top-K routing
-            topk_logits, topk_idx = gate_logits.topk(K, dim=-1)       # (B, K)
-            topk_weights = F.softmax(topk_logits, dim=-1)              # (B, K)  re-normalised
+            topk_logits, topk_idx = gate_logits.topk(self.top_k, dim=-1)       # (B, K)
+            topk_weights = F.softmax(topk_logits, dim=-1)                        # (B, K)
 
-            # Gather the K chosen expert outputs: (B, K, out)
             out_dim = expert_outs.shape[-1]
-            idx_exp = topk_idx.unsqueeze(-1).expand(-1, -1, out_dim)   # (B, K, out)
-            selected = expert_outs.gather(1, idx_exp)                  # (B, K, out)
+            idx_exp = topk_idx.unsqueeze(-1).expand(-1, -1, out_dim)            # (B, K, out)
+            candidates = expert_outs.gather(1, idx_exp)                          # (B, K, out)
 
-            # Weighted sum over selected experts
-            out = (selected * topk_weights.unsqueeze(-1)).sum(dim=1)   # (B, out)
+        out = (candidates * topk_weights.unsqueeze(-1)).sum(dim=1)               # (B, out)
+        return out, candidates, topk_idx, topk_weights
 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass with optional sparse top-K routing.
+
+        Returns:
+            Tensor of shape ``(B, output_dim)``.
+        """
+        out, _, _, _ = self.forward_candidates(x)
         return out

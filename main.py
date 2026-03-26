@@ -171,6 +171,9 @@ def create_parser():
     parser.add_argument('--moe_final_temp', type=float)
     parser.add_argument('--moe_gate_noise_final', type=float)
     parser.add_argument('--moe_temp_decay_epochs', type=int)
+    parser.add_argument('--moe_post', type=str, choices=['pre', 'post'])
+    parser.add_argument('--moe_agg', type=str,
+                        choices=['router', 'mean', 'best_obj', 'best_merit'])
     parser.add_argument('--scale', type=float)
     parser.add_argument('--dist_weight', type=float)
     parser.add_argument('--max_diff_iter', type=int)
@@ -263,6 +266,10 @@ def create_parser():
         config['MoE']['gate_noise_final'] = args.moe_gate_noise_final
     if args.moe_temp_decay_epochs is not None:
         config['MoE']['temp_decay_epochs'] = args.moe_temp_decay_epochs
+    if args.moe_post is not None:
+        config['moe_post'] = args.moe_post
+    if args.moe_agg is not None:
+        config['moe_agg'] = args.moe_agg
 
     # ── Method-specific overrides (applied to config[method] only) ──
     method = config['method']

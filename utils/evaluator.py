@@ -4,7 +4,7 @@ import time
 import torch
 from torch.utils.data import DataLoader
 
-from models.neural_networks import EnsembleMLP
+from models.neural_networks import EnsembleMLP, MixtureOfExperts
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve
 
@@ -197,6 +197,21 @@ class Evaluator:
 
         Falls back to the standard single-model path for non-ensemble models.
         """
+        if isinstance(model, MixtureOfExperts):
+            moe_post = self.config.get('moe_post', 'pre')
+            if moe_post == 'post':
+                _out, candidates, _topk_idx, topk_weights = model.forward_candidates(X_batch)
+                finals = []
+                for i in range(candidates.shape[1]):
+                    y_scaled = self.opt_problem.scale(candidates[:, i, :])
+                    y_final = self._post_process_predictions(X_batch, y_scaled)
+                    finals.append(y_final)
+                return self._aggregate_moe_predictions(finals, X_batch, topk_weights)
+
+            Y_pred = model(X_batch)
+            Y_pred_scaled = self.opt_problem.scale(Y_pred)
+            return self._post_process_predictions(X_batch, Y_pred_scaled)
+
         if not isinstance(model, EnsembleMLP):
             Y_pred = model(X_batch)
             Y_pred_scaled = self.opt_problem.scale(Y_pred)
@@ -217,6 +232,43 @@ class Evaluator:
                   for i in range(all_preds.shape[0])]
         aggregated = self._aggregate_predictions(scaled, X_batch)
         return self._post_process_predictions(X_batch, aggregated)
+
+    def _aggregate_moe_predictions(self, finals, X_batch, topk_weights):
+        """Aggregate post-processed MoE candidate predictions.
+
+        Strategies:
+            router      - per-sample pick candidate with highest routing weight
+            mean        - element-wise mean over candidates
+            best_obj    - per-sample pick candidate with lowest objective
+            best_merit  - per-sample pick candidate with lowest merit
+                         merit = obj + 1e5*(eq_viol + ineq_viol)
+        """
+        agg = self.config.get('moe_agg', self.config.get('ensemble_agg', 'best_merit'))
+        stacked = torch.stack(finals, dim=0)  # (K, B, out)
+
+        if agg == 'router':
+            pick = topk_weights.argmax(dim=1)  # (B,)
+            B = stacked.shape[1]
+            return stacked[pick, torch.arange(B, device=stacked.device)]
+
+        if agg == 'mean':
+            return stacked.mean(dim=0)
+
+        if agg in ('best_obj', 'best_merit'):
+            scores = []
+            for f in finals:
+                obj = self.opt_problem.obj_fn(f)  # (B,)
+                if agg == 'best_merit':
+                    eq_l1 = self.opt_problem.eq_resid(X_batch, f).abs().sum(dim=1)
+                    ineq_l1 = self.opt_problem.ineq_resid(X_batch, f).abs().sum(dim=1)
+                    obj = obj + 1e5 * (eq_l1 + ineq_l1)
+                scores.append(obj)
+            scores = torch.stack(scores, dim=0)  # (K, B)
+            best_idx = scores.argmin(dim=0)      # (B,)
+            B = stacked.shape[1]
+            return stacked[best_idx, torch.arange(B, device=stacked.device)]
+
+        raise ValueError(f"Unknown MoE aggregation strategy: {agg}")
 
     def _aggregate_predictions(self, finals, X_batch):
         """
