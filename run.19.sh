@@ -25,7 +25,7 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 2; do
+for seed in 0 1 2 3; do
     # python main.py \
     #     --method adaptive_penalty \
     #     --prob_type nonsmooth_nonconvex \
