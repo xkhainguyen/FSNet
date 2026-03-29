@@ -1,4 +1,4 @@
-<img src="basin_R3.png" alt="Figure R1" width="1000" height="800">
+<img src="basin_R3.png" alt="Figure R1" width="900" height="500">
 
 Figure R1. **Results of our approach for a PINN using R3 adaptive sampling on the physics-inspired learning task.**
 
