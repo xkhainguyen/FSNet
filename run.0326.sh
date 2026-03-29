@@ -27,7 +27,7 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 2; do
+for seed in 3; do
     # python main.py \
     #     --method FSNet \
     #     --prob_type nonsmooth_nonconvex \
@@ -42,8 +42,8 @@ for seed in 2; do
         --prob_name socp \
         --lr 0.0001  \
         --seed $seed \
-        --num_epochs 300 \
-        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_500.pt
+        --num_epochs 1000 \
+        # --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_500.pt
 done
 
 # python main.py \

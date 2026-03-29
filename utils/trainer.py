@@ -610,7 +610,8 @@ class Trainer:
     def _update_epoch_params(self, epoch: int) -> None:
         """Update parameters based on epoch."""
         # FSNet tolerance decay
-        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0) and self.config['checkpoint'] is None:
+        #TODO: make it fair
+        if ((self.method == 'FSNet' or self.method == 'S3Net' or self.method == 'semi') and (epoch + 1) % self.config_method['decay_tol_step'] == 0) and self.config['checkpoint'] is None and epoch < 300:
             self.config_method['val_tol'] = np.clip(
                 self.config_method['val_tol'] / 10, 
                 a_min=1e-9, 
