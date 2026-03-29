@@ -13,7 +13,7 @@ Table R1. **Performance comparison on a synthetic constrained optimization bench
 <img src="table_r1_epochs.png" alt="Table R2">
 
 ---
-Table R2. **Performance comparison on a synthetic constrained optimization benchmark of SSL with no warm-start, random label warm-start and cheap label warm-start.** We construct random solution labels via uniform sampling over a $\pm 3$ range in each dimension, which matches the scale of the solver-generated solutions. We generate $7{,}000$ such samples and perform supervised pretraining as in our standard pipeline. The last checkpoint is selected as it has lowest training loss and validation merit.
+Table R2. **Performance comparison on a synthetic constrained optimization benchmark of SSL with no warm-start, random label warm-start and cheap label warm-start.** We construct random solution labels via uniform sampling over a $\pm 3$ range in each dimension, which matches the scale of the solver-generated solutions. We generate $7{,}000$ such samples and perform supervised pretraining as in our standard pipeline. The last SL checkpoint is selected to warm-start SSL as it has lowest training loss and validation merit.
 
 <img src="table_r2_random.png" alt="Table R2">
 
