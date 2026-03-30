@@ -10,13 +10,13 @@ Figure R2. **SL (left) and SSL (right) dynamics across epochs in the synthetic o
 
 ---
 
-Table R1. **Performance comparison on a synthetic constrained optimization benchmark of SSL warm-started from different SL pretraining steps.** We use $7{,}000$ inexact labels (with a maximum CPU solve time of 2.0 s per label) for supervised warm-starting, SL achieves lowest validation merit at around epoch 250. We then perform FSNet SSL for 300 epochs from different SL pretraining steps.
+Table R1. **Performance comparison on a synthetic constrained optimization benchmark of SSL warm-started from different SL pretraining steps.** We use $7{,}000$ inexact labels (with a maximum CPU solve time of 2.0 s per label) for supervised warm-starting, SL achieves lowest validation merit at around epoch 250. We then perform FSNet SSL for 300 epochs from different SL pretraining steps. Results are reported over 4 random seeds.
 
 <img src="table_r1_epochs.png" alt="Table R2">
 
 ---
 
-Table R2. **Performance comparison on a synthetic constrained optimization benchmark of SSL with no warm-start, random label warm-start and cheap label warm-start.** We construct random solution labels via uniform sampling over a $\pm 3$ range in each dimension, which matches the scale of the solver-generated solutions. We generate $7{,}000$ such samples and perform supervised pretraining as in our standard pipeline. The last SL checkpoint is selected to warm-start SSL as it has lowest training loss and validation merit.
+Table R2. **Performance comparison on a synthetic constrained optimization benchmark of SSL with no warm-start, random label warm-start and cheap label warm-start.** We construct random solution labels via uniform sampling over a $\pm 3$ range in each dimension, which matches the scale of the solver-generated solutions. We generate $7{,}000$ such samples and perform supervised pretraining as in our standard pipeline. The last SL checkpoint is selected to warm-start SSL as it has lowest training loss and validation merit. Results are reported over 4 random seeds.
 
 <img src="table_r2_random.png" alt="Table R2">
 
