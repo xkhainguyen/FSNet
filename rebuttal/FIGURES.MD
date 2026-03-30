@@ -25,7 +25,7 @@ Table R2. **Performance comparison on a synthetic constrained optimization bench
 ## Additional references
 
 1R. Hornik, K., Stinchcombe, M., and White, H. Multilayer feedforward networks are universal approx-
-imators. Neu- ral networks, 2(5):359–366, 1989.\
+imators. Neu- ral networks, 2(5):359–366, 1989.
 
 2R. Du, S., Lee, J., Li, H., Wang, L., and Zhai, X. Gradient descent finds global minima of deep neural
 networks. In International conference on machine learning, pp. 1675– 1685. PMLR, 2019.
