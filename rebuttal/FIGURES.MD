@@ -10,7 +10,7 @@ Figure R2. **SL (left) and SSL (right) dynamics across epochs in the synthetic o
 
 ---
 
-Table R1. **Performance comparison on a synthetic constrained optimization benchmark of SSL warm-started from different SL pretraining steps.** We use $7{,}000$ inexact labels (with a maximum CPU solve time of 2.0 s per label) for supervised warm-starting, SL achieves lowest validation merit at around epoch 250. We then perform SSL for 300 epochs from different SL pretraining steps.
+Table R1. **Performance comparison on a synthetic constrained optimization benchmark of SSL warm-started from different SL pretraining steps.** We use $7{,}000$ inexact labels (with a maximum CPU solve time of 2.0 s per label) for supervised warm-starting, SL achieves lowest validation merit at around epoch 250. We then perform FSNet SSL for 300 epochs from different SL pretraining steps.
 
 <img src="table_r1_epochs.png" alt="Table R2">
 
