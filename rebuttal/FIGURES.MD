@@ -1,4 +1,4 @@
-**We thank all Reviewers for their thoughful and constructive feedback. We try our best to address all concerns and questions under word limits. All additional assumptions, remarks, results and references will be included in the revision.**
+**We thank all reviewers for their thoughtful and constructive feedback. We have done our best to address all concerns and questions within the word limits. All additional assumptions, remarks, results, and references will be included in the revision.**
 
 ---
 
