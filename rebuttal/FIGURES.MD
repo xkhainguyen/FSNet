@@ -1,3 +1,5 @@
+**All additional assumptions, remarks, results and references will be included in the revision.**
+
 <img src="figure_r1_compare_R3.png" alt="Figure R1" width="1000" height="500">
 
 Figure R1. **Results of our approach for a PINN using R3 adaptive sampling on the dynamical system learning task.**
