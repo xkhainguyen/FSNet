@@ -6,13 +6,15 @@
 #SBATCH -o logs/%x-%A_%a.out
 #SBATCH -e logs/%x-%A_%a.err
 
+set -euo pipefail
+
 # ----------------------------------------
 # Environment setup
 # ----------------------------------------
-
-# Load conda properly in non-interactive shells
-source ~/.bashrc        # ensures conda is available
+source ~/.bashrc
 conda activate ml4opt
+
+cd /home/khain/orcd/scratch/FSNet
 
 # ----------------------------------------
 # Run your job
