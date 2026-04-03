@@ -26,6 +26,10 @@ Table R2. **Performance comparison on a synthetic constrained optimization bench
 
 ---
 
+<img src="figure_r5_revised.png" alt="Figure R5">
+
+Figure R5. Revised version of Figure 5 in the original paper to better clarify SL pretraining and SSL. SL epochs are different from SSL epochs. Both are counted towards our method epochs.
+
 ## Additional references
 
 Daw A, Bu J, Wang S, Perdikaris P, Karpatne A. Mitigating Propagation Failures in Physics-informed Neural Networks using Retain-Resample-Release (R3) Sampling. In International Conference on Machine Learning 2023 Jul 3 (pp. 7264-7302). PMLR. 
