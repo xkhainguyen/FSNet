@@ -28,7 +28,7 @@ Table R2. **Performance comparison on a synthetic constrained optimization bench
 
 <img src="figure_r5_revised.png" alt="Figure R5">
 
-Figure R5. **A revised version of Figure 5 in the original paper to better clarify SL pretraining and SSL.** SL epochs are different from SSL epochs. Both are counted towards our method epochs.**
+Figure R5. **A revised version of Figure 5 in the original paper to better clarify SL pretraining and SSL.** SL epochs are different from SSL epochs. Both are counted towards our method epochs.
 
 ## Additional references
 
