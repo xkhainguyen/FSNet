@@ -117,6 +117,8 @@ def load_instance(config):
                          f"_{config.get('ensemble_post', 'pre')}")
         if config.get('network') == 'MoE':
             run_name += f"_moe{config['MoE']['num_experts']}k{config['MoE']['top_k']}_temp{config['MoE']['gate_temperature']}_noise{config['MoE']['gate_noise_std']}"
+            if config.get('moe_strategy', 'vanilla') != 'vanilla':
+                run_name += f"_{config['moe_strategy']}"
         if en_subopt != 0:
             run_name += f"_subopt{en_subopt}_{config['subopt_ratio']}"
         if config['checkpoint']:

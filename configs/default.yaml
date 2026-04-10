@@ -27,6 +27,8 @@ MoE:
   final_temp: 1.0
   gate_noise_final: 0.0
   temp_decay_epochs: 200
+moe_strategy: vanilla    # vanilla | top2_best_merit
+moe_candidate_top_k: 2   # used by top2_best_merit-style inference
 
 # ── Shared defaults (merged into every method) ──
 # Per-method sections below only need to list overrides.

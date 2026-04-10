@@ -106,6 +106,16 @@ def create_eval_parser():
     parser.add_argument('--ensemble_agg', type=str, default='mean',
                         choices=['mean', 'median', 'best_obj', 'best_merit'],
                         help='Aggregation strategy for ensemble members')
+    parser.add_argument('--moe_strategy', type=str, default=None,
+                        choices=['vanilla', 'top2_best_merit'],
+                        help='MoE inference strategy override')
+    parser.add_argument('--moe_candidate_top_k', type=int, default=None,
+                        help='Override number of router-selected experts to evaluate separately')
+    parser.add_argument('--moe_post', type=str, default=None, choices=['pre', 'post'],
+                        help='MoE post-processing mode override')
+    parser.add_argument('--moe_agg', type=str, default=None,
+                        choices=['router', 'mean', 'best_obj', 'best_merit'],
+                        help='MoE aggregation override')
 
     parser.add_argument('--test_batch_sizes', type=int, nargs='+', default=None,
                         help='Test batch sizes (default: from saved config)')
@@ -135,6 +145,8 @@ def _build_eval_save_dir(config):
         tag += (f"_ens{config['ensemble_size']}"
                 f"_{config.get('ensemble_post', 'pre')}"
                 f"_{config.get('ensemble_agg', 'mean')}")
+    if config.get('network') == 'MoE' and config.get('moe_strategy', 'vanilla') != 'vanilla':
+        tag += f"_{config['moe_strategy']}"
 
     prob_str = f"{prob_name.upper()}Problem"
     first_ckpt = config.get('_first_checkpoint_path', '')
@@ -206,6 +218,14 @@ def main():
 
     config['ensemble_post'] = args.ensemble_post
     config['ensemble_agg'] = args.ensemble_agg
+    if args.moe_strategy is not None:
+        config['moe_strategy'] = args.moe_strategy
+    if args.moe_candidate_top_k is not None:
+        config['moe_candidate_top_k'] = args.moe_candidate_top_k
+    if args.moe_post is not None:
+        config['moe_post'] = args.moe_post
+    if args.moe_agg is not None:
+        config['moe_agg'] = args.moe_agg
     config['wandb'] = args.wandb
     config['_eval_only'] = True
     config['_checkpoint_paths'] = checkpoints
@@ -263,6 +283,12 @@ def main():
     if is_ensemble:
         log.info("ensemble_post=%s  ensemble_agg=%s",
                  config['ensemble_post'], config['ensemble_agg'])
+    elif isinstance(model, MixtureOfExperts):
+        log.info("moe_strategy=%s  moe_post=%s  moe_agg=%s  moe_candidate_top_k=%s",
+                 config.get('moe_strategy', 'vanilla'),
+                 config.get('moe_post', 'pre'),
+                 config.get('moe_agg', 'best_merit'),
+                 config.get('moe_candidate_top_k', 'default'))
 
     log.info("=" * 60)
     log.info("TEST EVALUATION")

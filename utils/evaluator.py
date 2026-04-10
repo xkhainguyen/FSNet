@@ -198,6 +198,19 @@ class Evaluator:
         Falls back to the standard single-model path for non-ensemble models.
         """
         if isinstance(model, MixtureOfExperts):
+            moe_strategy = self.config.get('moe_strategy', 'vanilla')
+            if moe_strategy == 'top2_best_merit':
+                candidate_top_k = int(self.config.get('moe_candidate_top_k', 2))
+                _out, candidates, _topk_idx, topk_weights = model.forward_candidates(
+                    X_batch, candidate_top_k=candidate_top_k)
+                finals = []
+                for i in range(candidates.shape[1]):
+                    y_scaled = self.opt_problem.scale(candidates[:, i, :])
+                    y_final = self._post_process_predictions(X_batch, y_scaled)
+                    finals.append(y_final)
+                return self._aggregate_moe_predictions(
+                    finals, X_batch, topk_weights, agg='best_merit')
+
             moe_post = self.config.get('moe_post', 'pre')
             if moe_post == 'post':
                 _out, candidates, _topk_idx, topk_weights = model.forward_candidates(X_batch)
@@ -233,7 +246,7 @@ class Evaluator:
         aggregated = self._aggregate_predictions(scaled, X_batch)
         return self._post_process_predictions(X_batch, aggregated)
 
-    def _aggregate_moe_predictions(self, finals, X_batch, topk_weights):
+    def _aggregate_moe_predictions(self, finals, X_batch, topk_weights, agg=None):
         """Aggregate post-processed MoE candidate predictions.
 
         Strategies:
@@ -243,7 +256,7 @@ class Evaluator:
             best_merit  - per-sample pick candidate with lowest merit
                          merit = obj + 1e5*(eq_viol + ineq_viol)
         """
-        agg = self.config.get('moe_agg', self.config.get('ensemble_agg', 'best_merit'))
+        agg = agg or self.config.get('moe_agg', self.config.get('ensemble_agg', 'best_merit'))
         stacked = torch.stack(finals, dim=0)  # (K, B, out)
 
         if agg == 'router':
@@ -490,4 +503,3 @@ class Evaluator:
                          m.get('total_time', 0))
 
         log.info("=" * 70)
-

@@ -119,7 +119,7 @@ class MixtureOfExperts(nn.Module):
         self.gate_max_prob = gate_soft.max(dim=-1).values.mean()
         return gate_logits, gate_soft
 
-    def forward_candidates(self, x: torch.Tensor):
+    def forward_candidates(self, x: torch.Tensor, candidate_top_k: int = None):
         """Return routed candidate outputs and routing weights.
 
         Returns:
@@ -131,14 +131,20 @@ class MixtureOfExperts(nn.Module):
         gate_logits, gate_soft = self._compute_gates(x)
         expert_outs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, E, out)
 
-        use_sparse = self.sparse and (not self.force_dense)
+        if candidate_top_k is None:
+            effective_top_k = self.top_k
+        else:
+            effective_top_k = int(candidate_top_k)
+            effective_top_k = max(1, min(effective_top_k, self.num_experts))
+
+        use_sparse = (effective_top_k < self.num_experts) and (not self.force_dense)
         if not use_sparse:
             candidates = expert_outs
             topk_weights = gate_soft
             B = x.shape[0]
             topk_idx = torch.arange(self.num_experts, device=x.device).unsqueeze(0).expand(B, -1)
         else:
-            topk_logits, topk_idx = gate_logits.topk(self.top_k, dim=-1)       # (B, K)
+            topk_logits, topk_idx = gate_logits.topk(effective_top_k, dim=-1)  # (B, K)
             topk_weights = F.softmax(topk_logits, dim=-1)                        # (B, K)
 
             out_dim = expert_outs.shape[-1]

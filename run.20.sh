@@ -24,6 +24,7 @@ echo "=============================================="
 echo " Job started at: $(date '+%Y-%m-%d %H:%M:%S')"
 echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
+echo " MoE strategy: ${MOE_STRATEGY:-top2_best_merit} (candidate_top_k=${MOE_CANDIDATE_TOP_K:-2})"
 echo "=============================================="
 
 # for seed in 1 2 3; do
@@ -50,6 +51,8 @@ for seed in 2 3; do
         --num_epochs 300 \
         --network MoE \
         --moe_num_experts 4 --moe_top_k 2 \
+        --moe_strategy "${MOE_STRATEGY:-top2_best_merit}" \
+        --moe_candidate_top_k "${MOE_CANDIDATE_TOP_K:-2}" \
         --moe_aux_loss_weight 0.005 \
         --moe_warmup_epochs 30 \
         --moe_start_temp 2.0 --moe_final_temp 1.0 --moe_temp_decay_epochs 150 \
