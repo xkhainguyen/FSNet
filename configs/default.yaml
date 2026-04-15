@@ -23,7 +23,7 @@ ContextMLPv2:
   eps: 1.0e-08
   context_encoder_dim: 128
 LocalContextMLPv2:
-  local_delta_scale: 0.1
+  local_delta_scale: 0.08
   coarse_loss_weight: 0.5
 MoE:
   num_experts: 4
