@@ -56,7 +56,7 @@ penalty:
   lr: 0.00015
   num_epochs: 1000
   obj_weight: 1.0
-  eq_pen_weight: 100.0
+  eq_pen_weight: 125.0
   ineq_pen_weight: 50.0
 adaptive_penalty:
   eq_pen_weight_max: 500.0
