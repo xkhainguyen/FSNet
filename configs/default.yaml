@@ -27,7 +27,7 @@ ContextMLPv2:
   eps: 1.0e-8
   context_encoder_dim: 128
 LocalContextMLPv2:
-  local_delta_scale: 0.2
+  local_delta_scale: 0.1
   coarse_loss_weight: 0.5
 # MoE-specific (only used when network: MoE)
 MoE:
