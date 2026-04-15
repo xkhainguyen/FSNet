@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
-from models.neural_networks import MLP, EnsembleMLP, MixtureOfExperts
+from models.neural_networks import MLP, ContextMLPv1, ContextMLPv2, LocalContextMLPv1, LocalContextMLPv2, EnsembleMLP, MixtureOfExperts
 from utils.evaluator import Evaluator
 
 log = logging.getLogger(__name__)
@@ -115,6 +115,20 @@ def load_instance(config):
             run_name += (f"_ens{config['ensemble_size']}"
                          f"_{config.get('ensemble_mode', 'vanilla')}"
                          f"_{config.get('ensemble_post', 'pre')}")
+        if config.get('network') == 'ContextMLPv1':
+            ctx_cfg = config.get('ContextMLPv1', {})
+            run_name += f"_ctx{int(ctx_cfg.get('num_context_points', config.get('context_num_points', 16)))}"
+        if config.get('network') == 'ContextMLPv2':
+            ctx_cfg = config.get('ContextMLPv2', {})
+            run_name += (
+                f"_ctxv2k{int(ctx_cfg.get('num_context_points', 4))}"
+                f"e{int(ctx_cfg.get('context_encoder_dim', 128))}"
+            )
+        if config.get('network') == 'LocalContextMLPv1':
+            run_name += "_localctxv1"
+        if config.get('network') == 'LocalContextMLPv2':
+            local_cfg = config.get('LocalContextMLPv2', {})
+            run_name += f"_localctxv2d{local_cfg.get('local_delta_scale', 0.2)}"
         if config.get('network') == 'MoE':
             run_name += f"_moe{config['MoE']['num_experts']}k{config['MoE']['top_k']}_temp{config['MoE']['gate_temperature']}_noise{config['MoE']['gate_noise_std']}"
             if config.get('moe_strategy', 'vanilla') != 'vanilla':
@@ -152,6 +166,9 @@ def create_model(opt_problem, method, config):
     num_layers = config["num_layers"]
     network = config['network']
     dropout = config["dropout"]
+    context_cfg_v1 = config.get("ContextMLPv1", {})
+    context_cfg_v2 = config.get("ContextMLPv2", {})
+    local_ctx_cfg = config.get("LocalContextMLPv2", {})
 
     if method == "DC3" or method == "sup_partial":
         out_dim = opt_problem.partial_vars.shape[0]
@@ -160,6 +177,109 @@ def create_model(opt_problem, method, config):
 
     if network == 'MLP':
         model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
+    elif network == 'ContextMLPv1':
+        context_num_points = int(context_cfg_v1.get('num_context_points', config.get('context_num_points', 16)))
+        context_normalize = bool(context_cfg_v1.get('normalize', config.get('context_normalize', True)))
+        context_eps = float(context_cfg_v1.get('eps', config.get('context_eps', 1e-8)))
+
+        model = ContextMLPv1(
+            opt_problem.xdim,
+            hidden_dim,
+            out_dim,
+            problem_type=config['prob_type'],
+            problem_name=config['prob_name'],
+            L=opt_problem.L,
+            U=opt_problem.U,
+            A=opt_problem.A,
+            G=opt_problem.G,
+            h=opt_problem.h,
+            Q=opt_problem.Q,
+            p=opt_problem.p,
+            c=opt_problem.c,
+            H=getattr(opt_problem, 'H', None),
+            C=getattr(opt_problem, 'C', None),
+            d=getattr(opt_problem, 'd', None),
+            num_context_points=context_num_points,
+            seed=config.get('seed', 2025),
+            context_normalize=context_normalize,
+            context_eps=context_eps,
+            num_layers=num_layers,
+            dropout=dropout,
+        )
+    elif network == 'ContextMLPv2':
+        context_num_points = int(context_cfg_v2.get('num_context_points', 4))
+        context_normalize = bool(context_cfg_v2.get('normalize', True))
+        context_eps = float(context_cfg_v2.get('eps', 1e-8))
+        context_encoder_dim = int(context_cfg_v2.get('context_encoder_dim', 128))
+
+        model = ContextMLPv2(
+            opt_problem.xdim,
+            hidden_dim,
+            out_dim,
+            problem_type=config['prob_type'],
+            problem_name=config['prob_name'],
+            L=opt_problem.L,
+            U=opt_problem.U,
+            A=opt_problem.A,
+            G=opt_problem.G,
+            h=opt_problem.h,
+            Q=opt_problem.Q,
+            p=opt_problem.p,
+            c=opt_problem.c,
+            H=getattr(opt_problem, 'H', None),
+            C=getattr(opt_problem, 'C', None),
+            d=getattr(opt_problem, 'd', None),
+            num_context_points=context_num_points,
+            seed=config.get('seed', 2025),
+            context_normalize=context_normalize,
+            context_eps=context_eps,
+            context_encoder_dim=context_encoder_dim,
+            num_layers=num_layers,
+            dropout=dropout,
+        )
+    elif network == 'LocalContextMLPv1':
+        model = LocalContextMLPv1(
+            opt_problem.xdim,
+            hidden_dim,
+            out_dim,
+            problem_type=config['prob_type'],
+            problem_name=config['prob_name'],
+            L=opt_problem.L,
+            U=opt_problem.U,
+            A=opt_problem.A,
+            G=opt_problem.G,
+            h=opt_problem.h,
+            Q=opt_problem.Q,
+            p=opt_problem.p,
+            c=opt_problem.c,
+            H=getattr(opt_problem, 'H', None),
+            C=getattr(opt_problem, 'C', None),
+            d=getattr(opt_problem, 'd', None),
+            num_layers=num_layers,
+            dropout=dropout,
+        )
+    elif network == 'LocalContextMLPv2':
+        model = LocalContextMLPv2(
+            opt_problem.xdim,
+            hidden_dim,
+            out_dim,
+            problem_type=config['prob_type'],
+            problem_name=config['prob_name'],
+            L=opt_problem.L,
+            U=opt_problem.U,
+            A=opt_problem.A,
+            G=opt_problem.G,
+            h=opt_problem.h,
+            Q=opt_problem.Q,
+            p=opt_problem.p,
+            c=opt_problem.c,
+            H=getattr(opt_problem, 'H', None),
+            C=getattr(opt_problem, 'C', None),
+            d=getattr(opt_problem, 'd', None),
+            local_delta_scale=float(local_ctx_cfg.get('local_delta_scale', 0.2)),
+            num_layers=num_layers,
+            dropout=dropout,
+        )
     elif network == 'MoE':
         moe_cfg = config.get('MoE', {})
         num_experts = moe_cfg.get('num_experts', config.get('num_experts', 4))
@@ -175,7 +295,17 @@ def create_model(opt_problem, method, config):
         )
     else:
         raise ValueError(f"Unknown network type: {network}")
-    return model.to(DEVICE)
+    model = model.to(DEVICE)
+
+    if isinstance(model, (ContextMLPv1, ContextMLPv2)):
+        if isinstance(model, ContextMLPv2):
+            fit_batch_size = int(context_cfg_v2.get('fit_batch_size', 256))
+        else:
+            fit_batch_size = int(context_cfg_v1.get('fit_batch_size', config.get('context_fit_batch_size', 256)))
+        train_X = opt_problem.train_dataset.tensors[0]
+        model.fit_context_stats(train_X, batch_size=fit_batch_size)
+
+    return model
 
 
 class Trainer:
@@ -230,7 +360,20 @@ class Trainer:
     
         loss = self.config_method['obj_weight'] * obj + \
                self.config_method['eq_pen_weight'] * eq_violation + \
-               self.config_method['ineq_pen_weight'] * ineq_violation 
+               self.config_method['ineq_pen_weight'] * ineq_violation
+
+        if isinstance(self.model, LocalContextMLPv2) and self.model.last_coarse_prediction is not None:
+            coarse_scaled = self.opt_problem.scale(self.model.last_coarse_prediction)
+            coarse_obj = self.opt_problem.obj_fn(coarse_scaled)
+            coarse_eq_violation = self.opt_problem.eq_resid(X_batch, coarse_scaled).square().sum(dim=1)
+            coarse_ineq_violation = self.opt_problem.ineq_resid(X_batch, coarse_scaled).square().sum(dim=1)
+            coarse_weight = float(self.config.get('LocalContextMLPv2', {}).get('coarse_loss_weight', 0.5))
+            coarse_loss = self.config_method['obj_weight'] * coarse_obj + \
+                          self.config_method['eq_pen_weight'] * coarse_eq_violation + \
+                          self.config_method['ineq_pen_weight'] * coarse_ineq_violation
+            loss = loss + coarse_weight * coarse_loss
+            metrics['coarse_eq_violation'] = coarse_eq_violation.mean().item()
+            metrics['coarse_ineq_violation'] = coarse_ineq_violation.mean().item()
 
         metrics.update({
             'obj': obj.mean().item(),
@@ -631,6 +774,8 @@ class Trainer:
 
             # Accumulate metrics
             for key, value in batch_metrics.items():
+                if key not in epoch_metrics:
+                    epoch_metrics[key] = 0.0
                 epoch_metrics[key] += value
             epoch_metrics['loss'] += scalar_loss.item()
         

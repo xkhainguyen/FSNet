@@ -125,6 +125,52 @@ def _normalize_moe_config(config):
     config['MoE'] = moe
 
 
+def _normalize_context_configs(config):
+    """Ensure canonical nested configs for ContextMLPv1 and ContextMLPv2."""
+    legacy_map = {
+        'context_num_points': 'num_context_points',
+        'context_normalize': 'normalize',
+        'context_fit_batch_size': 'fit_batch_size',
+        'context_eps': 'eps',
+        'context_encoder_dim': 'context_encoder_dim',
+    }
+
+    ctx_v1 = dict(config.get('ContextMLPv1', {}) or {})
+    for legacy_key, nested_key in legacy_map.items():
+        if nested_key not in ctx_v1 and legacy_key in config:
+            ctx_v1[nested_key] = config[legacy_key]
+    for key, val in {
+        'num_context_points': 16,
+        'normalize': True,
+        'fit_batch_size': 256,
+        'eps': 1.0e-8,
+    }.items():
+        ctx_v1.setdefault(key, val)
+    config['ContextMLPv1'] = ctx_v1
+
+    ctx_v2 = dict(config.get('ContextMLPv2', {}) or {})
+    for legacy_key, nested_key in legacy_map.items():
+        if nested_key not in ctx_v2 and legacy_key in config:
+            ctx_v2[nested_key] = config[legacy_key]
+    for key, val in {
+        'num_context_points': 4,
+        'normalize': True,
+        'fit_batch_size': 256,
+        'eps': 1.0e-8,
+        'context_encoder_dim': 128,
+    }.items():
+        ctx_v2.setdefault(key, val)
+    config['ContextMLPv2'] = ctx_v2
+
+    local_ctx = dict(config.get('LocalContextMLPv2', {}) or {})
+    for key, val in {
+        'local_delta_scale': 0.2,
+        'coarse_loss_weight': 0.5,
+    }.items():
+        local_ctx.setdefault(key, val)
+    config['LocalContextMLPv2'] = local_ctx
+
+
 def create_parser():
     """Create and configure the argument parser, then load and process the configuration."""
     parser = argparse.ArgumentParser(description='Neural Network Optimization')
@@ -177,6 +223,12 @@ def create_parser():
     parser.add_argument('--moe_agg', type=str,
                         choices=['router', 'mean', 'best_obj', 'best_merit'])
     parser.add_argument('--moe_candidate_top_k', type=int)
+    parser.add_argument('--context_num_points', type=int)
+    parser.add_argument('--context_fit_batch_size', type=int)
+    parser.add_argument('--context_eps', type=float)
+    parser.add_argument('--context_encoder_dim', type=int)
+    parser.add_argument('--local_delta_scale', type=float)
+    parser.add_argument('--local_coarse_loss_weight', type=float)
     parser.add_argument('--scale', type=float)
     parser.add_argument('--dist_weight', type=float)
     parser.add_argument('--max_diff_iter', type=int)
@@ -209,6 +261,7 @@ def create_parser():
 
     _merge_defaults(config)
     _normalize_moe_config(config)
+    _normalize_context_configs(config)
 
     # ── Top-level overrides ──
     if args.method:
@@ -277,6 +330,21 @@ def create_parser():
         config['moe_agg'] = args.moe_agg
     if args.moe_candidate_top_k is not None:
         config['moe_candidate_top_k'] = args.moe_candidate_top_k
+    if args.context_num_points is not None:
+        config['ContextMLPv1']['num_context_points'] = args.context_num_points
+        config['ContextMLPv2']['num_context_points'] = args.context_num_points
+    if args.context_fit_batch_size is not None:
+        config['ContextMLPv1']['fit_batch_size'] = args.context_fit_batch_size
+        config['ContextMLPv2']['fit_batch_size'] = args.context_fit_batch_size
+    if args.context_eps is not None:
+        config['ContextMLPv1']['eps'] = args.context_eps
+        config['ContextMLPv2']['eps'] = args.context_eps
+    if args.context_encoder_dim is not None:
+        config['ContextMLPv2']['context_encoder_dim'] = args.context_encoder_dim
+    if args.local_delta_scale is not None:
+        config['LocalContextMLPv2']['local_delta_scale'] = args.local_delta_scale
+    if args.local_coarse_loss_weight is not None:
+        config['LocalContextMLPv2']['coarse_loss_weight'] = args.local_coarse_loss_weight
 
     # ── Method-specific overrides (applied to config[method] only) ──
     method = config['method']

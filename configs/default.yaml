@@ -11,10 +11,24 @@ test_batch_sizes: [256, 512]
 eval_step: 10
 
 # ── Model ──
-network: MLP           # MLP | MoE
+network: MLP           # MLP | ContextMLPv1 | ContextMLPv2 | LocalContextMLPv1 | LocalContextMLPv2 | MoE
 hidden_dim: 1024
 num_layers: 4
 dropout: 0.1
+ContextMLPv1:
+  num_context_points: 16
+  normalize: true
+  fit_batch_size: 256
+  eps: 1.0e-8
+ContextMLPv2:
+  num_context_points: 4
+  normalize: true
+  fit_batch_size: 256
+  eps: 1.0e-8
+  context_encoder_dim: 128
+LocalContextMLPv2:
+  local_delta_scale: 0.2
+  coarse_loss_weight: 0.5
 # MoE-specific (only used when network: MoE)
 MoE:
   num_experts: 4         # number of expert MLPs
@@ -49,8 +63,12 @@ defaults:
   max_diff_iter: 30
 
 # ── Per-method overrides ──
-penalty:
+penalty:  
+  lr: 0.0001
   num_epochs: 1000
+  obj_weight: 1.0
+  eq_pen_weight: 100.0
+  ineq_pen_weight: 50.0
 
 adaptive_penalty:
   eq_pen_weight_max: 500.0
