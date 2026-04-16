@@ -2,7 +2,7 @@ seed: 0
 train_size: 7000
 val_size: 1000
 test_size: 2000
-batch_size: 256
+batch_size: 512
 test_batch_sizes:
 - 256
 - 512
@@ -23,7 +23,7 @@ ContextMLPv2:
   eps: 1.0e-08
   context_encoder_dim: 128
 LocalContextMLPv2:
-  local_delta_scale: 0.18
+  local_delta_scale: 0.11
   coarse_loss_weight: 0.5
 MoE:
   num_experts: 4
@@ -53,10 +53,10 @@ defaults:
   max_iter: 50
   max_diff_iter: 30
 penalty:
-  lr: 0.0002
-  num_epochs: 1200
+  lr: 0.0001
+  num_epochs: 1000
   obj_weight: 1.0
-  eq_pen_weight: 150.0
+  eq_pen_weight: 100.0
   ineq_pen_weight: 50.0
 adaptive_penalty:
   eq_pen_weight_max: 500.0
