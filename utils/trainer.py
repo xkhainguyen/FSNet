@@ -48,6 +48,11 @@ def get_model_size_stats(model):
     }
 
 
+def append_seed_suffix(name, seed):
+    """Append the run seed as the final suffix of a directory name."""
+    return f"{name}_seed{seed}"
+
+
 def load_instance(config):
     """Loads problem instance, data, and sets up save directory.
 
@@ -119,16 +124,21 @@ def load_instance(config):
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     if config['ablation']:
+        ablation_name = append_seed_suffix(
+            f"dist_{config['FSNet']['dist_weight']}_diff_{config['FSNet']['max_diff_iter']}",
+            seed,
+        )
         result_save_dir = os.path.join(
             'ablation_results', prob_type, prob_name, str(opt_problem),
             f"{config['network']}_{method}",
-            f"dist_{config['FSNet']['dist_weight']}_diff_{config['FSNet']['max_diff_iter']}")
+            ablation_name)
     else:
         lr_str = f"{config[method]['lr']:.0e}".replace("+", "")
-        run_name = (f"{timestamp}_{method}_seed{seed}"
+        run_name = (f"{timestamp}_{method}"
                     f"_e{config[method]['num_epochs']}"
                     f"_lr{lr_str}"
                     f"_n{train_size}")
+        run_name += f"_hdim{config['hidden_dim']}"
         if config.get('ensemble_size', 1) > 1:
             run_name += (f"_ens{config['ensemble_size']}"
                          f"_{config.get('ensemble_mode', 'vanilla')}"
@@ -157,6 +167,7 @@ def load_instance(config):
             ckpt_tag = os.path.basename(os.path.dirname(config['checkpoint']))
             ckpt_model = os.path.splitext(os.path.basename(config['checkpoint']))[0]
             run_name += f"_finetune_{ckpt_tag}_{ckpt_model}"
+        run_name = append_seed_suffix(run_name, seed)
         result_save_dir = os.path.join(
             'results', prob_type, prob_name, str(opt_problem), run_name)
 

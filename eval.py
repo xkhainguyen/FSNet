@@ -20,7 +20,7 @@ import torch
 import time
 
 from main import setup_logging
-from utils.trainer import load_instance, create_model, DEVICE, get_model_size_stats
+from utils.trainer import append_seed_suffix, load_instance, create_model, DEVICE, get_model_size_stats
 from utils.evaluator import Evaluator
 from models.neural_networks import MLP, EnsembleMLP, MixtureOfExperts
 
@@ -140,13 +140,14 @@ def _build_eval_save_dir(config):
     method = config['method']
     seed = config.get('seed', 0)
 
-    tag = f"{timestamp}_eval_{method}_seed{seed}"
+    tag = f"{timestamp}_eval_{method}"
     if config.get('ensemble_size', 1) > 1:
         tag += (f"_ens{config['ensemble_size']}"
                 f"_{config.get('ensemble_post', 'pre')}"
                 f"_{config.get('ensemble_agg', 'mean')}")
     if config.get('network') == 'MoE' and config.get('moe_strategy', 'vanilla') != 'vanilla':
         tag += f"_{config['moe_strategy']}"
+    tag = append_seed_suffix(tag, seed)
 
     prob_str = f"{prob_name.upper()}Problem"
     first_ckpt = config.get('_first_checkpoint_path', '')
