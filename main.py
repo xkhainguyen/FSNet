@@ -126,7 +126,7 @@ def _normalize_moe_config(config):
 
 
 def _normalize_context_configs(config):
-    """Ensure canonical nested configs for ContextMLPv1 and ContextMLPv2."""
+    """Ensure canonical nested configs for SampledContextMLPv1 and SampledContextMLPv2."""
     legacy_map = {
         'context_num_points': 'num_context_points',
         'context_normalize': 'normalize',
@@ -135,7 +135,7 @@ def _normalize_context_configs(config):
         'context_encoder_dim': 'context_encoder_dim',
     }
 
-    ctx_v1 = dict(config.get('ContextMLPv1', {}) or {})
+    ctx_v1 = dict(config.get('SampledContextMLPv1', {}) or {})
     for legacy_key, nested_key in legacy_map.items():
         if nested_key not in ctx_v1 and legacy_key in config:
             ctx_v1[nested_key] = config[legacy_key]
@@ -146,9 +146,9 @@ def _normalize_context_configs(config):
         'eps': 1.0e-8,
     }.items():
         ctx_v1.setdefault(key, val)
-    config['ContextMLPv1'] = ctx_v1
+    config['SampledContextMLPv1'] = ctx_v1
 
-    ctx_v2 = dict(config.get('ContextMLPv2', {}) or {})
+    ctx_v2 = dict(config.get('SampledContextMLPv2', {}) or {})
     for legacy_key, nested_key in legacy_map.items():
         if nested_key not in ctx_v2 and legacy_key in config:
             ctx_v2[nested_key] = config[legacy_key]
@@ -160,7 +160,7 @@ def _normalize_context_configs(config):
         'context_encoder_dim': 128,
     }.items():
         ctx_v2.setdefault(key, val)
-    config['ContextMLPv2'] = ctx_v2
+    config['SampledContextMLPv2'] = ctx_v2
 
     local_ctx = dict(config.get('LocalContextMLPv2', {}) or {})
     for key, val in {
@@ -331,16 +331,16 @@ def create_parser():
     if args.moe_candidate_top_k is not None:
         config['moe_candidate_top_k'] = args.moe_candidate_top_k
     if args.context_num_points is not None:
-        config['ContextMLPv1']['num_context_points'] = args.context_num_points
-        config['ContextMLPv2']['num_context_points'] = args.context_num_points
+        config['SampledContextMLPv1']['num_context_points'] = args.context_num_points
+        config['SampledContextMLPv2']['num_context_points'] = args.context_num_points
     if args.context_fit_batch_size is not None:
-        config['ContextMLPv1']['fit_batch_size'] = args.context_fit_batch_size
-        config['ContextMLPv2']['fit_batch_size'] = args.context_fit_batch_size
+        config['SampledContextMLPv1']['fit_batch_size'] = args.context_fit_batch_size
+        config['SampledContextMLPv2']['fit_batch_size'] = args.context_fit_batch_size
     if args.context_eps is not None:
-        config['ContextMLPv1']['eps'] = args.context_eps
-        config['ContextMLPv2']['eps'] = args.context_eps
+        config['SampledContextMLPv1']['eps'] = args.context_eps
+        config['SampledContextMLPv2']['eps'] = args.context_eps
     if args.context_encoder_dim is not None:
-        config['ContextMLPv2']['context_encoder_dim'] = args.context_encoder_dim
+        config['SampledContextMLPv2']['context_encoder_dim'] = args.context_encoder_dim
     if args.local_delta_scale is not None:
         config['LocalContextMLPv2']['local_delta_scale'] = args.local_delta_scale
     if args.local_coarse_loss_weight is not None:

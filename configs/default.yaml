@@ -11,12 +11,12 @@ network: MLP
 hidden_dim: 1024
 num_layers: 4
 dropout: 0.1
-ContextMLPv1:
+SampledContextMLPv1:
   num_context_points: 16
   normalize: true
   fit_batch_size: 256
   eps: 1.0e-08
-ContextMLPv2:
+SampledContextMLPv2:
   num_context_points: 4
   normalize: true
   fit_batch_size: 256

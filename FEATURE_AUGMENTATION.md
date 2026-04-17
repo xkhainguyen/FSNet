@@ -4,8 +4,8 @@
 
 This repo now has four feature-augmentation variants:
 
-- `ContextMLPv1`: fixed sampled context, flattened directly into the predictor input
-- `ContextMLPv2`: fixed sampled context, encoded per sampled point and mean-pooled
+- `SampledContextMLPv1`: fixed sampled context, flattened directly into the predictor input
+- `SampledContextMLPv2`: fixed sampled context, encoded per sampled point and mean-pooled
 - `LocalContextMLPv1`: local structure features computed around the model's coarse prediction
 - `LocalContextMLPv2`: local residual refinement with a coarse-stage auxiliary penalty loss
 
@@ -25,7 +25,7 @@ But the early variants showed that adding structure is not enough by itself. The
 
 Observed behavior:
 
-- `ContextMLPv1` and `ContextMLPv2` did not help enough for `penalty`
+- `SampledContextMLPv1` and `SampledContextMLPv2` did not help enough for `penalty`
 - `LocalContextMLPv1` improved raw objective and opt gap, but hurt feasibility too much
 
 That last result is important. It suggests local structure is useful, but the model needs stronger pressure to keep feasibility under control.
@@ -79,14 +79,14 @@ This should make it easier to preserve feasibility while still exploiting useful
 
 ## Model Summary
 
-### ContextMLPv1
+### SampledContextMLPv1
 
 - fixed sampled `y_ref`
 - full residual vectors at sampled points
 - flatten all features
 - concatenate with `x`
 
-### ContextMLPv2
+### SampledContextMLPv2
 
 - fixed sampled `y_ref`
 - full residual vectors at sampled points
@@ -116,8 +116,8 @@ Because `penalty` is fast, use it as the primary iteration loop:
 1. `MLP`
 2. `LocalContextMLPv2`
 3. `LocalContextMLPv1` only as an ablation
-4. `ContextMLPv2` only if needed for comparison
-5. `ContextMLPv1` only as an older baseline
+4. `SampledContextMLPv2` only if needed for comparison
+5. `SampledContextMLPv1` only as an older baseline
 
 Then validate the best local model on `FSNet`.
 
@@ -245,7 +245,7 @@ Vanilla `FSNet`, 300 epochs:
 
 These runs are the main reference points for the experiments below.
 
-### ContextMLPv1
+### SampledContextMLPv1
 
 Penalty with fixed sampled context and flattened full residual vectors did not beat vanilla penalty.
 
@@ -269,7 +269,7 @@ Conclusion:
 
 - fixed sampled global context + raw flattening was not a good architecture for `penalty`
 
-### ContextMLPv2
+### SampledContextMLPv2
 
 Encoding sampled points before pooling was cleaner than v1, but still did not beat vanilla penalty.
 
@@ -280,7 +280,7 @@ Representative runs:
 
 Observed pattern:
 
-- better than `ContextMLPv1` in some cases, but still worse than vanilla penalty
+- better than `SampledContextMLPv1` in some cases, but still worse than vanilla penalty
 - changing from `k=4` to `k=16` barely changed the result
 
 Examples:
@@ -386,10 +386,10 @@ That pair appears qualitatively similar but is much worse in absolute objective/
 
 ### FSNet Checks
 
-The original fixed-context idea was not uniformly bad. On FSNet, `ContextMLPv1` helped a bit relative to vanilla:
+The original fixed-context idea was not uniformly bad. On FSNet, `SampledContextMLPv1` helped a bit relative to vanilla:
 
 - vanilla FSNet: `objective = 16.4747`, `opt_gap_mean = -5.1522`, `merit_mean = 72.84`
-- `ContextMLPv1`: `objective = 16.3003`, `opt_gap_mean = -6.1552`, `merit_mean = 82.19`
+- `SampledContextMLPv1`: `objective = 16.3003`, `opt_gap_mean = -6.1552`, `merit_mean = 82.19`
 
 Interpretation:
 

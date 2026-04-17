@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
-from models.neural_networks import MLP, ContextMLPv1, ContextMLPv2, LocalContextMLPv1, LocalContextMLPv2, EnsembleMLP, MixtureOfExperts
+from models.neural_networks import MLP, SampledContextMLPv1, SampledContextMLPv2, LocalContextMLPv1, LocalContextMLPv2, EnsembleMLP, MixtureOfExperts
 from utils.evaluator import Evaluator
 
 log = logging.getLogger(__name__)
@@ -133,11 +133,11 @@ def load_instance(config):
             run_name += (f"_ens{config['ensemble_size']}"
                          f"_{config.get('ensemble_mode', 'vanilla')}"
                          f"_{config.get('ensemble_post', 'pre')}")
-        if config.get('network') == 'ContextMLPv1':
-            ctx_cfg = config.get('ContextMLPv1', {})
+        if config.get('network') == 'SampledContextMLPv1':
+            ctx_cfg = config.get('SampledContextMLPv1', {})
             run_name += f"_ctx{int(ctx_cfg.get('num_context_points', config.get('context_num_points', 16)))}"
-        if config.get('network') == 'ContextMLPv2':
-            ctx_cfg = config.get('ContextMLPv2', {})
+        if config.get('network') == 'SampledContextMLPv2':
+            ctx_cfg = config.get('SampledContextMLPv2', {})
             run_name += (
                 f"_ctxv2k{int(ctx_cfg.get('num_context_points', 4))}"
                 f"e{int(ctx_cfg.get('context_encoder_dim', 128))}"
@@ -184,8 +184,8 @@ def create_model(opt_problem, method, config):
     num_layers = config["num_layers"]
     network = config['network']
     dropout = config["dropout"]
-    context_cfg_v1 = config.get("ContextMLPv1", {})
-    context_cfg_v2 = config.get("ContextMLPv2", {})
+    context_cfg_v1 = config.get("SampledContextMLPv1", {})
+    context_cfg_v2 = config.get("SampledContextMLPv2", {})
     local_ctx_cfg = config.get("LocalContextMLPv2", {})
 
     if method == "DC3" or method == "sup_partial":
@@ -195,12 +195,12 @@ def create_model(opt_problem, method, config):
 
     if network == 'MLP':
         model = MLP(opt_problem.xdim, hidden_dim, out_dim, num_layers=num_layers, dropout=dropout)
-    elif network == 'ContextMLPv1':
+    elif network == 'SampledContextMLPv1':
         context_num_points = int(context_cfg_v1.get('num_context_points', config.get('context_num_points', 16)))
         context_normalize = bool(context_cfg_v1.get('normalize', config.get('context_normalize', True)))
         context_eps = float(context_cfg_v1.get('eps', config.get('context_eps', 1e-8)))
 
-        model = ContextMLPv1(
+        model = SampledContextMLPv1(
             opt_problem.xdim,
             hidden_dim,
             out_dim,
@@ -224,13 +224,13 @@ def create_model(opt_problem, method, config):
             num_layers=num_layers,
             dropout=dropout,
         )
-    elif network == 'ContextMLPv2':
+    elif network == 'SampledContextMLPv2':
         context_num_points = int(context_cfg_v2.get('num_context_points', 4))
         context_normalize = bool(context_cfg_v2.get('normalize', True))
         context_eps = float(context_cfg_v2.get('eps', 1e-8))
         context_encoder_dim = int(context_cfg_v2.get('context_encoder_dim', 128))
 
-        model = ContextMLPv2(
+        model = SampledContextMLPv2(
             opt_problem.xdim,
             hidden_dim,
             out_dim,
@@ -315,8 +315,8 @@ def create_model(opt_problem, method, config):
         raise ValueError(f"Unknown network type: {network}")
     model = model.to(DEVICE)
 
-    if isinstance(model, (ContextMLPv1, ContextMLPv2)):
-        if isinstance(model, ContextMLPv2):
+    if isinstance(model, (SampledContextMLPv1, SampledContextMLPv2)):
+        if isinstance(model, SampledContextMLPv2):
             fit_batch_size = int(context_cfg_v2.get('fit_batch_size', 256))
         else:
             fit_batch_size = int(context_cfg_v1.get('fit_batch_size', config.get('context_fit_batch_size', 256)))

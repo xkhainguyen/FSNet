@@ -139,7 +139,7 @@ class _ContextFeatureBase(nn.Module):
         return torch.cat([obj, eq, ineq], dim=2)
 
 
-class ContextMLPv1(_ContextFeatureBase):
+class SampledContextMLPv1(_ContextFeatureBase):
     """MLP that augments ``x`` with flattened full residual-vector features."""
 
     def __init__(
@@ -236,7 +236,7 @@ class ContextMLPv1(_ContextFeatureBase):
         return self.mlp(torch.cat([x, context], dim=1))
 
 
-class ContextMLPv2(_ContextFeatureBase):
+class SampledContextMLPv2(_ContextFeatureBase):
     """Context model with per-point encoding and mean pooling."""
 
     def __init__(

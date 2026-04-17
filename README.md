@@ -50,14 +50,14 @@ python main.py \
     --method FSNet \
     --prob_type convex \
     --prob_name qp \
-    --network ContextMLPv1 \
+    --network SampledContextMLPv1 \
     --context_num_points 16
 ```
 
-`ContextMLPv1` augments `x` with context features computed at a fixed bank of sampled reference `y` points. The current v1 context includes the objective scalar plus the full equality and inequality residual vectors for each sampled reference point, flattened directly into the predictor input.
+`SampledContextMLPv1` augments `x` with context features computed at a fixed bank of sampled reference `y` points. The current v1 context includes the objective scalar plus the full equality and inequality residual vectors for each sampled reference point, flattened directly into the predictor input.
 The sampled reference bank is derived deterministically from the main run `--seed`.
 
-`ContextMLPv2` uses the same sampled per-point features, but encodes each sampled point first and mean-pools the encoded context before fusing it with `x`.
+`SampledContextMLPv2` uses the same sampled per-point features, but encodes each sampled point first and mean-pools the encoded context before fusing it with `x`.
 
 `LocalContextMLPv1` uses a two-stage local refinement design: it predicts a coarse `y0` from `x`, computes local objective and constraint features at that coarse prediction, and then predicts the final `y` from `[x, y0, local_structure(x, y0)]`.
 
@@ -70,20 +70,20 @@ The sampled reference bank is derived deterministically from the main run `--see
 | `--config` | `configs/default.yaml` | YAML config file |
 | `--seed` | `2025` | Random seed |
 | `--train_size` | `7000` | Training set size |
-| `--network` | `MLP` | `MLP`, `ContextMLPv1`, `ContextMLPv2`, `LocalContextMLPv1`, `LocalContextMLPv2`, or `MoE` |
+| `--network` | `MLP` | `MLP`, `SampledContextMLPv1`, `SampledContextMLPv2`, `LocalContextMLPv1`, `LocalContextMLPv2`, or `MoE` |
 | `--lr` | (from config) | Learning rate |
 | `--num_epochs` | (from config) | Number of training epochs |
 | `--hidden_dim` | `1024` | MLP hidden dimension |
 | `--num_layers` | `4` | Number of hidden layers |
 | `--dropout` | `0.1` | Dropout rate |
-| `--context_num_points` | `16` | Number of sampled reference `y` points for `ContextMLPv1` |
-| `--context_encoder_dim` | `128` | Point-encoder hidden size for `ContextMLPv2` |
+| `--context_num_points` | `16` | Number of sampled reference `y` points for `SampledContextMLPv1` |
+| `--context_encoder_dim` | `128` | Point-encoder hidden size for `SampledContextMLPv2` |
 | `--local_delta_scale` | `0.2` | Max residual correction scale for `LocalContextMLPv2` |
 | `--local_coarse_loss_weight` | `0.5` | Weight on coarse-stage penalty loss for `LocalContextMLPv2` |
 | `--checkpoint` | `None` | Resume from a saved `.pt` file |
 | `--save_intermediate` | `False` | Save model at each validation step |
 
-See `configs/default.yaml` for full per-method hyperparameters, MoE settings, and `ContextMLPv1` context settings.
+See `configs/default.yaml` for full per-method hyperparameters, MoE settings, and `SampledContextMLPv1` context settings.
 
 ## Deep Ensembles
 
