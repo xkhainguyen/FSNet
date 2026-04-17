@@ -11,20 +11,24 @@ network: MLP
 hidden_dim: 1024
 num_layers: 4
 dropout: 0.1
+
 SampledContextMLPv1:
   num_context_points: 16
   normalize: true
   fit_batch_size: 256
   eps: 1.0e-08
+
 SampledContextMLPv2:
   num_context_points: 4
   normalize: true
   fit_batch_size: 256
   eps: 1.0e-08
   context_encoder_dim: 128
+
 LocalContextMLPv2:
   local_delta_scale: 0.11
   coarse_loss_weight: 0.5
+  
 MoE:
   num_experts: 4
   top_k: 2
@@ -38,6 +42,7 @@ MoE:
   temp_decay_epochs: 200
 moe_strategy: vanilla
 moe_candidate_top_k: 2
+
 defaults:
   lr: 0.0001
   num_epochs: 300
@@ -52,33 +57,42 @@ defaults:
   memory_size: 30
   max_iter: 50
   max_diff_iter: 30
+
 penalty:
   lr: 0.0001
   num_epochs: 1000
   obj_weight: 1.0
   eq_pen_weight: 100.0
   ineq_pen_weight: 50.0
+
 adaptive_penalty:
   eq_pen_weight_max: 500.0
   ineq_pen_weight_max: 100.0
   increasing_rate: 2.0
   num_epochs: 1000
+
 FSNet: {}
+
 S3Net:
   scale: 500
+
 DC3:
   corr_lr: 1.0e-06
   max_corr_steps: 30
   corr_momentum: 0.5
   lr: 5.0e-05
   num_epochs: 1000
+
 sup:
   lr: 0.0005
   num_epochs: 1000
+
 sup_partial:
   lr: 0.0005
   num_epochs: 1000
+
 sup_pen:
   obj_weight: 0.1
   num_epochs: 1000
+
 semi: {}
