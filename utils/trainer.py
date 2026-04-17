@@ -30,6 +30,24 @@ DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 torch.set_default_dtype(torch.float64)
 
 
+def get_model_size_stats(model):
+    """Return parameter-count and memory-size stats for a PyTorch model."""
+    total_params = sum(param.numel() for param in model.parameters())
+    trainable_params = sum(param.numel() for param in model.parameters() if param.requires_grad)
+    param_bytes = sum(param.numel() * param.element_size() for param in model.parameters())
+    buffer_bytes = sum(buf.numel() * buf.element_size() for buf in model.buffers())
+    total_bytes = param_bytes + buffer_bytes
+
+    return {
+        'total_params': int(total_params),
+        'trainable_params': int(trainable_params),
+        'param_bytes': int(param_bytes),
+        'buffer_bytes': int(buffer_bytes),
+        'total_bytes': int(total_bytes),
+        'total_mb': float(total_bytes / (1024 ** 2)),
+    }
+
+
 def load_instance(config):
     """Loads problem instance, data, and sets up save directory.
 
@@ -322,6 +340,13 @@ class Trainer:
         self.en_penalty = False
         
         self._initialize_params()
+
+    def _log_model_size(self, model=None, prefix="Model size"):
+        """Log parameter-count and memory-size stats for a model."""
+        stats = get_model_size_stats(model or self.model)
+        log.info("%s: params=%d  trainable=%d  size=%.4f MB",
+                 prefix, stats['total_params'], stats['trainable_params'], stats['total_mb'])
+        return stats
 
     def compute_batch_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_label: torch.Tensor, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the loss and additional metrics."""
@@ -856,6 +881,7 @@ class Trainer:
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
 
+        self._log_model_size()
         self._init_optimizer_and_scheduler(train_loader)
 
         log.info("lr=%.2e  weight_decay=1e-3  epochs=%d",
@@ -1062,6 +1088,7 @@ class Trainer:
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(seed)
         self.model = create_model(self.opt_problem, self.method, self.config)
+        self._log_model_size(prefix="Member model size")
         self._init_optimizer_and_scheduler(train_loader)
 
     def _run_training_loop(self, train_loader, val_loader, num_epochs,
@@ -1364,6 +1391,7 @@ class Trainer:
             return
         os.makedirs(self.save_dir, exist_ok=True)
         log.info("Saving to: %s", self.save_dir)
+        model_size = get_model_size_stats(self.model)
 
         # ---- model.pt ----
         model_path = os.path.join(self.save_dir, "model.pt")
@@ -1384,6 +1412,14 @@ class Trainer:
             'training_time_seconds': round(training_time, 2),
             'pytorch_version': torch.__version__,
             'device': str(DEVICE),
+            'model_size': {
+                'total_params': model_size['total_params'],
+                'trainable_params': model_size['trainable_params'],
+                'param_bytes': model_size['param_bytes'],
+                'buffer_bytes': model_size['buffer_bytes'],
+                'total_bytes': model_size['total_bytes'],
+                'total_mb': round(model_size['total_mb'], 8),
+            },
             'opt_gap_unit': 'percent',
         }
         if test_results_data and 'batch_size_comparison' in test_results_data:
@@ -1411,6 +1447,7 @@ class Trainer:
         detailed = {
             'train_history': train_history,
             'val_history': val_history,
+            'model_size': model_size,
         }
         if test_results_data and 'detailed_results_all_batch_sizes' in test_results_data:
             detailed['test_detailed'] = test_results_data['detailed_results_all_batch_sizes']

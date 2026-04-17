@@ -184,7 +184,7 @@ def create_parser():
     parser.add_argument('--prob_name', type=str, choices=PROBLEM_NAMES)
     parser.add_argument('--prob_size', type=int, nargs='+', default=[100, 50, 50, 10000])
     parser.add_argument('--network', type=str, default='MLP')
-    parser.add_argument('--seed', type=int, default=2025)
+    parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--strict_repro', action='store_true',
                         help='Enable strict deterministic behavior (CuDNN deterministic + seeded DataLoader)')
     parser.add_argument('--ablation', type=bool, default=False)
@@ -413,6 +413,7 @@ def main():
              config['method'], config[config['method']]['num_epochs'], result_save_dir)
 
     trainer = Trainer(opt_problem=opt_problem, config=config, save_dir=result_save_dir)
+
     if config['ensemble_size'] > 1:
         log.info("Ensemble training: %d members, mode=%s",
                  config['ensemble_size'], config['ensemble_mode'])

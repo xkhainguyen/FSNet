@@ -20,7 +20,7 @@ import torch
 import time
 
 from main import setup_logging
-from utils.trainer import load_instance, create_model, DEVICE
+from utils.trainer import load_instance, create_model, DEVICE, get_model_size_stats
 from utils.evaluator import Evaluator
 from models.neural_networks import MLP, EnsembleMLP, MixtureOfExperts
 
@@ -174,6 +174,14 @@ def _save_eval_results(save_dir, config, batch_size_results, eval_time):
         'ensemble_post': config.get('ensemble_post', 'pre'),
         'ensemble_agg': config.get('ensemble_agg', 'mean'),
         'checkpoints': config.get('_checkpoint_paths', []),
+        'model_size': {
+            'total_params': int(config.get('_model_size', {}).get('total_params', 0)),
+            'trainable_params': int(config.get('_model_size', {}).get('trainable_params', 0)),
+            'param_bytes': int(config.get('_model_size', {}).get('param_bytes', 0)),
+            'buffer_bytes': int(config.get('_model_size', {}).get('buffer_bytes', 0)),
+            'total_bytes': int(config.get('_model_size', {}).get('total_bytes', 0)),
+            'total_mb': round(float(config.get('_model_size', {}).get('total_mb', 0.0)), 8),
+        },
         'opt_gap_unit': 'percent',
     }
     bs_metrics = {}
@@ -280,6 +288,10 @@ def main():
     log.info("Model: %s  test_batch_sizes=%s",
              f"EnsembleMLP({len(model.members)} members)" if is_ensemble else "MLP",
              test_batch_sizes)
+    model_size = get_model_size_stats(model)
+    log.info("Model size: params=%d  trainable=%d  size=%.4f MB",
+             model_size['total_params'], model_size['trainable_params'], model_size['total_mb'])
+    config['_model_size'] = model_size
     if is_ensemble:
         log.info("ensemble_post=%s  ensemble_agg=%s",
                  config['ensemble_post'], config['ensemble_agg'])

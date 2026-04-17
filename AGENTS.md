@@ -24,7 +24,6 @@ Agents working in this repo should optimize for small, targeted changes that pre
 - `utils/lbfgs.py`: differentiable or hybrid L-BFGS pieces used by FSNet-style methods
 - `datasets/`: generated datasets and dataset creation scripts
 - `scripts/`: analysis utilities, plotting helpers, timing scripts, ensemble helpers, and tuning scripts
-- `scripts/tuning/`: Slurm-oriented tuning workflow and tuning log
 - `piml/` and top-level `*.ipynb`: exploratory notebooks and analysis
 - `results/`: generated experiment artifacts, usually not meant for source control
 
@@ -112,7 +111,6 @@ There is no obvious dedicated unit test suite in this repository, so do not clai
 
 - Many shell scripts are Slurm-oriented and may assume cluster-specific resources such as GPUs and queue settings.
 - Do not casually change `#SBATCH` directives, job names, or checkpoint paths in experiment scripts unless the task calls for it.
-- Tuning workflow details are documented in `scripts/tuning/TUNING_LOG.md`; use that file to understand recent experiment conventions.
 
 ## Data And Artifact Safety
 
