@@ -203,3 +203,4 @@ logs/
 figures/
 wandb/
 .codex
+third-party/
