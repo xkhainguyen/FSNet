@@ -71,7 +71,8 @@ adaptive_penalty:
   increasing_rate: 2.0
   num_epochs: 1000
 
-FSNet: {}
+FSNet:
+  init_std: 0.001
 
 S3Net:
   scale: 500

@@ -359,6 +359,19 @@ class Trainer:
                  prefix, stats['total_params'], stats['trainable_params'], stats['total_mb'])
         return stats
 
+    def _maybe_apply_small_fsnet_init(self):
+        """Initialize fresh FSNet MLP weights to a small scale."""
+        if self.method != 'FSNet':
+            return
+
+        init_std = float(self.config.get('FSNet', {}).get('init_std', 1.0e-3))
+        for module in self.model.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.normal_(module.weight, mean=0.0, std=init_std)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+        log.info("Applied small FSNet init: linear weights ~ N(0, %.2e), biases = 0", init_std)
+
     def compute_batch_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_label: torch.Tensor, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the loss and additional metrics."""
         Y_pred_scaled = self.opt_problem.scale(Y_pred)
@@ -891,6 +904,7 @@ class Trainer:
             self.model.load_state_dict(ckpt['model_state_dict'])
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
+            self._maybe_apply_small_fsnet_init()
 
         self._log_model_size()
         self._init_optimizer_and_scheduler(train_loader)
@@ -1099,6 +1113,7 @@ class Trainer:
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(seed)
         self.model = create_model(self.opt_problem, self.method, self.config)
+        self._maybe_apply_small_fsnet_init()
         self._log_model_size(prefix="Member model size")
         self._init_optimizer_and_scheduler(train_loader)
 
