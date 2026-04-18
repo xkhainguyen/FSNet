@@ -188,6 +188,50 @@ def _save_config_yaml(config, save_dir):
     log.info("Config saved: %s", path)
 
 
+def _initialize_fsnet_output_layer(model, opt_problem):
+    """Bias the final sigmoid output toward the train-set mean solution.
+
+    Hidden layers keep their default PyTorch initialization.
+    The final linear layer gets a small Xavier initialization and a bias set to
+    the logit of the normalized train-set mean solution.
+    """
+    final_linear = None
+    for module in model.modules():
+        if isinstance(module, nn.Linear):
+            final_linear = module
+
+    if final_linear is None:
+        raise ValueError("FSNet output init requires at least one nn.Linear layer")
+
+    train_Y = opt_problem.train_dataset.tensors[1].to(
+        device=final_linear.weight.device,
+        dtype=final_linear.weight.dtype,
+    )
+
+    if train_Y.shape[1] == opt_problem.ydim:
+        lower = opt_problem.L.view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
+        upper = opt_problem.U.view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
+    else:
+        partial_vars = torch.as_tensor(opt_problem.partial_vars, device=train_Y.device)
+        lower = opt_problem.L[partial_vars].view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
+        upper = opt_problem.U[partial_vars].view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
+
+    denom = torch.clamp(upper - lower, min=1.0e-12)
+    y_mean_norm = ((train_Y - lower) / denom).mean(dim=0)
+    y_mean_norm = torch.clamp(y_mean_norm, min=1.0e-4, max=1.0 - 1.0e-4)
+
+    nn.init.xavier_uniform_(final_linear.weight, gain=0.1)
+    with torch.no_grad():
+        final_linear.bias.copy_(torch.logit(y_mean_norm))
+
+    log.info(
+        "Applied FSNet output init: final weight=xavier_uniform(gain=%.2f), "
+        "final bias=logit(train_mean_norm), mean(train_mean_norm)=%.4f",
+        0.1,
+        y_mean_norm.mean().item(),
+    )
+
+
 def create_model(opt_problem, method, config):
     """Creates and returns a neural network model."""
     
@@ -326,6 +370,9 @@ def create_model(opt_problem, method, config):
         raise ValueError(f"Unknown network type: {network}")
     model = model.to(DEVICE)
 
+    if method == 'FSNet':
+        _initialize_fsnet_output_layer(model, opt_problem)
+
     if isinstance(model, (SampledContextMLPv1, SampledContextMLPv2)):
         if isinstance(model, SampledContextMLPv2):
             fit_batch_size = int(context_cfg_v2.get('fit_batch_size', 256))
@@ -358,19 +405,6 @@ class Trainer:
         log.info("%s: params=%d  trainable=%d  size=%.4f MB",
                  prefix, stats['total_params'], stats['trainable_params'], stats['total_mb'])
         return stats
-
-    def _maybe_apply_small_fsnet_init(self):
-        """Initialize fresh FSNet MLP weights to a small scale."""
-        if self.method != 'FSNet':
-            return
-
-        init_std = float(self.config.get('FSNet', {}).get('init_std', 1.0e-3))
-        for module in self.model.modules():
-            if isinstance(module, nn.Linear):
-                nn.init.normal_(module.weight, mean=0.0, std=init_std)
-                if module.bias is not None:
-                    nn.init.zeros_(module.bias)
-        log.info("Applied small FSNet init: linear weights ~ N(0, %.2e), biases = 0", init_std)
 
     def compute_batch_loss(self, X_batch: torch.Tensor, Y_pred: torch.Tensor, Y_label: torch.Tensor, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the loss and additional metrics."""
@@ -904,7 +938,6 @@ class Trainer:
             self.model.load_state_dict(ckpt['model_state_dict'])
         else:
             self.model = create_model(self.opt_problem, self.method, self.config)
-            self._maybe_apply_small_fsnet_init()
 
         self._log_model_size()
         self._init_optimizer_and_scheduler(train_loader)
@@ -1113,7 +1146,6 @@ class Trainer:
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(seed)
         self.model = create_model(self.opt_problem, self.method, self.config)
-        self._maybe_apply_small_fsnet_init()
         self._log_model_size(prefix="Member model size")
         self._init_optimizer_and_scheduler(train_loader)
 

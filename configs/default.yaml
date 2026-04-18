@@ -65,14 +65,13 @@ penalty:
   eq_pen_weight: 100.0
   ineq_pen_weight: 50.0
 
+FSNet: {}
+
 adaptive_penalty:
   eq_pen_weight_max: 500.0
   ineq_pen_weight_max: 100.0
   increasing_rate: 2.0
   num_epochs: 1000
-
-FSNet:
-  init_std: 0.001
 
 S3Net:
   scale: 500
