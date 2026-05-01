@@ -46,6 +46,7 @@ moe_candidate_top_k: 2
 defaults:
   lr: 0.0001
   num_epochs: 300
+  init: default
   obj_weight: 1.0
   eq_pen_weight: 10.0
   ineq_pen_weight: 10.0

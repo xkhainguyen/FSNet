@@ -188,45 +188,63 @@ def _save_config_yaml(config, save_dir):
     log.info("Config saved: %s", path)
 
 
-def _initialize_fsnet_output_layer(model, opt_problem):
+def _initialize_mean_bias_output_layer(model, opt_problem, method):
     """Bias the final sigmoid output toward the train-set mean solution.
 
     Hidden layers keep their default PyTorch initialization.
     The final linear layer gets a small Xavier initialization and a bias set to
     the logit of the normalized train-set mean solution.
     """
-    final_linear = None
+    output_layers = []
     for module in model.modules():
-        if isinstance(module, nn.Linear):
-            final_linear = module
+        if isinstance(module, MLP):
+            final_linear = module.mlp[-2]
+            if not isinstance(final_linear, nn.Linear):
+                raise ValueError("mean_bias init expected MLP to end with Linear + Sigmoid")
+            output_layers.append(final_linear)
 
-    if final_linear is None:
-        raise ValueError("FSNet output init requires at least one nn.Linear layer")
+    if not output_layers:
+        raise ValueError("mean_bias init requires at least one MLP output layer")
+
+    ref_layer = output_layers[0]
+    output_dim = ref_layer.bias.numel()
 
     train_Y = opt_problem.train_dataset.tensors[1].to(
-        device=final_linear.weight.device,
-        dtype=final_linear.weight.dtype,
+        device=ref_layer.weight.device,
+        dtype=ref_layer.weight.dtype,
     )
 
-    if train_Y.shape[1] == opt_problem.ydim:
+    if output_dim == opt_problem.ydim:
         lower = opt_problem.L.view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
         upper = opt_problem.U.view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
-    else:
+        init_Y = train_Y
+    elif output_dim == len(opt_problem.partial_vars):
         partial_vars = torch.as_tensor(opt_problem.partial_vars, device=train_Y.device)
         lower = opt_problem.L[partial_vars].view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
         upper = opt_problem.U[partial_vars].view(1, -1).to(device=train_Y.device, dtype=train_Y.dtype)
+        init_Y = train_Y[:, partial_vars]
+    else:
+        raise ValueError(
+            f"mean_bias init output dim {output_dim} does not match full "
+            f"dim {opt_problem.ydim} or partial dim {len(opt_problem.partial_vars)}"
+        )
 
     denom = torch.clamp(upper - lower, min=1.0e-12)
-    y_mean_norm = ((train_Y - lower) / denom).mean(dim=0)
+    y_mean_norm = ((init_Y - lower) / denom).mean(dim=0)
     y_mean_norm = torch.clamp(y_mean_norm, min=1.0e-4, max=1.0 - 1.0e-4)
 
-    nn.init.xavier_uniform_(final_linear.weight, gain=0.1)
-    with torch.no_grad():
-        final_linear.bias.copy_(torch.logit(y_mean_norm))
+    for layer in output_layers:
+        if layer.bias is None or layer.bias.numel() != y_mean_norm.numel():
+            raise ValueError("mean_bias init target dimension does not match train-set mean")
+        nn.init.xavier_uniform_(layer.weight, gain=0.1)
+        with torch.no_grad():
+            layer.bias.copy_(torch.logit(y_mean_norm))
 
     log.info(
-        "Applied FSNet output init: final weight=xavier_uniform(gain=%.2f), "
+        "Applied %s mean-bias init to %d output layer(s): final weight=xavier_uniform(gain=%.2f), "
         "final bias=logit(train_mean_norm), mean(train_mean_norm)=%.4f",
+        method,
+        len(output_layers),
         0.1,
         y_mean_norm.mean().item(),
     )
@@ -370,8 +388,11 @@ def create_model(opt_problem, method, config):
         raise ValueError(f"Unknown network type: {network}")
     model = model.to(DEVICE)
 
-    if method == 'FSNet':
-        _initialize_fsnet_output_layer(model, opt_problem)
+    init_scheme = config.get(method, {}).get('init', 'default')
+    if init_scheme == 'mean_bias':
+        _initialize_mean_bias_output_layer(model, opt_problem, method)
+    elif init_scheme != 'default':
+        raise ValueError(f"Unknown init scheme for {method}: {init_scheme}")
 
     if isinstance(model, (SampledContextMLPv1, SampledContextMLPv2)):
         if isinstance(model, SampledContextMLPv2):
