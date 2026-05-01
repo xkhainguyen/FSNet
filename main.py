@@ -205,8 +205,10 @@ def create_parser():
     parser.add_argument('--hidden_dim', type=int)
     parser.add_argument('--num_layers', type=int)
     parser.add_argument('--dropout', type=float)
-    parser.add_argument('--init', type=str, choices=['default', 'mean_bias'],
+    parser.add_argument('--init', type=str, choices=['default', 'output_center', 'mean_bias'],
                         help='Network initialization scheme for the selected method')
+    parser.add_argument('--init_gain', type=float,
+                        help='Gain for init schemes that initialize output-layer weights')
     parser.add_argument('--num_experts', type=int)
     parser.add_argument('--top_k', type=int)
     parser.add_argument('--moe_num_experts', type=int)
@@ -360,6 +362,7 @@ def create_parser():
         'decay_tol_step': args.decay_tol_step,
         'memory_size': args.memory_size,
         'init': args.init,
+        'init_gain': args.init_gain,
     }
     for key, val in method_overrides.items():
         if val is not None:

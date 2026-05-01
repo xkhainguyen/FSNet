@@ -188,24 +188,48 @@ def _save_config_yaml(config, save_dir):
     log.info("Config saved: %s", path)
 
 
-def _initialize_mean_bias_output_layer(model, opt_problem, method):
+def _get_mlp_output_layers(model, init_name):
+    """Return final Linear layers from every MLP-like predictor in a model."""
+    output_layers = []
+    for module in model.modules():
+        if isinstance(module, MLP):
+            final_linear = module.mlp[-2]
+            if not isinstance(final_linear, nn.Linear):
+                raise ValueError(f"{init_name} init expected MLP to end with Linear + Sigmoid")
+            output_layers.append(final_linear)
+
+    if not output_layers:
+        raise ValueError(f"{init_name} init requires at least one MLP output layer")
+
+    return output_layers
+
+
+def _initialize_output_center_layer(model, method, gain):
+    """Initialize only output layers without using solution labels."""
+    output_layers = _get_mlp_output_layers(model, 'output_center')
+    for layer in output_layers:
+        if layer.bias is None:
+            raise ValueError("output_center init requires output-layer bias")
+        nn.init.xavier_uniform_(layer.weight, gain=gain)
+        nn.init.zeros_(layer.bias)
+
+    log.info(
+        "Applied %s output-center init to %d output layer(s): "
+        "final weight=xavier_uniform(gain=%.2f), final bias=0",
+        method,
+        len(output_layers),
+        gain,
+    )
+
+
+def _initialize_mean_bias_output_layer(model, opt_problem, method, gain):
     """Bias the final sigmoid output toward the train-set mean solution.
 
     Hidden layers keep their default PyTorch initialization.
     The final linear layer gets a small Xavier initialization and a bias set to
     the logit of the normalized train-set mean solution.
     """
-    output_layers = []
-    for module in model.modules():
-        if isinstance(module, MLP):
-            final_linear = module.mlp[-2]
-            if not isinstance(final_linear, nn.Linear):
-                raise ValueError("mean_bias init expected MLP to end with Linear + Sigmoid")
-            output_layers.append(final_linear)
-
-    if not output_layers:
-        raise ValueError("mean_bias init requires at least one MLP output layer")
-
+    output_layers = _get_mlp_output_layers(model, 'mean_bias')
     ref_layer = output_layers[0]
     output_dim = ref_layer.bias.numel()
 
@@ -236,7 +260,7 @@ def _initialize_mean_bias_output_layer(model, opt_problem, method):
     for layer in output_layers:
         if layer.bias is None or layer.bias.numel() != y_mean_norm.numel():
             raise ValueError("mean_bias init target dimension does not match train-set mean")
-        nn.init.xavier_uniform_(layer.weight, gain=0.1)
+        nn.init.xavier_uniform_(layer.weight, gain=gain)
         with torch.no_grad():
             layer.bias.copy_(torch.logit(y_mean_norm))
 
@@ -245,7 +269,7 @@ def _initialize_mean_bias_output_layer(model, opt_problem, method):
         "final bias=logit(train_mean_norm), mean(train_mean_norm)=%.4f",
         method,
         len(output_layers),
-        0.1,
+        gain,
         y_mean_norm.mean().item(),
     )
 
@@ -389,8 +413,11 @@ def create_model(opt_problem, method, config):
     model = model.to(DEVICE)
 
     init_scheme = config.get(method, {}).get('init', 'default')
-    if init_scheme == 'mean_bias':
-        _initialize_mean_bias_output_layer(model, opt_problem, method)
+    init_gain = float(config.get(method, {}).get('init_gain', 0.1))
+    if init_scheme == 'output_center':
+        _initialize_output_center_layer(model, method, init_gain)
+    elif init_scheme == 'mean_bias':
+        _initialize_mean_bias_output_layer(model, opt_problem, method, init_gain)
     elif init_scheme != 'default':
         raise ValueError(f"Unknown init scheme for {method}: {init_scheme}")
 

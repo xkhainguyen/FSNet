@@ -76,7 +76,8 @@ The sampled reference bank is derived deterministically from the main run `--see
 | `--hidden_dim` | `1024` | MLP hidden dimension |
 | `--num_layers` | `4` | Number of hidden layers |
 | `--dropout` | `0.1` | Dropout rate |
-| `--init` | `default` | Initialization scheme for the selected method. `mean_bias` initializes output-layer weights with small Xavier and output bias from the normalized train-set mean. |
+| `--init` | `default` | Initialization scheme for the selected method. `output_center` is label-free and initializes output-layer weights with small Xavier plus zero output bias. `mean_bias` additionally uses train labels to set output bias from the normalized train-set mean. |
+| `--init_gain` | `0.2` | Xavier gain for init schemes that initialize output-layer weights. |
 | `--context_num_points` | `16` | Number of sampled reference `y` points for `SampledContextMLPv1` |
 | `--context_encoder_dim` | `128` | Point-encoder hidden size for `SampledContextMLPv2` |
 | `--local_delta_scale` | `0.2` | Max residual correction scale for `LocalContextMLPv2` |

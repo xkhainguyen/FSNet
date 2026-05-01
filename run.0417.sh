@@ -19,22 +19,22 @@ conda activate ml4opt
 cd /home/khain/orcd/scratch/FSNet
 
 
-for seed in 0 1 2 3; do
-    echo "=============================================="
-    echo " Job started at: $(date '+%Y-%m-%d %H:%M:%S')"
-    echo " Job ID: $SLURM_JOB_ID"
-    echo " Node: $SLURM_NODELIST"
-    echo "=============================================="
+# for seed in 0 1 2 3; do
+#     echo "=============================================="
+#     echo " Job started at: $(date '+%Y-%m-%d %H:%M:%S')"
+#     echo " Job ID: $SLURM_JOB_ID"
+#     echo " Node: $SLURM_NODELIST"
+#     echo "=============================================="
 
-    python main.py \
-    --seed $seed \
-    --method FSNet \
-    --prob_type nonsmooth_nonconvex \
-    --prob_name socp \
-    --network LocalContextMLPv2 \
-    --hidden_dim 1500
+#     python main.py \
+#     --seed $seed \
+#     --method FSNet \
+#     --prob_type nonsmooth_nonconvex \
+#     --prob_name socp \
+#     --network LocalContextMLPv2 \
+#     --hidden_dim 1500
 
-done
+# done
 
 for seed in 0 1 2 3; do
     echo "=============================================="
@@ -49,7 +49,7 @@ for seed in 0 1 2 3; do
     --prob_type nonsmooth_nonconvex \
     --prob_name socp \
     --network MLP \
-    --hidden_dim 256
+    --hidden_dim 2048
 
-# done
+done
 
