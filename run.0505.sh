@@ -32,10 +32,10 @@ for seed in 0 1 2 3; do
         --method penalty \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
-        --lr 0.0001  \
+        --lr 0.00008  \
         --seed $seed \
         --num_epochs 1000 \
-        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260116-173042_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0/model_430.pt
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-184556_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_3.0/model_150.pt
 done
 
 # python main.py \

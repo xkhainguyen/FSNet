@@ -296,7 +296,7 @@ if __name__ == "__main__":
         "--method", "FSNet",
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
-        "--seed", "1",
+        "--seed", "3",
         "--checkpoint",
         "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-052711_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260327-050238_sup_seedpen_model_990/model.pt",
     ])
@@ -320,6 +320,6 @@ if __name__ == "__main__":
 
     # Save
     os.makedirs("figures", exist_ok=True)
-    out_path = "figures/merit_interpolation_fsnet_bad.npz"
+    out_path = "figures/merit_interpolation_fsnet_bad_1.npz"
     np.savez(out_path, t=t, merit=merit)
     print(f"Saved interpolation data to: {out_path}", flush=True)
