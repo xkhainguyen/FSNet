@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -t 06:00:00
-#SBATCH -p mit_normal_gpu,mit_preemptable
-#SBATCH --gres=gpu:l40s:1
+# SBATCH -p mit_normal_gpu,mit_preemptable
+# SBATCH --gres=gpu:l40s:1
 #SBATCH -J ml4opf
 #SBATCH -o logs/%x-%A_%a.out
 #SBATCH -e logs/%x-%A_%a.err
@@ -27,7 +27,7 @@ echo " Job ID: $SLURM_JOB_ID"
 echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
-for seed in 3; do
+for seed in 0; do
     # python main.py \
     #     --method FSNet \
     #     --prob_type nonsmooth_nonconvex \
@@ -42,8 +42,40 @@ for seed in 3; do
         --prob_name socp \
         --lr 0.0001  \
         --seed $seed \
-        --num_epochs 1000 \
-        # --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_500.pt
+        --num_epochs 300 \
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_550.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr 0.0001  \
+        --seed $seed \
+        --num_epochs 300 \
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_650.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr 0.0001  \
+        --seed $seed \
+        --num_epochs 300 \
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_750.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr 0.0001  \
+        --seed $seed \
+        --num_epochs 300 \
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_850.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr 0.0001  \
+        --seed $seed \
+        --num_epochs 300 \
+        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_950.pt
 done
 
 # python main.py \

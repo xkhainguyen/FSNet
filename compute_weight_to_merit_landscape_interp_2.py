@@ -240,13 +240,22 @@ if __name__ == "__main__":
     # Load model_A0 (EDIT PATH)
     
     # base model after initial supervised training
+    # args, config = create_parser([
+    #     "--method", "FSNet",
+    #     "--prob_type", "nonsmooth_nonconvex",
+    #     "--prob_name", "socp",
+    #     "--seed", "0",
+    #     "--checkpoint",
+    #     "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260116-173042_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_10.0/model_430.pt",
+    # ])
+
     args, config = create_parser([
         "--method", "FSNet",
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
         "--seed", "0",
         "--checkpoint",
-        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260115-184556_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_3.0/model_150.pt",
+        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-050238_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize800_subopt_3_0.0/model_990.pt",
     ])
 
     # base model random
@@ -274,13 +283,22 @@ if __name__ == "__main__":
     # ])
 
     # final warmstarted model
+    # args, config = create_parser([
+    #     "--method", "FSNet",
+    #     "--prob_type", "nonsmooth_nonconvex",
+    #     "--prob_name", "socp",
+    #     "--seed", "1",
+    #     "--checkpoint",
+    #     "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260117-175720_MLP_FSNet_seed1_nepochs300_lr0.0001_trainsize7000_finetune_20260116-173042_sup_seedpen_model_430/model.pt",
+    # ])
+
     args, config = create_parser([
         "--method", "FSNet",
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
-        "--seed", "0",
+        "--seed", "1",
         "--checkpoint",
-        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260117-191337_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150/model.pt",
+        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-052711_MLP_FSNet_seed3_nepochs300_lr0.0001_trainsize7000_finetune_20260327-050238_sup_seedpen_model_990/model.pt",
     ])
 
     opt_problem, result_save_dir = load_instance(config)
@@ -302,6 +320,6 @@ if __name__ == "__main__":
 
     # Save
     os.makedirs("figures", exist_ok=True)
-    out_path = "figures/merit_interpolation_warmstarted.npz"
+    out_path = "figures/merit_interpolation_fsnet_bad.npz"
     np.savez(out_path, t=t, merit=merit)
     print(f"Saved interpolation data to: {out_path}", flush=True)
