@@ -28,32 +28,89 @@ echo " Node: $SLURM_NODELIST"
 echo "=============================================="
 
 SL_CKPT_DIR="results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-092838_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_3.0"
-
-for seed in 0 1; do
+LR=0.00009
+for seed in 0; do
     python main.py \
         --method FSNet \
         --prob_type nonsmooth_nonconvex \
         --prob_name socp \
-        --lr 0.0001  \
+        --lr $LR  \
         --seed $seed \
         --num_epochs 300 \
-        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_100.pt
-    python main.py \
-        --method FSNet \
-        --prob_type nonsmooth_nonconvex \
-        --prob_name socp \
-        --lr 0.0001  \
-        --seed $seed \
-        --num_epochs 200 \
-        --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-092838_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_3.0/model_250.pt
+        --early_stop_patience 3 \
+        --checkpoint $SL_CKPT_DIR/model_100.pt
     # python main.py \
     #     --method FSNet \
     #     --prob_type nonsmooth_nonconvex \
     #     --prob_name socp \
-    #     --lr 0.0001  \
+    #     --lr $LR  \
     #     --seed $seed \
     #     --num_epochs 300 \
-    #     --checkpoint results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260327-094852_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize7000_subopt_3_2.0/model_400.pt
+    #     --early_stop_patience 3 \
+    #     --checkpoint $SL_CKPT_DIR/model_200.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr $LR  \
+        --seed $seed \
+        --num_epochs 300 \
+        --early_stop_patience 3 \
+        --checkpoint $SL_CKPT_DIR/model_300.pt
+    # python main.py \
+    #     --method FSNet \
+    #     --prob_type nonsmooth_nonconvex \
+    #     --prob_name socp \
+    #     --lr $LR  \
+    #     --seed $seed \
+    #     --num_epochs 300 \
+    #     --early_stop_patience 3 \
+    #     --checkpoint $SL_CKPT_DIR/model_400.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr $LR  \
+        --seed $seed \
+        --num_epochs 300 \
+        --early_stop_patience 3 \
+        --checkpoint $SL_CKPT_DIR/model_500.pt
+    # python main.py \
+    #     --method FSNet \
+    #     --prob_type nonsmooth_nonconvex \
+    #     --prob_name socp \
+    #     --lr $LR  \
+    #     --seed $seed \
+    #     --num_epochs 300 \
+    #     --early_stop_patience 3 \
+    #     --checkpoint $SL_CKPT_DIR/model_600.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr $LR  \
+        --seed $seed \
+        --num_epochs 300 \
+        --early_stop_patience 3 \
+        --checkpoint $SL_CKPT_DIR/model_700.pt
+    # python main.py \
+    #     --method FSNet \
+    #     --prob_type nonsmooth_nonconvex \
+    #     --prob_name socp \
+    #     --lr $LR  \
+    #     --seed $seed \
+    #     --num_epochs 300 \
+    #     --early_stop_patience 3 \
+    #     --checkpoint $SL_CKPT_DIR/model_800.pt
+    python main.py \
+        --method FSNet \
+        --prob_type nonsmooth_nonconvex \
+        --prob_name socp \
+        --lr $LR  \
+        --seed $seed \
+        --num_epochs 300 \
+        --early_stop_patience 3 \
+        --checkpoint $SL_CKPT_DIR/model_900.pt
 done
 
 # python main.py \

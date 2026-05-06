@@ -689,6 +689,31 @@ class Trainer:
         # Training history
         train_history = []
         val_history = []
+        early_stop_metric = self.config.get('early_stop_metric', 'merit_mean')
+        early_stop_mode = self.config.get('early_stop_mode', 'min')
+        early_stop_patience = self.config.get('early_stop_patience')
+        early_stop_min_delta = self.config.get('early_stop_min_delta', 0.0)
+        early_stop_enabled = early_stop_patience is not None and early_stop_patience > 0
+        best_early_stop_metric = None
+        best_early_stop_epoch = None
+        early_stop_wait = 0
+        early_stop_info = {
+            'enabled': early_stop_enabled,
+            'stopped': False,
+            'metric': early_stop_metric,
+            'mode': early_stop_mode,
+            'patience': early_stop_patience,
+            'min_delta': early_stop_min_delta,
+            'best_epoch': None,
+            'best_metric': None,
+            'stopped_epoch': None,
+            'checks_without_improvement': 0,
+        }
+        if early_stop_enabled:
+            print(
+                f"Early stopping enabled: monitoring validation {early_stop_metric} "
+                f"({early_stop_mode}, patience={early_stop_patience}, min_delta={early_stop_min_delta})"
+            )
 
         train_start = time.time()
         for epoch in range(self.config_method['num_epochs']):
@@ -718,6 +743,47 @@ class Trainer:
                 # Save all results with detailed information
                 if self.save_dir and self.config['save_intermediate']:
                     self._save_model(epoch)
+
+                if early_stop_enabled:
+                    if early_stop_metric not in val_metrics:
+                        available_metrics = ', '.join(sorted(val_metrics.keys()))
+                        raise KeyError(
+                            f"Early stopping metric '{early_stop_metric}' not found in validation metrics. "
+                            f"Available metrics: {available_metrics}"
+                        )
+                    current_metric = val_metrics[early_stop_metric]
+                    if best_early_stop_metric is None:
+                        improved = True
+                    elif early_stop_mode == 'min':
+                        improved = current_metric < best_early_stop_metric - early_stop_min_delta
+                    elif early_stop_mode == 'max':
+                        improved = current_metric > best_early_stop_metric + early_stop_min_delta
+                    else:
+                        raise ValueError("early_stop_mode must be 'min' or 'max'")
+
+                    if improved:
+                        best_early_stop_metric = current_metric
+                        best_early_stop_epoch = epoch
+                        early_stop_wait = 0
+                        early_stop_info['best_epoch'] = best_early_stop_epoch
+                        early_stop_info['best_metric'] = best_early_stop_metric
+                        early_stop_info['checks_without_improvement'] = early_stop_wait
+                    else:
+                        early_stop_wait += 1
+                        early_stop_info['checks_without_improvement'] = early_stop_wait
+                        print(
+                            f"Early stopping wait: {early_stop_wait}/{early_stop_patience} "
+                            f"(best {early_stop_metric}: {best_early_stop_metric:.6e} "
+                            f"at epoch {best_early_stop_epoch})"
+                        )
+                        if early_stop_wait >= early_stop_patience:
+                            early_stop_info['stopped'] = True
+                            early_stop_info['stopped_epoch'] = epoch
+                            print(
+                                f"\nEarly stopping at epoch {epoch}: validation {early_stop_metric} "
+                                f"did not improve for {early_stop_patience} validation checks."
+                            )
+                            break
         
         train_end = time.time()
         training_time = train_end - train_start
@@ -758,7 +824,8 @@ class Trainer:
                 train_history, 
                 val_history, 
                 final_test_results, 
-                training_time
+                training_time,
+                early_stop_info
             )
         
         return self.model
@@ -786,7 +853,7 @@ class Trainer:
             print(f"✗ Error saving model: {e}")
 
     def _save_model_and_results(self, train_history, val_history,
-                                test_results_data, training_time):
+                                test_results_data, training_time, early_stop_info=None):
         """Saves the model in a .pt file and other results in a .pkl file."""
         if not self.save_dir:
             print("Save directory not specified. Skipping saving.")
@@ -819,6 +886,7 @@ class Trainer:
             'training_time_seconds': training_time,
             'train_history': train_history,
             'val_history': val_history,
+            'early_stop': early_stop_info,
             'test_results': test_results_data, # This contains summary and detailed results
             'pytorch_version': torch.__version__,
             'device_used': str(DEVICE)

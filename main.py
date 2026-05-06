@@ -31,6 +31,14 @@ def create_parser():
     parser.add_argument('--en_subopt', type=int, default=0, help='Enable suboptimality in training')
     parser.add_argument('--subopt_ratio', type=float, default=0, help='Suboptimality ratio if en_subopt is True')
     parser.add_argument('--save_intermediate', type=bool, default=False, help='Save intermediate models during training')
+    parser.add_argument('--early_stop_patience', type=int, default=None,
+                        help='Stop after this many validation checks without metric improvement')
+    parser.add_argument('--early_stop_min_delta', type=float, default=None,
+                        help='Minimum validation metric change required to count as improvement')
+    parser.add_argument('--early_stop_metric', type=str, default=None,
+                        help='Validation metric to monitor for early stopping')
+    parser.add_argument('--early_stop_mode', type=str, choices=['min', 'max'], default=None,
+                        help='Whether lower or higher validation metric is better')
 
     # Dataset parameters
     parser.add_argument('--train_size', type=int, help='Size of training dataset', default=7000)
@@ -77,6 +85,14 @@ def create_parser():
     config['en_subopt'] = args.en_subopt
     config['subopt_ratio'] = args.subopt_ratio
     config['save_intermediate'] = args.save_intermediate
+    if args.early_stop_patience is not None:
+        config['early_stop_patience'] = args.early_stop_patience
+    if args.early_stop_min_delta is not None:
+        config['early_stop_min_delta'] = args.early_stop_min_delta
+    if args.early_stop_metric is not None:
+        config['early_stop_metric'] = args.early_stop_metric
+    if args.early_stop_mode is not None:
+        config['early_stop_mode'] = args.early_stop_mode
 
     # Override dataset parameters
     if args.batch_size:

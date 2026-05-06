@@ -9,6 +9,13 @@ test_batch_size: [256, 512]
 
 eval_step: 10
 
+# Early stopping is disabled when patience is null or <= 0.
+# Patience counts validation evaluations, not training epochs.
+early_stop_patience:
+early_stop_min_delta: 0.0
+early_stop_metric: merit_mean
+early_stop_mode: min
+
 hidden_dim: 1024 
 num_layers: 4
 dropout: 0.1
