@@ -301,7 +301,7 @@ if __name__ == "__main__":
         "--prob_type", "nonsmooth_nonconvex",
         "--prob_name", "socp",
         "--checkpoint",
-        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260505-134628_MLP_penalty_seed0_nepochs1000_lr0.0001_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150/model.pt",
+        "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260505-151430_MLP_penalty_seed0_nepochs1000_lr8e-05_trainsize7000_finetune_20260115-184556_sup_seedpen_model_150/model.pt",
     ])
 
     # args, config = create_parser([
@@ -331,6 +331,6 @@ if __name__ == "__main__":
 
     # Save
     os.makedirs("figures", exist_ok=True)
-    out_path = "figures/merit_interpolation_penalty_ours0_new.npz"
+    out_path = "figures/merit_interpolation_penalty_ours0_new2.npz"
     np.savez(out_path, t=t, merit=merit)
     print(f"Saved interpolation data to: {out_path}", flush=True)
