@@ -689,10 +689,12 @@ class Trainer:
         # Training history
         train_history = []
         val_history = []
-        early_stop_metric = self.config.get('early_stop_metric', 'merit_mean')
+        early_stop_metric = self.config.get('early_stop_metric', 'stop_merit')
         early_stop_mode = self.config.get('early_stop_mode', 'min')
         early_stop_patience = self.config.get('early_stop_patience')
         early_stop_min_delta = self.config.get('early_stop_min_delta', 0.0)
+        early_stop_eq_weight = self.config.get('early_stop_eq_weight', 1e5)
+        early_stop_ineq_weight = self.config.get('early_stop_ineq_weight', 1e5)
         early_stop_enabled = early_stop_patience is not None and early_stop_patience > 0
         best_early_stop_metric = None
         best_early_stop_epoch = None
@@ -704,6 +706,8 @@ class Trainer:
             'mode': early_stop_mode,
             'patience': early_stop_patience,
             'min_delta': early_stop_min_delta,
+            'eq_weight': early_stop_eq_weight,
+            'ineq_weight': early_stop_ineq_weight,
             'best_epoch': None,
             'best_metric': None,
             'stopped_epoch': None,
@@ -738,6 +742,17 @@ class Trainer:
             if (epoch) % self.config['eval_step'] == 0:
                 print(f"\nRunning validation at epoch {epoch}...")
                 val_metrics = self.evaluator.evaluate(self.model, val_loader, f"validation_epoch_{epoch}")
+                val_metrics['stop_merit'] = (
+                    val_metrics['objective']
+                    + early_stop_eq_weight * val_metrics['eq_violation_l1_mean']
+                    + early_stop_ineq_weight * val_metrics['ineq_violation_l1_mean']
+                )
+                print(
+                    f"Stop merit: {val_metrics['stop_merit']:.6e} "
+                    f"= {val_metrics['objective']:.6e} "
+                    f"+ {early_stop_eq_weight:.1e} * {val_metrics['eq_violation_l1_mean']:.6e} "
+                    f"+ {early_stop_ineq_weight:.1e} * {val_metrics['ineq_violation_l1_mean']:.6e}"
+                )
                 val_history.append({**val_metrics, 'epoch': epoch})
 
                 # Save all results with detailed information

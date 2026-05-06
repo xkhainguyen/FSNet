@@ -13,8 +13,10 @@ eval_step: 10
 # Patience counts validation evaluations, not training epochs.
 early_stop_patience:
 early_stop_min_delta: 0.0
-early_stop_metric: merit_mean
+early_stop_metric: stop_merit
 early_stop_mode: min
+early_stop_eq_weight: 1.0e+5
+early_stop_ineq_weight: 1.0e+5
 
 hidden_dim: 1024 
 num_layers: 4
