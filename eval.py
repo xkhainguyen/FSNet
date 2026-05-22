@@ -120,6 +120,22 @@ def create_eval_parser():
     parser.add_argument('--test_batch_sizes', type=int, nargs='+', default=None,
                         help='Test batch sizes (default: from saved config)')
 
+    parser.add_argument('--skip_repair', action='store_true',
+                        help='Bypass the per-sample repair step entirely (ablation).')
+    parser.add_argument('--repair_max_iter', type=int, default=None,
+                        help='Override repair iteration count (e.g. L-BFGS max_iter).')
+
+    parser.add_argument('--inference_perturb_k', type=int, default=0,
+                        help='K perturbed repair restarts for single-model checkpoints. '
+                             '0 (default) disables. Effective only on non-ensemble checkpoints.')
+    parser.add_argument('--inference_perturb_eps', type=float, default=0.05,
+                        help='Std of additive noise on raw NN output before repair (single-model).')
+    parser.add_argument('--inference_perturb_dist', type=str, default='gauss',
+                        choices=['gauss', 'antithetic', 'sphere'],
+                        help='Perturbation distribution: gauss, antithetic, sphere.')
+    parser.add_argument('--inference_perturb_keep_original', type=int, default=1,
+                        help='Include the unperturbed prediction as restart 0 (1=yes, 0=no).')
+
     parser.add_argument('--wandb', action='store_true', help='Log results to W&B')
     parser.add_argument('--wandb_project', type=str, default='FSNet-eval')
     parser.add_argument('--wandb_entity', type=str, default=None)
@@ -147,6 +163,14 @@ def _build_eval_save_dir(config):
                 f"_{config.get('ensemble_agg', 'mean')}")
     if config.get('network') == 'MoE' and config.get('moe_strategy', 'vanilla') != 'vanilla':
         tag += f"_{config['moe_strategy']}"
+    if config.get('skip_repair', False):
+        tag += "_norepair"
+    if config.get('repair_max_iter_override') is not None:
+        tag += f"_repIt{config['repair_max_iter_override']}"
+    if config.get('inference_perturb_k', 0) > 1:
+        tag += (f"_pertK{config['inference_perturb_k']}"
+                f"_eps{config['inference_perturb_eps']}"
+                f"_{config.get('inference_perturb_dist','gauss')}")
     tag = append_seed_suffix(tag, seed)
 
     prob_str = f"{prob_name.upper()}Problem"
@@ -174,6 +198,11 @@ def _save_eval_results(save_dir, config, batch_size_results, eval_time):
         'ensemble_size': config.get('ensemble_size', 1),
         'ensemble_post': config.get('ensemble_post', 'pre'),
         'ensemble_agg': config.get('ensemble_agg', 'mean'),
+        'skip_repair': bool(config.get('skip_repair', False)),
+        'repair_max_iter_override': config.get('repair_max_iter_override', None),
+        'inference_perturb_k': int(config.get('inference_perturb_k', 0)),
+        'inference_perturb_eps': float(config.get('inference_perturb_eps', 0.0)),
+        'inference_perturb_dist': config.get('inference_perturb_dist', 'gauss'),
         'checkpoints': config.get('_checkpoint_paths', []),
         'model_size': {
             'total_params': int(config.get('_model_size', {}).get('total_params', 0)),
@@ -227,6 +256,15 @@ def main():
 
     config['ensemble_post'] = args.ensemble_post
     config['ensemble_agg'] = args.ensemble_agg
+
+    config['skip_repair'] = args.skip_repair
+    if args.repair_max_iter is not None:
+        config['repair_max_iter_override'] = args.repair_max_iter
+
+    config['inference_perturb_k'] = args.inference_perturb_k
+    config['inference_perturb_eps'] = args.inference_perturb_eps
+    config['inference_perturb_dist'] = args.inference_perturb_dist
+    config['inference_perturb_keep_original'] = bool(args.inference_perturb_keep_original)
     if args.moe_strategy is not None:
         config['moe_strategy'] = args.moe_strategy
     if args.moe_candidate_top_k is not None:

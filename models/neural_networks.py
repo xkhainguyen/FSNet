@@ -525,6 +525,68 @@ class EnsembleMLP(nn.Module):
         return torch.stack([m(x) for m in self.members], dim=0)
 
 
+class MultiHeadMLP(nn.Module):
+    """Shared trunk + M independent heads producing M candidate solutions.
+
+    Architecture:
+        trunk:  Linear(input,hidden) -> SiLU -> [Linear(hidden,hidden) -> SiLU
+                -> Dropout]*(num_layers-1)  -> output (B, hidden)
+        head_i: Linear(hidden, head_hidden) -> SiLU -> Linear(head_hidden,
+                output_dim) -> Sigmoid
+
+    ``forward(x)`` returns the mean of the M heads (back-compat with the
+    single-model contract). ``forward_all(x)`` returns ``(M, B, out)`` so that
+    the existing ensemble eval path (``ensemble_post=post``) works unchanged.
+
+    Designed for amortized constrained optimization: the per-sample repair
+    step and ``best_merit`` aggregation act as the (untrained) selector among
+    the M candidates. No learned router (unlike ``MixtureOfExperts``).
+    """
+
+    is_multihead = True
+
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dim: int,
+        output_dim: int,
+        num_heads: int = 5,
+        head_hidden_dim: int | None = None,
+        num_layers: int = 1,
+        dropout: float = 0.0,
+    ):
+        super().__init__()
+        self.num_heads = int(num_heads)
+        head_hidden_dim = head_hidden_dim or max(hidden_dim // 4, 64)
+        self.head_hidden_dim = int(head_hidden_dim)
+
+        trunk_layers = [nn.Linear(input_dim, hidden_dim), nn.SiLU()]
+        for i in range(num_layers - 1):
+            trunk_layers += [nn.Linear(hidden_dim, hidden_dim), nn.SiLU()]
+            if dropout > 0:
+                trunk_layers.append(nn.Dropout(p=dropout / (i + 1)))
+        self.trunk = nn.Sequential(*trunk_layers)
+
+        self.heads = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(hidden_dim, self.head_hidden_dim),
+                nn.SiLU(),
+                nn.Linear(self.head_hidden_dim, output_dim),
+                nn.Sigmoid(),
+            )
+            for _ in range(self.num_heads)
+        ])
+
+    def forward(self, x):
+        feats = self.trunk(x)
+        preds = torch.stack([h(feats) for h in self.heads], dim=0)  # (M,B,out)
+        return preds.mean(dim=0)
+
+    def forward_all(self, x):
+        feats = self.trunk(x)
+        return torch.stack([h(feats) for h in self.heads], dim=0)   # (M,B,out)
+
+
 class MixtureOfExperts(nn.Module):
     """Mixture of Experts with MLP experts and a learned gating network."""
 

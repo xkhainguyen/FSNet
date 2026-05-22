@@ -204,3 +204,6 @@ figures/
 wandb/
 .codex
 third-party/
+# Generated experiment outputs
+scripts/ensemble/expts/results.csv
+scripts/ensemble/expts/*.obsolete

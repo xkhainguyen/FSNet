@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve, hybrid_lbfgs_solve
-from models.neural_networks import MLP, SampledContextMLPv1, SampledContextMLPv2, LocalContextMLPv1, LocalContextMLPv2, EnsembleMLP, MixtureOfExperts
+from models.neural_networks import MLP, SampledContextMLPv1, SampledContextMLPv2, LocalContextMLPv1, LocalContextMLPv2, EnsembleMLP, MixtureOfExperts, MultiHeadMLP
 from utils.evaluator import Evaluator
 
 log = logging.getLogger(__name__)
@@ -161,6 +161,11 @@ def load_instance(config):
             run_name += f"_moe{config['MoE']['num_experts']}k{config['MoE']['top_k']}_temp{config['MoE']['gate_temperature']}_noise{config['MoE']['gate_noise_std']}"
             if config.get('moe_strategy', 'vanilla') != 'vanilla':
                 run_name += f"_{config['moe_strategy']}"
+        if config.get('network') == 'MultiHeadMLP':
+            mhe_cfg = config.get('MultiHeadMLP', {}) or {}
+            run_name += f"_mhe{int(mhe_cfg.get('num_heads', config.get('mhe_num_heads', 5)))}"
+            if mhe_cfg.get('head_hidden_dim') is not None:
+                run_name += f"h{int(mhe_cfg['head_hidden_dim'])}"
         if en_subopt != 0:
             run_name += f"_subopt{en_subopt}_{config['subopt_ratio']}"
         if config['checkpoint']:
@@ -394,6 +399,18 @@ def create_model(opt_problem, method, config):
             local_delta_scale=float(local_ctx_cfg.get('local_delta_scale', 0.2)),
             num_layers=num_layers,
             dropout=dropout,
+        )
+    elif network == 'MultiHeadMLP':
+        mhe_cfg = config.get('MultiHeadMLP', {})
+        num_heads = int(mhe_cfg.get('num_heads', config.get('mhe_num_heads', 5)))
+        head_hidden_dim = mhe_cfg.get('head_hidden_dim',
+                                       config.get('mhe_head_hidden_dim', None))
+        head_hidden_dim = int(head_hidden_dim) if head_hidden_dim else None
+        model = MultiHeadMLP(
+            opt_problem.xdim, hidden_dim, out_dim,
+            num_heads=num_heads,
+            head_hidden_dim=head_hidden_dim,
+            num_layers=num_layers, dropout=dropout,
         )
     elif network == 'MoE':
         moe_cfg = config.get('MoE', {})
@@ -884,11 +901,23 @@ class Trainer:
         for batch_idx, (X_batch, Y_label) in enumerate(train_loader):
             X_batch = X_batch.to(DEVICE, non_blocking=True)
             Y_label = Y_label.to(DEVICE, non_blocking=True)
-            Y_pred = self.model(X_batch)
-            
-            loss, batch_metrics = self.compute_batch_loss(X_batch, Y_pred, Y_label, epoch_metrics)
 
-            scalar_loss = loss.mean()
+            if getattr(self.model, 'is_multihead', False):
+                all_preds = self.model.forward_all(X_batch)  # (M, B, out)
+                M = all_preds.shape[0]
+                total_loss = 0.0
+                batch_metrics = {}
+                for m in range(M):
+                    loss_m, metrics_m = self.compute_batch_loss(
+                        X_batch, all_preds[m], Y_label, epoch_metrics)
+                    total_loss = total_loss + loss_m.mean()
+                    if m == 0:
+                        batch_metrics = metrics_m
+                scalar_loss = total_loss / M
+            else:
+                Y_pred = self.model(X_batch)
+                loss, batch_metrics = self.compute_batch_loss(X_batch, Y_pred, Y_label, epoch_metrics)
+                scalar_loss = loss.mean()
             if isinstance(self.model, MixtureOfExperts):
                 moe_cfg = self.config.get('MoE', {})
                 moe_aux_weight = moe_cfg.get('aux_loss_weight', self.config.get('moe_aux_loss_weight', 0.01))

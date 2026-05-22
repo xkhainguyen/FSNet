@@ -4,7 +4,7 @@ import time
 import torch
 from torch.utils.data import DataLoader
 
-from models.neural_networks import EnsembleMLP, MixtureOfExperts
+from models.neural_networks import EnsembleMLP, MixtureOfExperts, MultiHeadMLP
 from utils.optimization_utils import *
 from utils.lbfgs import nondiff_lbfgs_solve
 
@@ -105,7 +105,7 @@ class Evaluator:
 
             obj_pred = self.opt_problem.obj_fn(Y_final)
 
-            merit = 1.0 * obj_pred + 1e5 * eq_l1 + 1e5 * ineq_l1
+            merit = 1.0 * obj_pred + 1e6 * eq_l1 + 1e6 * ineq_l1
 
             total_merit += merit.sum().item()
             total_samples += X_batch.size(0)
@@ -171,13 +171,24 @@ class Evaluator:
     
     @torch.enable_grad()
     def _post_process_predictions(self, X_batch, Y_pred_scaled):
-        """Apply method-specific post-processing."""
+        """Apply method-specific post-processing.
+
+        When ``config['skip_repair']`` is True the repair step is bypassed and
+        ``Y_pred_scaled`` is returned as-is, regardless of method. Use to ablate
+        the contribution of the repair layer at eval time.
+        """
+        if self.config.get('skip_repair', False):
+            return Y_pred_scaled
+
+        max_iter_override = self.config.get('repair_max_iter_override', None)
+
         if self.method == "FSNet" or self.method == "S3Net" or self.method == 'semi':
             return nondiff_lbfgs_solve(
                 X_batch, Y_pred_scaled, self.opt_problem,
                 val_tol=self.config_method.get('test_val_tol', 1e-6),
                 memory=self.config_method.get('memory_size', 20),
-                max_iter=self.config_method.get('max_iter', 20),
+                max_iter=max_iter_override if max_iter_override is not None
+                          else self.config_method.get('max_iter', 20),
                 scale=self.config_method.get('scale', 1)
             )
         elif self.method == "DC3" or self.method == "sup_partial":
@@ -225,9 +236,15 @@ class Evaluator:
             Y_pred_scaled = self.opt_problem.scale(Y_pred)
             return self._post_process_predictions(X_batch, Y_pred_scaled)
 
-        if not isinstance(model, EnsembleMLP):
+        is_ensemble_like = isinstance(model, (EnsembleMLP, MultiHeadMLP))
+        if not is_ensemble_like:
             Y_pred = model(X_batch)
             Y_pred_scaled = self.opt_problem.scale(Y_pred)
+
+            perturb_k = int(self.config.get('inference_perturb_k', 0))
+            if perturb_k > 1:
+                return self._perturb_repair_aggregate(X_batch, Y_pred_scaled, perturb_k)
+
             return self._post_process_predictions(X_batch, Y_pred_scaled)
 
         ensemble_post = self.config.get('ensemble_post', 'pre')
@@ -254,7 +271,7 @@ class Evaluator:
             mean        - element-wise mean over candidates
             best_obj    - per-sample pick candidate with lowest objective
             best_merit  - per-sample pick candidate with lowest merit
-                         merit = obj + 1e5*(eq_viol + ineq_viol)
+                         merit = obj + 1e6*(eq_viol + ineq_viol)
         """
         agg = agg or self.config.get('moe_agg', self.config.get('ensemble_agg', 'best_merit'))
         stacked = torch.stack(finals, dim=0)  # (K, B, out)
@@ -274,7 +291,7 @@ class Evaluator:
                 if agg == 'best_merit':
                     eq_l1 = self.opt_problem.eq_resid(X_batch, f).abs().sum(dim=1)
                     ineq_l1 = self.opt_problem.ineq_resid(X_batch, f).abs().sum(dim=1)
-                    obj = obj + 1e5 * (eq_l1 + ineq_l1)
+                    obj = obj + 1e6 * (eq_l1 + ineq_l1)
                 scores.append(obj)
             scores = torch.stack(scores, dim=0)  # (K, B)
             best_idx = scores.argmin(dim=0)      # (B,)
@@ -282,6 +299,53 @@ class Evaluator:
             return stacked[best_idx, torch.arange(B, device=stacked.device)]
 
         raise ValueError(f"Unknown MoE aggregation strategy: {agg}")
+
+    def _perturb_repair_aggregate(self, X_batch, Y_pred_scaled, K):
+        """Single-model "free ensemble" via perturbed repair starts.
+
+        Take one NN's scaled prediction, replicate K times with additive noise,
+        run the repair step on each perturbed start, then aggregate with the
+        configured ``ensemble_agg`` (typically ``best_merit``). This turns any
+        single-model checkpoint into a K-member post-style ensemble at
+        inference time with zero retraining cost.
+
+        Config knobs:
+            inference_perturb_k    : K (number of perturbed restarts)
+            inference_perturb_eps  : Gaussian std (scalar or relative to output range)
+            inference_perturb_dist : 'gauss' (default), 'antithetic', 'sphere'
+            inference_perturb_keep_original : include unperturbed pred as restart 0 (default True)
+        """
+        eps = float(self.config.get('inference_perturb_eps', 0.05))
+        dist = self.config.get('inference_perturb_dist', 'gauss')
+        keep_original = self.config.get('inference_perturb_keep_original', True)
+
+        B, D = Y_pred_scaled.shape
+        device = Y_pred_scaled.device
+
+        finals = []
+        if keep_original:
+            finals.append(self._post_process_predictions(X_batch, Y_pred_scaled))
+            n_remaining = K - 1
+        else:
+            n_remaining = K
+
+        if dist == 'antithetic':
+            n_pairs = (n_remaining + 1) // 2
+            zs = torch.randn(n_pairs, B, D, device=device, dtype=Y_pred_scaled.dtype)
+            perts = torch.cat([zs, -zs], dim=0)[:n_remaining] * eps
+        elif dist == 'sphere':
+            zs = torch.randn(n_remaining, B, D, device=device, dtype=Y_pred_scaled.dtype)
+            zs = zs / zs.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            perts = zs * eps
+        else:
+            perts = torch.randn(n_remaining, B, D,
+                                 device=device, dtype=Y_pred_scaled.dtype) * eps
+
+        for k in range(n_remaining):
+            y_perturbed = Y_pred_scaled + perts[k]
+            finals.append(self._post_process_predictions(X_batch, y_perturbed))
+
+        return self._aggregate_predictions(finals, X_batch)
 
     def _aggregate_predictions(self, finals, X_batch):
         """
@@ -292,7 +356,7 @@ class Evaluator:
             median       – element-wise median
             best_obj   – per-sample pick the member with the lowest objective
             best_merit – per-sample pick the member with the lowest
-                           merit = obj + 1e5*(eq_viol + ineq_viol)
+                           merit = obj + 1e6*(eq_viol + ineq_viol)
         """
         agg = self.config.get('ensemble_agg', 'mean')
         stacked = torch.stack(finals, dim=0)  # (M, B, out)
@@ -310,7 +374,7 @@ class Evaluator:
                 if agg == 'best_merit':
                     eq_l1 = self.opt_problem.eq_resid(X_batch, f).abs().sum(dim=1)
                     ineq_l1 = self.opt_problem.ineq_resid(X_batch, f).abs().sum(dim=1)
-                    obj = obj + 1e5 * (eq_l1 + ineq_l1)
+                    obj = obj + 1e6 * (eq_l1 + ineq_l1)
                 scores.append(obj)
             scores = torch.stack(scores, dim=0)  # (M, B)
             best_idx = scores.argmin(dim=0)       # (B,)

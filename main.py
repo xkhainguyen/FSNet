@@ -240,6 +240,12 @@ def create_parser():
     parser.add_argument('--decay_tol_step', type=int)
     parser.add_argument('--memory_size', type=int)
 
+    # MultiHeadMLP (MHE — shared trunk, M heads)
+    parser.add_argument('--mhe_num_heads', type=int,
+                        help='Number of heads for --network MultiHeadMLP')
+    parser.add_argument('--mhe_head_hidden_dim', type=int,
+                        help='Head hidden width for MultiHeadMLP (default: hidden_dim//4)')
+
     # Ensemble
     parser.add_argument('--ensemble_size', type=int, default=1)
     parser.add_argument('--ensemble_mode', type=str, default='vanilla',
@@ -349,6 +355,14 @@ def create_parser():
         config['LocalContextMLPv2']['local_delta_scale'] = args.local_delta_scale
     if args.local_coarse_loss_weight is not None:
         config['LocalContextMLPv2']['coarse_loss_weight'] = args.local_coarse_loss_weight
+
+    if args.mhe_num_heads is not None or args.mhe_head_hidden_dim is not None:
+        mhe_cfg = dict(config.get('MultiHeadMLP', {}) or {})
+        if args.mhe_num_heads is not None:
+            mhe_cfg['num_heads'] = int(args.mhe_num_heads)
+        if args.mhe_head_hidden_dim is not None:
+            mhe_cfg['head_hidden_dim'] = int(args.mhe_head_hidden_dim)
+        config['MultiHeadMLP'] = mhe_cfg
 
     # ── Method-specific overrides (applied to config[method] only) ──
     method = config['method']
