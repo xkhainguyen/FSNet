@@ -1,0 +1,13 @@
+{
+  "benchmark_name": "structured_multimodal_socp",
+  "version": "v3_feasible_X",
+  "seed": 2025,
+  "num_examples": 10,
+  "num_var": 100,
+  "num_eq": 50,
+  "num_ineq": 50,
+  "num_modes": 4,
+  "conditioning_alpha": 6.0,
+  "A_condition_number": 403.4287934927351,
+  "pickle_path": "datasets/structured_multimodal_socp/seed2025_var100_ineq50_eq50_modes4_ex10.pkl"
+}
