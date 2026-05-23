@@ -207,3 +207,9 @@ third-party/
 # Generated experiment outputs
 scripts/ensemble/expts/results.csv
 scripts/ensemble/expts/*.obsolete
+
+# Generated artifacts at root
+output.png
+autoresearch_results.tsv
+.codex
+*.log
