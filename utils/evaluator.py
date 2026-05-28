@@ -251,11 +251,12 @@ class Evaluator:
         all_preds = model.forward_all(X_batch)  # (M, B, out)
 
         if ensemble_post == 'post':
-            finals = []
-            for i in range(all_preds.shape[0]):
-                y_scaled = self.opt_problem.scale(all_preds[i])
-                y_final = self._post_process_predictions(X_batch, y_scaled)
-                finals.append(y_final)
+            scaled_stack = torch.stack(
+                [self.opt_problem.scale(all_preds[i])
+                 for i in range(all_preds.shape[0])],
+                dim=0,
+            )  # (M, B, out)
+            finals = self._batched_post_process(X_batch, scaled_stack)
             return self._aggregate_predictions(finals, X_batch)
 
         scaled = [self.opt_problem.scale(all_preds[i])
@@ -300,6 +301,42 @@ class Evaluator:
 
         raise ValueError(f"Unknown MoE aggregation strategy: {agg}")
 
+    def _batched_post_process(self, X_batch, Y_candidates):
+        """Run the per-sample repair on K candidates.
+
+        Args:
+            X_batch: (B, xdim) input batch.
+            Y_candidates: (K, B, ydim) K candidate scaled predictions per sample.
+
+        Returns:
+            list of K tensors of shape (B, ydim) — the repaired candidates.
+
+        Defaults to a Python loop over K (each call has homogeneous samples).
+        Set ``vectorize_repair=True`` to stack into a single (K·B)-batch call
+        — but **expect different (typically worse) numbers**: the L-BFGS
+        implementation in this repo uses a single global line-search step
+        size and a batch-mean objective for convergence checking
+        (``utils/lbfgs.py:120-140``, lines 107-117). With heterogeneous
+        K-candidate batches the global step size can't fit all samples and
+        the mean-based convergence check exits too early. Sequential calls
+        avoid this because each call has homogeneous samples (the k-th
+        perturbation of B inputs, all close to each other).
+
+        Proper fix would require per-sample line search in L-BFGS.
+        """
+        K, _, _ = Y_candidates.shape
+        if not self.config.get('vectorize_repair', False) or K == 1:
+            return [self._post_process_predictions(X_batch, Y_candidates[k])
+                    for k in range(K)]
+
+        # Experimental vectorised path — keep available for L2O variants where
+        # the L-BFGS line-search heterogeneity isn't a problem.
+        B, D = Y_candidates.shape[1], Y_candidates.shape[2]
+        Y_flat = Y_candidates.reshape(K * B, D)
+        X_flat = X_batch.repeat(K, 1)
+        Y_repaired_flat = self._post_process_predictions(X_flat, Y_flat)
+        return list(Y_repaired_flat.reshape(K, B, D).unbind(0))
+
     def _perturb_repair_aggregate(self, X_batch, Y_pred_scaled, K):
         """Single-model "free ensemble" via perturbed repair starts.
 
@@ -314,6 +351,7 @@ class Evaluator:
             inference_perturb_eps  : Gaussian std (scalar or relative to output range)
             inference_perturb_dist : 'gauss' (default), 'antithetic', 'sphere'
             inference_perturb_keep_original : include unperturbed pred as restart 0 (default True)
+            vectorize_repair : run all K repairs in one (K·B)-batch L-BFGS call (default True)
         """
         eps = float(self.config.get('inference_perturb_eps', 0.05))
         dist = self.config.get('inference_perturb_dist', 'gauss')
@@ -322,12 +360,7 @@ class Evaluator:
         B, D = Y_pred_scaled.shape
         device = Y_pred_scaled.device
 
-        finals = []
-        if keep_original:
-            finals.append(self._post_process_predictions(X_batch, Y_pred_scaled))
-            n_remaining = K - 1
-        else:
-            n_remaining = K
+        n_remaining = K - 1 if keep_original else K
 
         if dist == 'antithetic':
             n_pairs = (n_remaining + 1) // 2
@@ -341,9 +374,12 @@ class Evaluator:
             perts = torch.randn(n_remaining, B, D,
                                  device=device, dtype=Y_pred_scaled.dtype) * eps
 
+        candidates = [Y_pred_scaled] if keep_original else []
         for k in range(n_remaining):
-            y_perturbed = Y_pred_scaled + perts[k]
-            finals.append(self._post_process_predictions(X_batch, y_perturbed))
+            candidates.append(Y_pred_scaled + perts[k])
+
+        Y_stacked = torch.stack(candidates, dim=0)  # (K, B, D)
+        finals = self._batched_post_process(X_batch, Y_stacked)
 
         return self._aggregate_predictions(finals, X_batch)
 

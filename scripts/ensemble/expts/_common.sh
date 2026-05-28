@@ -1,8 +1,10 @@
 #!/bin/bash
-set -e
+# NOTE: source ~/.bashrc BEFORE set -e — bashrc may return non-zero from
+# helper scripts (e.g. conda init) and would otherwise abort the job.
 source ~/.bashrc
 conda activate ml4opt
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+set -e
 cd /orcd/scratch/orcd/008/khain/FSNet
 mkdir -p logs
 

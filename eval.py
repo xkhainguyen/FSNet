@@ -135,6 +135,11 @@ def create_eval_parser():
                         help='Perturbation distribution: gauss, antithetic, sphere.')
     parser.add_argument('--inference_perturb_keep_original', type=int, default=1,
                         help='Include the unperturbed prediction as restart 0 (1=yes, 0=no).')
+    parser.add_argument('--vectorize_repair', action='store_true',
+                        help='Experimental: stack K perturbed candidates into one (K*B)-batch '
+                             'L-BFGS call. Faster but currently gives worse Merit because L-BFGS '
+                             'uses a global line-search step + batch-mean convergence check (see '
+                             '_batched_post_process docstring). Default off.')
 
     parser.add_argument('--wandb', action='store_true', help='Log results to W&B')
     parser.add_argument('--wandb_project', type=str, default='FSNet-eval')
@@ -265,6 +270,7 @@ def main():
     config['inference_perturb_eps'] = args.inference_perturb_eps
     config['inference_perturb_dist'] = args.inference_perturb_dist
     config['inference_perturb_keep_original'] = bool(args.inference_perturb_keep_original)
+    config['vectorize_repair'] = args.vectorize_repair
     if args.moe_strategy is not None:
         config['moe_strategy'] = args.moe_strategy
     if args.moe_candidate_top_k is not None:
