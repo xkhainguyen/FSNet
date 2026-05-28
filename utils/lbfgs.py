@@ -120,15 +120,23 @@ def _create_objective_function(x: torch.Tensor, data, scale: float) -> Callable[
 def _check_convergence(f_val_per_sample: torch.Tensor, g: torch.Tensor, config: LBFGSConfig) -> torch.Tensor:
     """Per-sample convergence check.
 
-    ``f_val_per_sample`` must be the un-reduced (B,) objective tensor. The
-    returned mask has shape (B,); callers ``.all()`` it to decide loop exit.
-    Previously this took a scalar ``f_val`` (batch-mean) which broadcast to all
-    samples — that caused premature exit on heterogeneous batches (e.g., K-
-    candidate perturbation eval).
+    Returns a (B,) mask. Sample i is considered converged when **both** the
+    per-sample objective is below ``val_tol`` AND the per-sample gradient norm
+    is below ``grad_tol`` — i.e. we're at a low-residual *and* near-stationary
+    point. Callers ``.all()`` the result to decide loop exit.
+
+    The previous semantics was ``val | grad`` (either triggers exit). That
+    was the cause of the batch-1 quality regression: a single sample can hit
+    the val-tol threshold (squared residual small) while its L1 residual is
+    still substantial, or hit grad-tol at a near-stationary but non-feasible
+    point. At larger batch the OR threshold was effectively forgiving because
+    different samples failed different criteria and the loop kept running for
+    the worst. The ``&`` semantics removes that fragile coupling and gives
+    consistent per-sample convergence regardless of batch composition.
     """
     val_converged = f_val_per_sample / config.scale < config.val_tol  # (B,) bool
     grad_converged = g.norm(dim=1) < config.grad_tol                   # (B,) bool
-    return val_converged | grad_converged                               # (B,) bool
+    return val_converged & grad_converged                               # (B,) bool
 
 
 def _backtracking_line_search(
