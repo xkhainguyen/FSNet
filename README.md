@@ -70,7 +70,7 @@ The sampled reference bank is derived deterministically from the main run `--see
 | `--config` | `configs/default.yaml` | YAML config file |
 | `--seed` | `2025` | Random seed |
 | `--train_size` | `7000` | Training set size |
-| `--network` | `MLP` | `MLP`, `SampledContextMLPv1`, `SampledContextMLPv2`, `LocalContextMLPv1`, `LocalContextMLPv2`, or `MoE` |
+| `--network` | `MLP` | `MLP`, `SampledContextMLPv1`, `SampledContextMLPv2`, `LocalContextMLPv1`, `LocalContextMLPv2`, `MultiHeadMLP`, or `MoE` |
 | `--lr` | (from config) | Learning rate |
 | `--num_epochs` | (from config) | Number of training epochs |
 | `--hidden_dim` | `1024` | MLP hidden dimension |
@@ -82,6 +82,8 @@ The sampled reference bank is derived deterministically from the main run `--see
 | `--context_encoder_dim` | `128` | Point-encoder hidden size for `SampledContextMLPv2` |
 | `--local_delta_scale` | `0.2` | Max residual correction scale for `LocalContextMLPv2` |
 | `--local_coarse_loss_weight` | `0.5` | Weight on coarse-stage penalty loss for `LocalContextMLPv2` |
+| `--mhe_num_heads` | `5` | Number of heads for `--network MultiHeadMLP` |
+| `--mhe_head_hidden_dim` | `hidden_dim//4` | Head hidden width for `MultiHeadMLP` |
 | `--checkpoint` | `None` | Resume from a saved `.pt` file |
 | `--save_intermediate` | `False` | Save model at each validation step |
 
@@ -121,6 +123,24 @@ python main.py \
 | `--fge_pretrain_ratio` | `0.8` | Fraction of epochs for pre-training before FGE snapshot collection |
 | `--fge_lr_max` | (base lr) | Peak LR during FGE cyclical phase |
 
+### Multi-Head Ensemble (MHE)
+
+A single network with one shared trunk and M independent heads. Each head produces a candidate solution; all candidates are repaired separately and aggregated via `best_merit` at evaluation. No learned router (unlike `MoE`). Typically much smaller (~28% the parameters of an M-member vanilla ensemble of the same width).
+
+```bash
+python main.py \
+    --method FSNet \
+    --prob_type nonsmooth_nonconvex --prob_name socp \
+    --network MultiHeadMLP \
+    --mhe_num_heads 5 \
+    --hidden_dim 1024 --num_layers 4
+```
+
+Notes:
+
+- For **FSNet/DC3/projection** (methods with a non-trivial repair), the in-loop repair during training pushes each head's prediction toward a different feasible local optimum, giving the heads functional diversity. MHE matches or beats vanilla ens5 quality at 28% the parameters.
+- For **penalty** (no test-time repair), heads on the shared trunk stay too similar — MHE trains faster but Merit lags vanilla. A diversity loss between heads (e.g., functional repulsion) is needed to close the gap.
+
 ### Ensemble evaluation modes
 
 Control how ensemble members are combined at evaluation time:
@@ -128,7 +148,7 @@ Control how ensemble members are combined at evaluation time:
 | Flag | Values | Description |
 |---|---|---|
 | `--ensemble_post` | `pre` (default), `post` | `pre` = average NN outputs then post-process once. `post` = post-process each member then aggregate. |
-| `--ensemble_agg` | `mean` (default), `median`, `best_obj`, `best_merit` | Aggregation strategy. `best_obj` picks the member with the lowest objective per sample. `best_merit` picks the member with the best merit (obj + penalty * violations). |
+| `--ensemble_agg` | `mean` (default), `median`, `best_obj`, `best_merit` | Aggregation strategy. `best_obj` picks the member with the lowest objective per sample. `best_merit` picks the member with the best merit (`obj + 1e6·(eq_viol_L1 + ineq_viol_L1)`). |
 
 ```bash
 # Fast: average then post-process once
@@ -137,6 +157,8 @@ python main.py ... --ensemble_post pre --ensemble_agg mean
 # High quality: post-process each member, pick the best per sample
 python main.py ... --ensemble_post post --ensemble_agg best_merit
 ```
+
+**Merit weight**: Both the reported `merit_mean` (`_compute_merit`) and the `best_merit` aggregation selector use the same weight `ρ = 1e6` on equality and inequality L1 violations. Prior to commit `8ef818b` the selector used `ρ = 1e5`; old eval numbers from that period may differ slightly.
 
 ## Evaluation
 
@@ -165,14 +187,56 @@ python eval.py \
     --ensemble_agg best_merit
 ```
 
+### Inference-time perturbation (multi-restart repair)
+
+Turn any single-model checkpoint into a K-restart "free ensemble" by perturbing its raw NN output K times and running the repair operator (L-BFGS for FSNet) on each, then aggregating via `best_merit`. Zero retraining cost. Only meaningful for methods with a non-trivial repair step (FSNet, DC3, projection) — for `penalty` (identity repair) the trick is a no-op.
+
+```bash
+python eval.py --checkpoints results/.../model.pt \
+    --inference_perturb_k 20 \
+    --inference_perturb_eps 0.1 \
+    --ensemble_agg best_merit
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--inference_perturb_k` | `0` (disabled) | Number of perturbed L-BFGS restarts. K=20 ε=0.1 typically beats vanilla M=5 ensembles on FSNet. |
+| `--inference_perturb_eps` | `0.05` | Standard deviation of the additive noise on the raw NN output. Sweet spot ε≈0.05–0.1 for FSNet on SOCP. |
+| `--inference_perturb_dist` | `gauss` | `gauss`, `antithetic` (deterministic ±z pairs for variance reduction), or `sphere` (radially uniform). |
+| `--inference_perturb_keep_original` | `1` | Include the unperturbed prediction as restart 0 (1=yes, 0=no). |
+
+### Repair-step ablation
+
+Quantify the contribution of the per-sample repair (L-BFGS for FSNet, projection for DC3, identity for penalty) on a saved checkpoint:
+
+```bash
+# Skip repair entirely; evaluate the raw NN output
+python eval.py --checkpoints results/.../model.pt --skip_repair
+
+# Override the L-BFGS iteration budget
+python eval.py --checkpoints results/.../model.pt --repair_max_iter 20
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--skip_repair` | off | Bypass the repair step; evaluate the raw scaled NN output directly. |
+| `--repair_max_iter` | (from config) | Override the L-BFGS `max_iter` at eval time. Reducing this is destructive — on FSNet, dropping from 50 → 20 inflates merit ~90× per restart. |
+
 ### Eval flags
 
 | Flag | Default | Description |
 |---|---|---|
-| `--checkpoints` | (required) | One or more `.pt` checkpoint paths |
+| `--run_dir` | — | Training run directory. Auto-discovers `members/member_*.pt` (ensemble) or `model.pt`. |
+| `--checkpoints` | — | One or more `.pt` checkpoint paths. Multiple are combined into an ad-hoc ensemble. (Either `--run_dir` or `--checkpoints` is required.) |
 | `--config` | (from checkpoint) | Override YAML config |
+| `--ensemble_size` | (from checkpoint) | Subsample to first N members |
 | `--ensemble_post` | `pre` | `pre` or `post` (see above) |
 | `--ensemble_agg` | `mean` | `mean`, `median`, `best_obj`, `best_merit` |
+| `--skip_repair` | off | See "Repair-step ablation" |
+| `--repair_max_iter` | (from config) | See "Repair-step ablation" |
+| `--inference_perturb_k` | `0` | See "Inference-time perturbation" |
+| `--inference_perturb_eps` | `0.05` | See "Inference-time perturbation" |
+| `--inference_perturb_dist` | `gauss` | See "Inference-time perturbation" |
 | `--test_batch_sizes` | (from config) | Override test batch sizes |
 
 ## Weights & Biases
@@ -208,15 +272,27 @@ Logged metrics include per-epoch training loss, constraint violations, optimalit
 ├── configs/
 │   └── default.yaml           # Default hyperparameters for all methods
 ├── models/
-│   └── neural_networks.py     # MLP and EnsembleMLP architectures
+│   └── neural_networks.py     # MLP, EnsembleMLP, MultiHeadMLP, MoE, context-augmented variants
 ├── utils/
 │   ├── trainer.py             # Training loop, loss functions, ensemble training
-│   ├── evaluator.py           # Evaluation, ensemble aggregation strategies
+│   ├── evaluator.py           # Evaluation, ensemble aggregation, perturbation, repair ablation
 │   ├── optimization_utils.py  # Problem definitions (QP, QCQP, SOCP variants)
 │   └── lbfgs.py               # Differentiable / hybrid L-BFGS solver
+├── scripts/
+│   ├── ensemble/              # Ensemble experiment drivers
+│   │   ├── exp_*.sh           # SLURM drivers for vanilla / FGE / penalty / FSNet
+│   │   ├── mhe/               # MultiHeadMLP training + smoke-test scripts
+│   │   └── expts/             # Audit, perturbation, repair-ablation, MHE-eval scripts + analysis
+│   ├── tuning/                # Hyperparameter tuning orchestration
+│   ├── landscape/             # Compute-side: input/weight → merit landscape probes
+│   ├── analysis/              # FSNet winner-region analyses, checkpoint diagnostics
+│   └── visualization/         # Plotting notebooks (winner regions, training curves, etc.)
 ├── datasets/
 │   ├── convex/                # Generated convex problem datasets
 │   ├── nonconvex/             # Generated nonconvex problem datasets
 │   └── nonsmooth_nonconvex/   # Generated nonsmooth nonconvex datasets
-└── results/                   # Saved models and evaluation results
+├── archive/                   # Stale or superseded scripts/notebooks (kept for history)
+│   ├── scripts/
+│   └── notebooks/
+└── results/                   # Saved models and evaluation results (gitignored)
 ```
