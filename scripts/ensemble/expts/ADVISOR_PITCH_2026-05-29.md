@@ -86,6 +86,16 @@ So on the *hardest, most-ensemble-favorable* problem class — a genuinely
 multimodal real benchmark — the entire "free ensemble" gain is an
 under-convergence artifact. **The negative result holds even here.**
 
+**Two-seed confirmation.** Both seeds give the same picture — converged-repair
+Merit is seed-robust at **2.03**, and K=100 perturbation changes nothing:
+
+| | seed 0 | seed 1 |
+|--|--------|--------|
+| under-converged (`ps=0`) K=1 | 114 | ~100 |
+| under-converged K=100 (perturb) | 14 | ~37–59 |
+| **converged (`ps=1`) K=1** | **2.0284** | **2.0277** |
+| **converged K=100 (perturb)** | **2.0279** | **2.0277** (identical) |
+
 ## 6. Scientific-rigor angle (worth raising)
 
 This study is a case study in how easy it is to mistake under-convergence for a
@@ -109,7 +119,8 @@ measuring an ensemble gain; report only what survives.
 
 ## 8. Open / next
 
-- A second seed + a second real problem (AC-OPF) to harden §5.
+- §5 confirmed on **2 seeds** (done). Next hardening: a *second* real multimodal
+  problem (AC-OPF) — new pipeline, scoped follow-up.
 - Whether the ~1% multimodal residual ever becomes practically large in a
   genuinely high-dimensional multimodal problem (toy showed coverage collapse).
 - Framing: negative-result + protocol paper, or fold into a broader
@@ -169,5 +180,6 @@ controls. AC-OPF is the next place to look.
   shrinks 0.042→0.011 as net converges; high-d K=100 residual 2.2→14.9% (d 2→16).
 - **Nonconvex QCQP (real multimodal):** under-converged repair K=1 **114** →
   K=100 **14**; converged repair (`per_sample=1`) K=1 **2.0284** → K=100 **2.0279**
-  (perturbation adds ~0.02%, within noise). seed 0; seed 1 confirmation pending.
-  `logs/eval-ncqcqp-14735337.out`, `logs/eval-ncqcqp-dec-14736223.out`
+  (perturbation adds ~0.02%, within noise). Seed 1 replicates: converged K=1
+  **2.0277** = K=100 **2.0277**. `logs/eval-ncqcqp-14735337.out`,
+  `logs/eval-ncqcqp-dec-14736223.out`, `logs/eval-ncqcqp-s1-14736793.out`
