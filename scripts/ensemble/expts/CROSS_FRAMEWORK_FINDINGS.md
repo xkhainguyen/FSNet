@@ -358,6 +358,36 @@ survive d≫2?).
 
 ---
 
+## 7. Disconnected-ball in higher dimension — coverage collapse (partly confounded)
+
+Tests the 2D-inflation worry from §6: in 2D, K=100 random perturbations cover the
+space easily, so the multistart "ball-recovery" may be a low-dim artifact. Same
+union-of-balls problem in R^d (self-contained, `bp_disc_highdim.py`), n_ball=4,
+cosine LR decay, K=100 best-ε:
+
+| d | iters | K=1 optgap | K=1 wrong% | K=100 optgap | K=100 wrong% |
+|---|-------|-----------|------------|--------------|--------------|
+| 2  | 240k | 0.021 | 5.9%  | 0.004 | 2.2%  |
+| 4  | 240k | 0.457 | 61.2% | 0.077 | 5.6%  |
+| 8  | 300k | 0.605 | 74.6% | 0.215 | 10.1% |
+| 16 | 360k | 0.609 | 75.2% | 0.359 | 14.9% |
+
+**Relatively clean signal — coverage collapse:** the *post-perturbation* residual
+K=100 wrong-ball% rises 2.2 → 5.6 → 10.1 → 14.9% and K=100 optgap rises
+0.004 → 0.359 as d grows. Fixed K=100 perturbations cover exponentially less
+volume in higher d, so even *with* multistart the result degrades sharply. This
+confirms the §6 worry: the 2D "ball-recovery to 2.2% wrong" was favorably
+inflated by easy 2D coverage; in higher d, K=100 is increasingly inadequate.
+
+**Confounded part — the K=1 side.** d≥4 got ~2D training budgets for a much
+harder routing problem (K=1 optgap 0.46–0.61 = badly undertrained), so the K=1
+wrong% climb (5.9→75%) mixes dimension with undertraining and can't be read as a
+structural floor. A per-d convergence check at d=4 (240k→480k→960k) is running to
+see whether K=1 wrong% plateaus high (dimension amplifies) or drops toward ~6%
+(it was undertraining) — **result pending, no conclusion drawn yet.**
+
+---
+
 ## Synthesis
 
 | Framework | Repair operator | Objective | Source of perturbation gain |
