@@ -108,3 +108,58 @@ measuring an ensemble gain; report only what survives.
   genuinely high-dimensional multimodal problem (toy showed coverage collapse).
 - Framing: negative-result + protocol paper, or fold into a broader
   "what ensembling buys in L2O" study.
+
+---
+
+## Appendix — anticipated questions & defenses
+
+**Q: Isn't "just converge the repair" obvious? Why is the negative result interesting?**
+The reported gains were published/claimed as *method* contributions (free
+ensembling, multi-restart). Showing they're convergence artifacts — with the
+*same number* recoverable by a one-line budget/criterion fix that's 10–20×
+cheaper — reframes a whole line of "ensemble your L2O solver" work. The
+diagnostic protocol is the transferable contribution.
+
+**Q: Could your convergence "fix" just be over-fitting the eval?**
+No — `per_sample_lbfgs` changes only the repair's convergence *criterion*
+(per-sample val-AND-grad) and line search, not the objective. Same checkpoint,
+same data. And on Πnet/DC3 the fix is literally their own budget knob
+(`n_iter`, `corr_lr`) with no code change.
+
+**Q: You changed your conclusions several times — why trust this one?**
+Each reversal was forced by a *control*, not a vibe: HardNet's "2× win" died
+under a 1500-epoch run; the toy's "survives convergence" died under LR-decay +
+the wrong-ball metric. The current claims are the ones that *survived* controls.
+The negative findings never reversed. (This is in the writeup as correction
+notes, not hidden.)
+
+**Q: Does the multimodal case ever actually justify ensembling?**
+There is a genuine residual (~1%, a structural routing floor a continuous net
+can't represent) — but it's small, and in higher dimension fixed-K perturbation
+coverage collapses (K=100 residual wrong-ball 2%→15% as d 2→16). So even the
+"best case for ensembling" doesn't yield a large convergence-surviving win in
+our tests. Open: a genuinely high-dim real multimodal problem (AC-OPF).
+
+**Q: Is `per_sample_lbfgs` usable in production?**
+Eval-only: `=1` diverges during training (loss→80k+), so it's a test-time repair
+mode. Default off; legacy training/eval byte-for-byte unchanged.
+
+**Q: What would change your mind / falsify the thesis?**
+A problem where, with repair AND network both verified-converged, K-perturbation
+still gives a large (≫1%) merit reduction. We actively looked for this (HardNet
+nonconvex obj; disconnected multimodal set) and it collapsed each time under
+controls. AC-OPF is the next place to look.
+
+## Appendix — exact numbers (verified against committed logs)
+
+- Πnet (DC3 QP100): n_iter=100 K=1 **116.52** → K=100 **44.64** (−62%); n_iter=500
+  K=1 **−11.56** (beats all perturbation). `logs/pinet-verify-14689578.out`
+- DC3 (nonsmooth SOCP): default Merit **590.6**; budget 3000 → **76.2**; `corr_lr`
+  1e-3 → **24.4**; K=100 perturb → **24.3**. (fix-the-knob == perturbation)
+  `logs/dc3-steps-sweep-14690284.out`, `logs/dc3-unaff-14687899.out`
+- HardNet (nonconvex QP100): 200ep K=1 **−2.78** → K=100 **−5.60**; at 1500ep the
+  K=1 reaches the converged level and the gain → ~1%. `logs/hardnet-verify-14694446.out`
+- Disconnected-ball: K=1 wrong-ball 5.6% floor (cosine LR, 480k); K=100 gain
+  shrinks 0.042→0.011 as net converges; high-d K=100 residual 2.2→14.9% (d 2→16).
+- **Nonconvex QCQP (real multimodal):** under-converged repair K=1 **114** →
+  K=100 **14**; converged repair (`per_sample=1`) K=1 **2.03**. `logs/eval-ncqcqp-14735337.out`
