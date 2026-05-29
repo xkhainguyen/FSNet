@@ -189,7 +189,9 @@ class Evaluator:
                 memory=self.config_method.get('memory_size', 20),
                 max_iter=max_iter_override if max_iter_override is not None
                           else self.config_method.get('max_iter', 20),
-                scale=self.config_method.get('scale', 1)
+                scale=self.config_method.get('scale', 1),
+                per_sample=self.config.get('per_sample_lbfgs',
+                                            self.config_method.get('per_sample_lbfgs', False)),
             )
         elif self.method == "DC3" or self.method == "sup_partial":
             Y_completion = self.opt_problem.complete_partial(X_batch, Y_pred_scaled)

@@ -140,6 +140,8 @@ def create_eval_parser():
                              'L-BFGS call. Faster but currently gives worse Merit because L-BFGS '
                              'uses a global line-search step + batch-mean convergence check (see '
                              '_batched_post_process docstring). Default off.')
+    parser.add_argument('--per_sample_lbfgs', type=int, choices=[0, 1], default=None,
+                        help='1=enable batch-invariant L-BFGS at eval time. Default from saved config.')
 
     parser.add_argument('--wandb', action='store_true', help='Log results to W&B')
     parser.add_argument('--wandb_project', type=str, default='FSNet-eval')
@@ -271,6 +273,8 @@ def main():
     config['inference_perturb_dist'] = args.inference_perturb_dist
     config['inference_perturb_keep_original'] = bool(args.inference_perturb_keep_original)
     config['vectorize_repair'] = args.vectorize_repair
+    if args.per_sample_lbfgs is not None:
+        config['per_sample_lbfgs'] = bool(args.per_sample_lbfgs)
     if args.moe_strategy is not None:
         config['moe_strategy'] = args.moe_strategy
     if args.moe_candidate_top_k is not None:

@@ -239,6 +239,9 @@ def create_parser():
     parser.add_argument('--val_tol', type=float)
     parser.add_argument('--decay_tol_step', type=int)
     parser.add_argument('--memory_size', type=int)
+    parser.add_argument('--per_sample_lbfgs', type=int, choices=[0, 1], default=None,
+                        help='1=enable batch-invariant L-BFGS (per-sample line search + val&grad convergence). '
+                             'Default from config (false). Affects FSNet/S3Net/semi training and eval.')
 
     # MultiHeadMLP (MHE — shared trunk, M heads)
     parser.add_argument('--mhe_num_heads', type=int,
@@ -377,6 +380,7 @@ def create_parser():
         'memory_size': args.memory_size,
         'init': args.init,
         'init_gain': args.init_gain,
+        'per_sample_lbfgs': bool(args.per_sample_lbfgs) if args.per_sample_lbfgs is not None else None,
     }
     for key, val in method_overrides.items():
         if val is not None:

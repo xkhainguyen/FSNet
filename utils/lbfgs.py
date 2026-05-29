@@ -77,7 +77,16 @@ def compute_gamma(S: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
 
 
 class LBFGSConfig:
-    """Configuration class for L-BFGS parameters."""
+    """Configuration class for L-BFGS parameters.
+
+    ``per_sample`` (default False) toggles the new batch-invariant code path:
+    per-sample objective + sum-reduced gradients + per-sample line search +
+    val-AND-grad convergence. With False, the legacy behavior is preserved
+    (batch-mean objective + global line search + val-OR-grad convergence).
+    Tests on the existing FSNet+SOCP training showed the legacy behavior is
+    the previous default; enable per_sample=True to get the batch-invariant
+    L-BFGS at training or eval time.
+    """
     def __init__(
         self,
         max_iter: int = 20,
@@ -88,7 +97,8 @@ class LBFGSConfig:
         c: float = 1e-4,
         rho_ls: float = 0.5,
         max_ls_iter: int = 10,
-        verbose: bool = False
+        verbose: bool = False,
+        per_sample: bool = False,
     ):
         self.max_iter = max_iter
         self.memory = memory
@@ -98,6 +108,7 @@ class LBFGSConfig:
         self.c = c
         self.rho_ls = rho_ls
         self.max_ls_iter = max_ls_iter
+        self.per_sample = per_sample
         self.verbose = verbose
 
 
@@ -117,26 +128,58 @@ def _create_objective_function(x: torch.Tensor, data, scale: float) -> Callable[
     return _obj
 
 
+def _check_convergence_old(f_val: torch.Tensor, g: torch.Tensor, config: LBFGSConfig) -> torch.Tensor:
+    """Legacy convergence check: scalar batch-mean f_val + OR semantics.
+
+    Active when ``config.per_sample == False``. ``f_val`` is the batch-mean
+    scalar; ``val_converged`` broadcasts to all samples; ``grad_converged`` is
+    per-sample. The OR can fire prematurely on heterogeneous batches.
+    """
+    val_converged = f_val / config.scale < config.val_tol
+    grad_converged = g.norm(dim=1) < config.grad_tol
+    return val_converged | grad_converged
+
+
 def _check_convergence(f_val_per_sample: torch.Tensor, g: torch.Tensor, config: LBFGSConfig) -> torch.Tensor:
-    """Per-sample convergence check.
+    """Per-sample convergence check used when ``config.per_sample == True``.
 
     Returns a (B,) mask. Sample i is considered converged when **both** the
     per-sample objective is below ``val_tol`` AND the per-sample gradient norm
     is below ``grad_tol`` — i.e. we're at a low-residual *and* near-stationary
     point. Callers ``.all()`` the result to decide loop exit.
-
-    The previous semantics was ``val | grad`` (either triggers exit). That
-    was the cause of the batch-1 quality regression: a single sample can hit
-    the val-tol threshold (squared residual small) while its L1 residual is
-    still substantial, or hit grad-tol at a near-stationary but non-feasible
-    point. At larger batch the OR threshold was effectively forgiving because
-    different samples failed different criteria and the loop kept running for
-    the worst. The ``&`` semantics removes that fragile coupling and gives
-    consistent per-sample convergence regardless of batch composition.
     """
     val_converged = f_val_per_sample / config.scale < config.val_tol  # (B,) bool
     grad_converged = g.norm(dim=1) < config.grad_tol                   # (B,) bool
     return val_converged & grad_converged                               # (B,) bool
+
+
+def _backtracking_line_search_old(
+    y: torch.Tensor,
+    d: torch.Tensor,
+    g: torch.Tensor,
+    f_val: torch.Tensor,
+    obj_func: Callable,
+    config: LBFGSConfig,
+) -> float:
+    """Legacy global-step backtracking line search.
+
+    Active when ``config.per_sample == False``. Returns a single scalar step
+    used for the whole batch. The Armijo check uses the batch-mean ``f_val``
+    and the batch-sum direction derivative, so it can pick a step that's a
+    compromise across heterogeneous samples.
+    """
+    step = 1.0
+    dir_deriv = (g * d).sum()
+
+    with torch.no_grad():
+        for _ in range(config.max_ls_iter):
+            y_trial = y + step * d
+            f_trial = obj_func(y_trial)  # uses default reduce=True → scalar
+            if (f_trial <= f_val + config.c * step * dir_deriv).all():
+                break
+            step *= config.rho_ls
+
+    return step
 
 
 def _backtracking_line_search(
@@ -223,13 +266,19 @@ def lbfgs_solve(
     # Create objective function
     obj_func = _create_objective_function(x, data, config.scale)
 
-    # Per-sample objective + per-sample gradient (sum-reduce for autograd).
-    f_val_vec = obj_func(y, reduce=False)
-    g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=True)[0]
+    if config.per_sample:
+        f_val_vec = obj_func(y, reduce=False)
+        g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=True)[0]
+    else:
+        f_val = obj_func(y)
+        g = torch.autograd.grad(f_val, y, create_graph=True)[0]
 
     for k in range(config.max_iter):
-        # Per-sample convergence check
-        if _check_convergence(f_val_vec, g, config).all():
+        if config.per_sample:
+            converged = _check_convergence(f_val_vec, g, config)
+        else:
+            converged = _check_convergence_old(f_val, g, config)
+        if converged.all():
             if config.verbose:
                 print(f"Converged at iteration {k}")
             break
@@ -244,13 +293,21 @@ def lbfgs_solve(
         else:
             d = -0.1 * g  # Steepest descent for first iteration
 
-        # Per-sample line search → (B,) step
-        step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, config)
+        # Line search
+        if config.per_sample:
+            step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, config)
+            y_next = y + step.unsqueeze(-1) * d
+        else:
+            step = _backtracking_line_search_old(y, d, g, f_val, obj_func, config)
+            y_next = y + step * d
 
         # Update solution
-        y_next = y + step.unsqueeze(-1) * d
-        f_next_vec = obj_func(y_next, reduce=False)
-        g_next = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=True)[0]
+        if config.per_sample:
+            f_next_vec = obj_func(y_next, reduce=False)
+            g_next = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=True)[0]
+        else:
+            f_next = obj_func(y_next)
+            g_next = torch.autograd.grad(f_next, y_next, create_graph=True)[0]
 
         # Update history
         S_hist[hist_ptr] = y_next - y
@@ -260,12 +317,19 @@ def lbfgs_solve(
 
         # Prepare for next iteration
         y = y_next
-        f_val_vec = f_next_vec.clone()
+        if config.per_sample:
+            f_val_vec = f_next_vec.clone()
+        else:
+            f_val = f_next.clone()
         g = g_next.clone()
 
         if config.verbose and k % 5 == 0:
-            print(f"Iter {k:3d}: f_mean = {f_next_vec.mean().item()/config.scale:.3e}, "
-                  f"|g| = {g_next.norm():.3e}, step_mean = {step.mean().item():.3e}")
+            if config.per_sample:
+                print(f"Iter {k:3d}: f_mean = {f_next_vec.mean().item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step_mean = {step.mean().item():.3e}")
+            else:
+                print(f"Iter {k:3d}: f = {f_next.item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step = {step:.3e}")
 
     return y
 
@@ -323,15 +387,22 @@ def nondiff_lbfgs_solve(
     
     obj_func = _create_objective_function(x, data, config.scale)
 
-    f_val_vec = obj_func(y, reduce=False)
-    g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=False)[0]
+    if config.per_sample:
+        f_val_vec = obj_func(y, reduce=False)
+        g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=False)[0]
+    else:
+        f_val = obj_func(y)
+        g = torch.autograd.grad(f_val, y, create_graph=False)[0]
 
     for k in range(config.max_iter):
         y.requires_grad_(False)
         g = g.detach()
 
-        # Per-sample convergence check
-        if _check_convergence(f_val_vec, g, config).all():
+        if config.per_sample:
+            converged = _check_convergence(f_val_vec, g, config)
+        else:
+            converged = _check_convergence_old(f_val, g, config)
+        if converged.all():
             if config.verbose:
                 print(f"Converged at iteration {k}")
             break
@@ -346,15 +417,22 @@ def nondiff_lbfgs_solve(
         else:
             d = -0.1 * g
 
-        # Per-sample line search → (B,) step
-        step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, config)
-
-        y_next = y + step.unsqueeze(-1) * d
+        # Line search
+        if config.per_sample:
+            step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, config)
+            y_next = y + step.unsqueeze(-1) * d
+        else:
+            step = _backtracking_line_search_old(y, d, g, f_val, obj_func, config)
+            y_next = y + step * d
 
         # Update history with detached tensors
         y_next.requires_grad_(True)
-        f_next_vec = obj_func(y_next, reduce=False)
-        g_next, = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=False)
+        if config.per_sample:
+            f_next_vec = obj_func(y_next, reduce=False)
+            g_next, = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=False)
+        else:
+            f_next = obj_func(y_next)
+            g_next, = torch.autograd.grad(f_next, y_next, create_graph=False)
 
         S_hist[hist_ptr] = (y_next - y).detach()
         Y_hist[hist_ptr] = (g_next - g).detach()
@@ -362,12 +440,19 @@ def nondiff_lbfgs_solve(
         hist_len = min(hist_len + 1, config.memory)
 
         y = y_next.detach()
-        f_val_vec = f_next_vec.detach().clone()
+        if config.per_sample:
+            f_val_vec = f_next_vec.detach().clone()
+        else:
+            f_val = f_next.clone()
         g = g_next.clone()
 
         if config.verbose and k % 5 == 0:
-            print(f"Iter {k:3d}: f_mean = {f_next_vec.mean().item()/config.scale:.3e}, "
-                  f"|g| = {g_next.norm():.3e}, step_mean = {step.mean().item():.3e}")
+            if config.per_sample:
+                print(f"Iter {k:3d}: f_mean = {f_next_vec.mean().item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step_mean = {step.mean().item():.3e}")
+            else:
+                print(f"Iter {k:3d}: f = {f_next.item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step = {step:.3e}")
 
     return y
 
@@ -419,7 +504,8 @@ def hybrid_lbfgs_solve(
         c=config.c,
         rho_ls=config.rho_ls,
         max_ls_iter=config.max_ls_iter,
-        verbose=config.verbose
+        verbose=config.verbose,
+        per_sample=config.per_sample,
     )
     
     # Run differentiable phase (shortened version of lbfgs_solve)
@@ -433,11 +519,19 @@ def hybrid_lbfgs_solve(
     hist_ptr = 0
     
     obj_func = _create_objective_function(x, data, config.scale)
-    f_val_vec = obj_func(y, reduce=False)
-    g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=True)[0]
+    if config.per_sample:
+        f_val_vec = obj_func(y, reduce=False)
+        g = torch.autograd.grad(f_val_vec.sum(), y, create_graph=True)[0]
+    else:
+        f_val = obj_func(y)
+        g = torch.autograd.grad(f_val, y, create_graph=True)[0]
 
     for k in range(max_diff_iter):
-        if _check_convergence(f_val_vec, g, diff_config).all():
+        if config.per_sample:
+            converged = _check_convergence(f_val_vec, g, diff_config)
+        else:
+            converged = _check_convergence_old(f_val, g, diff_config)
+        if converged.all():
             if config.verbose:
                 print(f"Converged in differentiable phase at iteration {k}")
             return y
@@ -452,13 +546,20 @@ def hybrid_lbfgs_solve(
         else:
             d = -0.1 * g
 
-        # Per-sample line search → (B,) step
-        step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, diff_config)
+        # Line search
+        if config.per_sample:
+            step = _backtracking_line_search(y, d, g, f_val_vec, obj_func, diff_config)
+            y_next = y + step.unsqueeze(-1) * d
+        else:
+            step = _backtracking_line_search_old(y, d, g, f_val, obj_func, diff_config)
+            y_next = y + step * d
 
-        # Update
-        y_next = y + step.unsqueeze(-1) * d
-        f_next_vec = obj_func(y_next, reduce=False)
-        g_next = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=True)[0]
+        if config.per_sample:
+            f_next_vec = obj_func(y_next, reduce=False)
+            g_next = torch.autograd.grad(f_next_vec.sum(), y_next, create_graph=True)[0]
+        else:
+            f_next = obj_func(y_next)
+            g_next = torch.autograd.grad(f_next, y_next, create_graph=True)[0]
 
         # Update history
         S_hist[hist_ptr] = y_next - y
@@ -467,12 +568,19 @@ def hybrid_lbfgs_solve(
         hist_len = min(hist_len + 1, config.memory)
 
         y = y_next
-        f_val_vec = f_next_vec.clone()
+        if config.per_sample:
+            f_val_vec = f_next_vec.clone()
+        else:
+            f_val = f_next.clone()
         g = g_next.clone()
 
         if config.verbose and k % 5 == 0:
-            print(f"Diff iter {k:3d}: f = {f_next.item()/config.scale:.3e}, "
-                  f"|g| = {g_next.norm():.3e}, step = {step:.3e}")
+            if config.per_sample:
+                print(f"Diff iter {k:3d}: f_mean = {f_next_vec.mean().item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step_mean = {step.mean().item():.3e}")
+            else:
+                print(f"Diff iter {k:3d}: f = {f_next.item()/config.scale:.3e}, "
+                      f"|g| = {g_next.norm():.3e}, step = {step:.3e}")
     
     # Switch to non-differentiable phase
     remaining_config = LBFGSConfig(
@@ -484,7 +592,8 @@ def hybrid_lbfgs_solve(
         c=config.c,
         rho_ls=config.rho_ls,
         max_ls_iter=config.max_ls_iter,
-        verbose=config.verbose
+        verbose=config.verbose,
+        per_sample=config.per_sample,
     )
     
     y_nondiff = nondiff_lbfgs_solve(

@@ -56,6 +56,7 @@ defaults:
   val_tol: 1.0e-07
   test_val_tol: 1.0e-09
   decay_tol_step: 100
+  per_sample_lbfgs: false  # true → batch-invariant L-BFGS (per-sample line search + val&grad convergence)
   memory_size: 30
   max_iter: 50
   max_diff_iter: 30

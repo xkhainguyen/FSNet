@@ -576,6 +576,7 @@ class Trainer:
             max_iter=self.config_method['max_iter'],
             max_diff_iter=self.config_method['max_diff_iter'],
             scale=self.config_method['scale'],
+            per_sample=self.config_method.get('per_sample_lbfgs', False),
         )
         obj = self.opt_problem.obj_fn(Y_final)
         eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
@@ -727,6 +728,7 @@ class Trainer:
                 max_iter=self.config_method['max_iter'],
                 max_diff_iter=self.config_method['max_diff_iter'],
                 scale=self.config_method['scale'],
+                per_sample=self.config_method.get('per_sample_lbfgs', False),
             )
         else:
             Y_final = Y_pred_scaled
@@ -794,6 +796,7 @@ class Trainer:
                 max_iter=self.config_method['max_iter'],
                 max_diff_iter=self.config_method['max_diff_iter'],
                 scale=self.config_method['scale'],
+                per_sample=self.config_method.get('per_sample_lbfgs', False),
             )
         else:
             Y_final = Y_pred_scaled
