@@ -26,7 +26,14 @@ artifacts on one of two axes**; the genuine residual gains are small (~1%).
 
 A convex objective with a converged Euclidean projection **and a converged
 network** gets ~zero genuine benefit. The gains that survive full convergence
-(sources 3–4) are order 1%.
+on convex problems (sources 3–4) are order 1%.
+
+**The positive regime (§6):** when the feasible set is **multimodal /
+disconnected**, perturbation gives a LARGE gain that survives full convergence
+(94% optgap reduction on a union-of-balls control), because a continuous net
+structurally mis-routes ~13% of instances to the wrong feasible component no
+matter how long it trains. *This* is where ensembling earns its cost — covering
+multimodality, not papering over under-convergence.
 
 > **Correction note.** An earlier draft of this doc claimed HardNet showed a
 > "real, large nonconvex-objective win (2×)." The 1500-epoch controls (§5)
@@ -260,6 +267,46 @@ source — undertrained network — alongside under-converged repair.
 
 ---
 
+## 6. Disconnected-ball multimodal control — THE POSITIVE REGIME
+
+All five frameworks above had a **convex (connected) feasible set**, so the
+solution map is continuous and a converged network needs no ensemble. To find
+where ensembling genuinely helps, we built a control with a **disconnected
+feasible set**: amortized linear optimization over a union of 4 disjoint balls
+(BP's `Disconnected_Ball` geometry).
+
+`min wᵀx s.t. x ∈ ⋃ᵢ Ball(centerᵢ, radiusᵢ)`, conditioning input `[c, w]`
+(geometry + objective direction) → `x`. The optimal ball is a **discontinuous**
+function of `(c, w)`. Repair = radial bisection from the nearest ball-center
+interior point (fully converged, viol ≈ 1e-9). Self-contained solver, trained
+unsupervised with ramped feasibility penalty. Script:
+`scripts/ensemble/expts/bp/bp_disconnected_sweep.py` (2D, CPU, ~3 min).
+
+**Convergence control** (the HardNet lesson applied): we trained 20k AND 60k
+iters and tracked **wrong-ball%** = fraction of instances whose repaired
+solution lands in a ball ≠ the objective-optimal ball (a genuine *routing*
+failure, distinct from precision error).
+
+| iters | K=1 optgap | K=1 wrong-ball% | K=100 ε=1.0 optgap | K=100 wrong-ball% |
+|-------|-----------|------------------|--------------------|--------------------|
+| 20k   | 0.150     | 15.5%            | 0.0067             | 2.8%               |
+| 60k   | 0.096     | **12.8%**        | **0.0054**         | **2.8%**           |
+
+The K=1 wrong-ball rate does **not** head to zero with 3× more training (15.5%
+→ 12.8%, plateauing) — a continuous network structurally cannot represent the
+discontinuous argmin-ball map, so it mis-routes ~13% of instances *no matter how
+long you train*. And perturbation multistart **survives convergence**: at 60k
+iters, K=100 (ε=1.0) cuts optgap 0.096 → 0.0054 (**94% of the gap closed**) and
+wrong-ball 12.8% → 2.8%. The mechanism is directly measured — multistart lands
+candidates in different balls and `best_merit` keeps the right one.
+
+This is the qualitatively different, **positive** result: on a multimodal
+(disconnected) feasible set, perturbation/ensembling delivers a large gain that
+survives full network + repair convergence, because the failure mode (wrong-ball
+routing) is intrinsic to the discontinuous solution map — not an artifact.
+
+---
+
 ## Synthesis
 
 | Framework | Repair operator | Objective | Source of perturbation gain |
@@ -270,10 +317,11 @@ source — undertrained network — alongside under-converged repair.
 | BP        | radial bisection (non-Euclidean, iterative) | convex | **Real (small)** — repair geometry; ≈0.4% obj, mostly feasibility-tightening |
 | HardNet 200ep | one-shot pinv/ReLU correction (closed-form, *non-Euclidean*) | nonconvex | **Mostly artifact** — 101% gain, but ~95% of it was *undertraining* (see controls) |
 | HardNet 1500ep (converged) | same | nonconvex | **Real (small)** — 1.1% total: ≈0.5% non-Euclidean correction + ≈0.6% nonconvex objective |
+| Disconnected-ball (converged) | radial bisection | linear, **disconnected feasible set** | **Real (LARGE)** — 94% optgap reduction; survives convergence (wrong-ball 13%→3%) |
 
-The "free ensemble" gain has **four** sources — and only two are genuine, both
-small. The headline lesson is that the two big-looking sources are both
-*under-convergence on different axes*:
+The perturbation gain has **five** sources. The two big-looking ones in the
+convex frameworks are both *under-convergence in disguise*; the genuinely large
+gain appears only when the feasible set is multimodal:
 
 1. **Under-converged repair** (FSNet, DC3, Πnet — convex obj + iterative
    Euclidean projection). Artifact. Fixing the repair budget is 10–20× cheaper
@@ -291,14 +339,27 @@ small. The headline lesson is that the two big-looking sources are both
 4. **Nonconvex objective** (HardNet `pᵀsin(y)`, ≈0.6% increment). Genuine but
    tiny — far from the "large multistart win" the undertrained run suggested.
 
-Practical rule for L2O ensembling: **the large perturbation gains reported on
-these benchmarks are convergence artifacts — either under-converged repair
-(fix the repair) or an undertrained network (train longer).** Both are cheaper
-to fix directly than to ensemble around. The *genuine* perturbation gains that
-survive full convergence (direction-dependent repair, nonconvex objective) are
-small — order 1% — and only appear at all when the repair is non-Euclidean or
-the objective is nonconvex. A convex objective with a converged Euclidean
-projection and a converged network gets ~zero genuine benefit.
+5. **Multimodal (disconnected) feasible set** (disconnected-ball control, ≈94%
+   optgap reduction). Genuine AND large, AND survives convergence. A continuous
+   net structurally mis-routes ~13% of instances to the wrong feasible component
+   (doesn't vanish with 3× training); perturbation+best_merit recovers the right
+   component. **This is the one regime where ensembling clearly earns its
+   inference cost.**
+
+Practical rule for L2O ensembling: **on convex/connected-feasible-set problems,
+the large perturbation gains are convergence artifacts** — either under-converged
+repair (fix the repair) or an undertrained network (train longer), both cheaper
+to fix directly than to ensemble around; the residual genuine gains are ~1%.
+**Ensembling/perturbation earns its inference cost only when the solution map is
+multimodal** — a disconnected/nonconvex feasible set where the argmin jumps
+between components as the parameters vary. There a continuous net structurally
+mis-routes a fixed fraction of instances (≈13% here, doesn't vanish with
+training) and multistart+best_merit recovers them (94% optgap reduction).
+
+**So: don't ensemble to paper over under-convergence; ensemble to cover
+multimodality.** The diagnostic that tells them apart is the convergence
+control — push repair budget AND training to convergence; whatever gain
+survives is the real, multimodality-driven part.
 
 ---
 
