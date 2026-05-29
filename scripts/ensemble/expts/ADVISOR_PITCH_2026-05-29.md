@@ -72,13 +72,19 @@ convergence. Merit = obj + 1e6·(eq+ineq violation):
 | repair regime | K=1 (no perturb) | K=100 perturb |
 |---------------|------------------|----------------|
 | **under-converged** (`per_sample=0`) | Merit 114 | Merit 14 (the "88% win") |
-| **converged** (`per_sample=1`) | **Merit 2.03** | _[pending cell]_ |
+| **converged** (`per_sample=1`) | **Merit 2.03** | **Merit 2.03** (no change) |
 
-The punchline: **just fixing the repair convergence (114 → 2.03) beats the
-perturbation-on-broken-repair (14) by ~7×, with no ensembling at all.** And
-raising `max_iter` 50→200 under the legacy criterion does nothing (114→114) —
-the fix is the *convergence criterion*, not the budget. _[Decisive cell —
-does K=100 add anything on top of converged repair? — folded in below.]_
+Two punchlines:
+1. **Just fixing the repair convergence (114 → 2.03) beats the
+   perturbation-on-broken-repair (14) by ~7×, with no ensembling at all.**
+   (Raising `max_iter` 50→200 under the legacy criterion does nothing, 114→114 —
+   the fix is the convergence *criterion*, not the budget.)
+2. **Once the repair is converged, perturbation/ensembling adds nothing** — K=100
+   gives Merit 2.0279 vs K=1's 2.0284 (~0.02%, within noise; swept ε=0.05–0.3).
+
+So on the *hardest, most-ensemble-favorable* problem class — a genuinely
+multimodal real benchmark — the entire "free ensemble" gain is an
+under-convergence artifact. **The negative result holds even here.**
 
 ## 6. Scientific-rigor angle (worth raising)
 
@@ -162,4 +168,6 @@ controls. AC-OPF is the next place to look.
 - Disconnected-ball: K=1 wrong-ball 5.6% floor (cosine LR, 480k); K=100 gain
   shrinks 0.042→0.011 as net converges; high-d K=100 residual 2.2→14.9% (d 2→16).
 - **Nonconvex QCQP (real multimodal):** under-converged repair K=1 **114** →
-  K=100 **14**; converged repair (`per_sample=1`) K=1 **2.03**. `logs/eval-ncqcqp-14735337.out`
+  K=100 **14**; converged repair (`per_sample=1`) K=1 **2.0284** → K=100 **2.0279**
+  (perturbation adds ~0.02%, within noise). seed 0; seed 1 confirmation pending.
+  `logs/eval-ncqcqp-14735337.out`, `logs/eval-ncqcqp-dec-14736223.out`
