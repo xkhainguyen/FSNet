@@ -7,11 +7,11 @@
 #SBATCH -o /orcd/scratch/orcd/008/khain/FSNet/logs/%x-%j.out
 #SBATCH -e /orcd/scratch/orcd/008/khain/FSNet/logs/%x-%j.err
 
-set -e
 source ~/.bashrc
 conda activate ml4opt
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 cd /orcd/scratch/orcd/008/khain/FSNet
+set -e
 echo "=== FSNet on REAL multimodal benchmark: nonconvex QCQP $(date) on $SLURM_NODELIST ==="
 nvidia-smi -L
 

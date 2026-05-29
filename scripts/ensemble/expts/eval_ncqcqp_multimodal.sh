@@ -7,12 +7,12 @@
 #SBATCH -o /orcd/scratch/orcd/008/khain/FSNet/logs/%x-%j.out
 #SBATCH -e /orcd/scratch/orcd/008/khain/FSNet/logs/%x-%j.err
 
-set -e
 source ~/.bashrc
 conda activate ml4opt
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export PYTHONUNBUFFERED=1
 cd /orcd/scratch/orcd/008/khain/FSNet
+set -e
 
 # Run dir is passed as $1 (the converged FSNet nonconvex-qcqp training dir).
 RUN_DIR="$1"
