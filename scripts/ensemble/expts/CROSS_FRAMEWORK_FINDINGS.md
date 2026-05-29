@@ -382,9 +382,31 @@ inflated by easy 2D coverage; in higher d, K=100 is increasingly inadequate.
 **Confounded part — the K=1 side.** d≥4 got ~2D training budgets for a much
 harder routing problem (K=1 optgap 0.46–0.61 = badly undertrained), so the K=1
 wrong% climb (5.9→75%) mixes dimension with undertraining and can't be read as a
-structural floor. A per-d convergence check at d=4 (240k→480k→960k) is running to
-see whether K=1 wrong% plateaus high (dimension amplifies) or drops toward ~6%
-(it was undertraining) — **result pending, no conclusion drawn yet.**
+structural floor.
+
+**Per-d convergence check at d=4 — INCONCLUSIVE (methodology hit its limit).**
+
+| iters | K=1 optgap | K=1 wrong% |
+|-------|-----------|------------|
+| 240k  | 0.457 | 61.2% |
+| 480k  | 0.598 | **71.7%** (worse!) |
+
+More training made d=4 *worse* (61→72% wrong, near the 75% random-guess rate for
+4 balls), which exposes two problems: (i) at d=4 this small net essentially fails
+to learn routing — near-random; (ii) the convergence-check method is flawed — each
+row is a *separate* cosine-LR run with its own T_max schedule, not a progressive
+trajectory, so "more iters" is not monotone convergence (d=2 looked monotone by
+luck; d=4 reveals the schedule-dependence). The 960k run was stopped — it would
+only add another arbitrary-schedule point.
+
+**Conclusion for §7:** the *coverage-collapse* signal (K=100 residual rising with
+d) is real and the cleanest dimension result. But the **structural-floor-vs-
+dimension** question is NOT cleanly answerable with this 2D-derived toy and this
+training methodology — d=4 is dominated by training pathology. Settling it would
+need a better-posed problem (stable training at each d, with each d trained to its
+own verified convergence), which is a larger undertaking than the toy supports.
+Not pursued further; the robust results (negative across 6 frameworks §1–5,
+high-d coverage collapse §7) stand without it.
 
 ---
 
