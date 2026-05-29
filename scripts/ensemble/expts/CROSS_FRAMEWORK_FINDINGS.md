@@ -7,8 +7,9 @@ giving ~60% merit reduction at K=100 on FSNet over single-shot inference. Is thi
 gain *real* (a genuine functional-diversity benefit) or a *repair-operator
 under-convergence artifact* (the multi-start papers over a badly-tuned solver)?
 
-**Verdict (5 frameworks tested).** The big perturbation gains are **convergence
-artifacts on one of two axes**; the genuine residual gains are small (~1%).
+**Verdict (6 testbeds tested).** The big perturbation gains are **convergence
+artifacts on one of two axes**; every genuine convergence-surviving residual is
+small (~1%), *including the multimodal case once trained to convergence*.
 
 1. **Under-converged iterative repair** (FSNet/L-BFGS, DC3/grad-SGD, Πnet/ADMM,
    convex objectives) → **artifact**. Collapses to noise once the repair
@@ -24,20 +25,23 @@ artifacts on one of two axes**; the genuine residual gains are small (~1%).
 4. **Nonconvex objective** (HardNet `pᵀsin(y)`, ≈0.6% increment at convergence)
    → **real but tiny** — not the large effect the undertrained run suggested.
 
-A convex objective with a converged Euclidean projection **and a converged
-network** gets ~zero genuine benefit. The gains that survive full convergence
-on convex problems (sources 3–4) are order 1%.
+5. **Multimodal / disconnected feasible set** (§6) → **real but small (~1%)**.
+   The *most* genuine of the convergence-surviving effects: a continuous net
+   cannot perfectly represent the discontinuous argmin-component map, so a ~5.6%
+   routing-error floor remains even at convergence (it flattens 240k→480k). But
+   the headline "94%" was undertraining + 2D random-search — proper LR-decay
+   training more than halved the apparent floor (13%→5.6%) and shrank the K=100
+   gain 0.042→0.011. The surviving gain is ≈1% of the objective. The
+   connected-vs-disconnected *distinction* is real (a convex single ball needs
+   no ensembling — Control B), but it does **not** translate into a large
+   convergence-surviving win.
 
-**The candidate positive regime (§6) — promising, NOT established:** on a
-**multimodal / disconnected** feasible set, perturbation gives a large *apparent*
-gain (94% optgap reduction on a union-of-balls control), and the
-connected-vs-disconnected distinction is real (a convex single ball needs no
-ensembling — Control B). BUT controls show the disconnected K=1 error is still
-training-limited (12.3→10.7%, not a demonstrated floor), the usable-ε gain is
-mostly within-ball precision not multimodal routing, and true ball-switching
-needs random-search-scale ε in a 2D toy. "Ensembling earns its cost on
-multimodal problems" is the best-supported hypothesis but **not yet proven** —
-a 480k convergence run + higher-dim test are pending.
+A convex objective with a converged Euclidean projection **and a converged
+network** gets ~zero genuine benefit. Every effect that survives full
+convergence — non-Euclidean repair (3), nonconvex objective (4), multimodal
+routing (5) — is order ~1%. **No testbed shows a large convergence-surviving
+perturbation/ensemble gain.** The headline numbers (60%, 2×, 94%) were all
+under-convergence on the repair or the network.
 
 > **Correction note.** An earlier draft of this doc claimed HardNet showed a
 > "real, large nonconvex-objective win (2×)." The 1500-epoch controls (§5)
@@ -271,7 +275,7 @@ source — undertrained network — alongside under-converged repair.
 
 ---
 
-## 6. Disconnected-ball multimodal control — THE POSITIVE REGIME
+## 6. Disconnected-ball multimodal control — RESOLVED (~1% genuine, not 94%)
 
 All five frameworks above had a **convex (connected) feasible set**, so the
 solution map is continuous and a converged network needs no ensemble. To find
@@ -286,11 +290,10 @@ interior point (fully converged, viol ≈ 1e-9). Self-contained solver, trained
 unsupervised with ramped feasibility penalty. Script:
 `scripts/ensemble/expts/bp/bp_disconnected_sweep.py` (2D, CPU, ~3 min).
 
-**⚠ STATUS: SUGGESTIVE, NOT ESTABLISHED.** An earlier draft of this section
-claimed a confirmed "positive regime — large gain survives convergence." The
-controls below (scripts `bp_disc_controls.py`, `bp_disc_convergence.py`) show
-that claim was premature — the same overclaim pattern as the HardNet section.
-What is solid vs open:
+**STATUS: RESOLVED.** An earlier draft claimed a confirmed "positive regime —
+large gain survives convergence." Controls (`bp_disc_controls.py`,
+`bp_disc_convergence.py`) show that was premature — same overclaim pattern as
+HardNet. The resolved picture:
 
 **Solid — connected vs disconnected distinction (Control B).** A connected
 single-ball (convex) feasible set, same pipeline, is solved at K=1
@@ -298,25 +301,28 @@ single-ball (convex) feasible set, same pipeline, is solved at K=1
 perturbation gain genuinely requires the disconnected feasible set; it is not a
 pipeline artifact.
 
-**Open — is the disconnected K=1 error structural or undertraining?** Tracking
-**wrong-ball%** (fraction whose repaired solution lands in a ball ≠ the
-objective-optimal ball — a routing failure distinct from precision):
+**Resolved — the "13% structural floor" was mostly under-optimization.** The
+first controls used constant LR and read a "plateau at ~13% wrong-ball." With
+proper cosine LR decay and training to convergence (128×4, the best arch), the
+K=1 error is far lower and the trajectory flattens near ~5.6%:
 
-| run | K=1 optgap | K=1 wrong-ball% |
-|-----|-----------|------------------|
-| 128×4, 60k  | 0.098 | 12.3% |
-| 128×4, 120k | 0.066 | **10.7%** ← still dropping |
-| 256×6, 120k | 0.122 | 15.3% (bigger net = undertrained at 120k) |
-| 512×6, 120k | 0.115 | 18.1% |
+| iters (cosine LR) | K=1 optgap | K=1 wrong-ball% | K=100 ε=1 optgap | gain |
+|-------------------|-----------|------------------|-------------------|------|
+| 60k   | 0.046 | 7.6% | 0.0044 | 0.042 |
+| 120k  | 0.032 | 6.8% | 0.0043 | 0.027 |
+| 240k  | 0.018 | 5.7% | 0.0041 | 0.014 |
+| 480k  | 0.015 | **5.6%** | 0.0041 | **0.011** |
 
-K=1 wrong-ball is **still descending** with training (12.3 → 10.7 over 60k→120k),
-not floored — so I cannot claim it's an irreducible structural floor. The
-bigger-net rows are uninformative (undertrained at fixed iters), so the capacity
-axis is unresolved too. A definitive run (128×4 + cosine LR decay, out to 480k)
-is in progress to see whether K=1 wrong-ball floors (structural) or → 0
-(undertraining).
+Two facts: (i) more than half the apparent effect was under-optimization — the
+"13%" floor fell to ~5.6% once LR decay was used, and the K=100 gain shrank
+0.042 → 0.011 as the net converged (same undertraining pattern as HardNet);
+(ii) but wrong-ball% genuinely *floors* at ~5.6% (240k→480k: 5.7→5.6, flat),
+while optgap keeps creeping down — so there is a **small, real structural
+routing floor** (a continuous net cannot perfectly represent the discontinuous
+argmin-ball map). The surviving gain at convergence is ≈0.011, i.e. **~1% of the
+objective** (|opt| ≈ 1.21) — the same order as BP's ≈0.4% and HardNet's ≈0.6%.
 
-**ε decomposition (128×4, 120k) — most of the usable-ε gain is precision, not
+**ε decomposition (128×4, 120k) — usable-ε gain is mostly precision, not
 routing:**
 
 | ε | optgap | wrong-ball% |
@@ -328,12 +334,19 @@ routing:**
 | 1.00 | 0.0046 | 2.2% |
 
 At small ε the optgap falls 58% while wrong-ball is nearly flat — that gain is
-the NN landing closer to the optimal boundary *within the correct ball*
-(precision, plausibly undertraining), **not** ball-switching. True ball-switching
-only ramps up at ε ≈ 0.5–1.0, i.e. perturbations comparable to the whole
-domain — essentially random multi-start, where the NN is nearly irrelevant. In
-2D, 100 random restarts cover the space, so the headline "94%" is also likely
-2D-inflated and would shrink in higher dimensions (untested).
+within-ball precision (undertraining), **not** ball-switching. True
+ball-switching only ramps up at ε ≈ 0.5–1.0, i.e. perturbations comparable to
+the whole domain — essentially random multi-start, where the NN is nearly
+irrelevant. In 2D, 100 random restarts cover the space, so the headline "94%"
+was undertraining + 2D-inflated random search; the convergence-surviving,
+genuinely-multimodal part is ~1%.
+
+**Resolved conclusion:** the multimodal/disconnected feasible set is the *most*
+real of the convergence-surviving effects — it has a genuine ~5.6% routing
+floor that training cannot remove — but the gain is still only ~1% of the
+objective, not the 94% headline. The headline was undertraining + random-search
+in 2D. So even here, ensembling does not deliver a large convergence-surviving
+win; it buys ~1% at K× inference cost.
 
 **Honest conclusion:** the connected-vs-disconnected distinction is real, but a
 clean "ensembling delivers a large gain that survives convergence on multimodal
@@ -355,7 +368,7 @@ survive d≫2?).
 | BP        | radial bisection (non-Euclidean, iterative) | convex | **Real (small)** — repair geometry; ≈0.4% obj, mostly feasibility-tightening |
 | HardNet 200ep | one-shot pinv/ReLU correction (closed-form, *non-Euclidean*) | nonconvex | **Mostly artifact** — 101% gain, but ~95% of it was *undertraining* (see controls) |
 | HardNet 1500ep (converged) | same | nonconvex | **Real (small)** — 1.1% total: ≈0.5% non-Euclidean correction + ≈0.6% nonconvex objective |
-| Disconnected-ball | radial bisection | linear, **disconnected feasible set** | **Open** — large gain (94%) but K=1 still training-limited + usable-ε gain is mostly within-ball precision; "survives convergence" NOT established (see §6) |
+| Disconnected-ball (converged, LR decay) | radial bisection | linear, **disconnected feasible set** | **Real but small (~1%)** — genuine ~5.6% routing floor survives training; the 94% headline was undertraining + 2D random-search (see §6) |
 
 The perturbation gain has **five** sources. The two big-looking ones in the
 convex frameworks are both *under-convergence in disguise*; the genuinely large
@@ -377,29 +390,29 @@ gain appears only when the feasible set is multimodal:
 4. **Nonconvex objective** (HardNet `pᵀsin(y)`, ≈0.6% increment). Genuine but
    tiny — far from the "large multistart win" the undertrained run suggested.
 
-5. **Multimodal (disconnected) feasible set** (disconnected-ball control, ≈94%
-   optgap reduction at ε=1.0). The most *promising* candidate for a genuine
-   convergence-surviving gain — and the connected-vs-disconnected distinction is
-   real (Control B) — but on controls it is **not yet established** (§6): K=1
-   wrong-ball is still training-limited (12.3→10.7, not floored), the usable-ε
-   gain is mostly within-ball precision rather than routing, and the
-   ball-switching gain needs random-search-scale ε in a 2D problem. Pending a
-   480k-iter convergence run and a higher-dimensional version.
+5. **Multimodal (disconnected) feasible set** (disconnected-ball control) →
+   **real but small (~1%)** at convergence (§6). The headline ≈94% optgap
+   reduction was undertraining + 2D random-search: proper LR-decay training
+   halved the apparent routing floor (13%→5.6%) and shrank the K=100 gain
+   0.042→0.011. A genuine ~5.6% routing floor *does* survive (continuous net
+   can't represent the discontinuous argmin-component map), but the surviving
+   objective gain is ~1% — same order as 3–4. The connected-vs-disconnected
+   distinction is real (Control B), but does not yield a large convergence-
+   surviving win.
 
-Practical rule for L2O ensembling: **on convex/connected-feasible-set problems,
-the large perturbation gains are convergence artifacts** — either under-converged
-repair (fix the repair) or an undertrained network (train longer), both cheaper
-to fix directly than to ensemble around; the residual genuine gains are ~1%.
-**Ensembling/perturbation earns its inference cost only when the solution map is
-multimodal** — a disconnected/nonconvex feasible set where the argmin jumps
-between components as the parameters vary. There a continuous net structurally
-mis-routes a fixed fraction of instances (≈13% here, doesn't vanish with
-training) and multistart+best_merit recovers them (94% optgap reduction).
+Practical rule for L2O ensembling: **the large perturbation/ensemble gains
+reported on these benchmarks are convergence artifacts** — under-converged
+repair (fix the repair budget) or an undertrained network (train longer, with
+LR decay), both far cheaper than ensembling. This held on **all six testbeds**,
+*including* the multimodal one: at full convergence every genuine residual is
+~1% of the objective. Disconnected/nonconvex feasible sets have the most "real"
+residual (a ~5.6% routing floor a continuous net can't remove), but it is still
+~1% — not worth K× inference for most uses.
 
-**So: don't ensemble to paper over under-convergence; ensemble to cover
-multimodality.** The diagnostic that tells them apart is the convergence
-control — push repair budget AND training to convergence; whatever gain
-survives is the real, multimodality-driven part.
+**So: don't ensemble to paper over under-convergence — fix the convergence.**
+The diagnostic: push repair budget AND training (with LR decay) to convergence
+before measuring any ensemble gain; whatever survives — order ~1% here — is the
+real part. Every headline number in this study (60%, 2×, 94%) failed this test.
 
 ---
 
