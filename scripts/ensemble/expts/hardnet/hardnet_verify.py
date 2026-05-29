@@ -45,8 +45,9 @@ def metrics(data, X, Y):
     return obj, eq, ineq, merit(obj, eq, ineq)
 
 
-def main(epochs: int, seed: int):
-    print(f"=== HardNet verification: DC3 nonconvex QP100, seed={seed}, epochs={epochs} ===", flush=True)
+def main(epochs: int, seed: int, convex_obj: bool = False):
+    tag = "CONVEX-obj (control)" if convex_obj else "nonconvex-obj"
+    print(f"=== HardNet verification [{tag}]: DC3 QP100, seed={seed}, epochs={epochs} ===", flush=True)
     print(f"device: {DEVICE}", flush=True)
 
     # ----- Load dataset -----
@@ -64,6 +65,18 @@ def main(epochs: int, seed: int):
     data._device = DEVICE
     print(f"data: {data}, ydim={data.ydim}, neq={data.neq}, A.shape={data.A.shape}, C.shape={data.C.shape}", flush=True)
     print(f"trainX={data.trainX.shape}, validX={data.validX.shape}, testX={data.testX.shape}", flush=True)
+
+    # ----- Control (1)/(2): optionally drop the nonconvex sin term -----
+    # Original: evaluate(X,Y) = (0.5*(Y@Q)*Y + p*sin(Y)).sum(1)  -> nonconvex via sin
+    # Convex:   evaluate(X,Y) = (0.5*(Y@Q)*Y + p*Y).sum(1)       -> convex (Q is PSD)
+    if convex_obj:
+        _Q, _p = data.Q, data.p
+        def _convex_evaluate(X, Y):
+            return (0.5 * (Y @ _Q) * Y + _p * Y).sum(dim=1)
+        data.evaluate = _convex_evaluate  # used by get_train_loss AND our metrics()
+        # sanity: confirm patch is live
+        _yt = data.trainY[:2]
+        print(f"  [convex control] patched data.evaluate; sample obj={float(_convex_evaluate(data.trainX[:2], _yt).mean()):.4f}", flush=True)
 
     # ----- Build args (mirroring default_args for `opt` + hardnet_aff) -----
     args = {
@@ -190,5 +203,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--epochs", type=int, default=200)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--convex_obj", action="store_true",
+                   help="drop the nonconvex sin term -> convex objective (control 2)")
     args = p.parse_args()
-    main(args.epochs, args.seed)
+    main(args.epochs, args.seed, convex_obj=args.convex_obj)
