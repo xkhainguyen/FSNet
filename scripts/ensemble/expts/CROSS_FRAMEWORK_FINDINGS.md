@@ -521,8 +521,23 @@ result, so run it first; then (1); then (2) on a subset.
   third-party/pinet log -1`).
 - BP evidence: `scripts/ensemble/expts/bp/bp_verify.{py,sh}`. Repo vendored at
   `third-party/Bisection-Projection`.
-- HardNet evidence: `scripts/ensemble/expts/hardnet/hardnet_verify.{py,sh}`,
-  log `logs/hardnet-verify-14694446.out`. Repo vendored at `third-party/hardnet`.
-- Run logs: `logs/pinet-verify-14689578.out` (Πnet QP, seed 42),
+- HardNet evidence: `scripts/ensemble/expts/hardnet/hardnet_verify.{py,sh}`
+  (§5 200ep run, log `logs/hardnet-verify-14694446.out`) and
+  `hardnet_control.sh` + `--convex_obj` (the 1500ep nonconvex/convex controls).
+  Repo vendored at `third-party/hardnet`.
+- Disconnected-ball (§6): `scripts/ensemble/expts/bp/bp_disconnected_sweep.py`
+  (initial sweep), `bp_disc_controls.py` (Control A capacity×iters, Control B
+  connected, ε decomposition; log `logs/bp-disc-controls.out`),
+  `bp_disc_convergence.py` (128×4 + cosine-LR-decay to 480k; log
+  `logs/bp-disc-convergence.out`).
+- Higher dimension (§7): `scripts/ensemble/expts/bp/bp_disc_highdim.py`
+  (d=2,4,8,16; log `logs/bp-disc-highdim.out`) and `bp_disc_d4_converge.py`
+  (inconclusive d=4 convergence check; log `logs/bp-disc-d4-converge.out`).
+- Other run logs: `logs/pinet-verify-14689578.out` (Πnet QP, seed 42),
+  `logs/pinet-verify-s0-14690992.out` (Πnet seed 0),
   `logs/dc3-steps-sweep-14690284.{out,err}` (DC3 grad_steps budget/lr sweep),
   `logs/dc3-unaff-14687899.out` (DC3 unaffected by L-BFGS per_sample flag).
+
+Note: `logs/` and `third-party/` are gitignored; the scripts are tracked and
+regenerate the logs. Vendored-repo commits are pinned by the shallow clone
+(`git -C third-party/<repo> log -1`).
