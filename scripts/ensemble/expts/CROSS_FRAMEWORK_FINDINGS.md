@@ -7,27 +7,33 @@ giving ~60% merit reduction at K=100 on FSNet over single-shot inference. Is thi
 gain *real* (a genuine functional-diversity benefit) or a *repair-operator
 under-convergence artifact* (the multi-start papers over a badly-tuned solver)?
 
-**Verdict (5 frameworks tested).** The gain has **three distinct sources**, and
-they must be disentangled before claiming an ensembling result:
+**Verdict (5 frameworks tested).** The big perturbation gains are **convergence
+artifacts on one of two axes**; the genuine residual gains are small (~1%).
 
-1. **Under-converged iterative repair on a convex objective** (FSNet/L-BFGS,
-   DC3/grad-SGD, Πnet/ADMM) → the gain is an **artifact**. It collapses to
-   numerical noise once the repair runs to convergence; fixing the repair
-   budget is 10–20× cheaper and reproduces the same numbers. *Most published
-   "free ensemble" results on convex benchmarks live here.*
-2. **Direction-dependent repair** (Bisection-Projection / radial bisection) →
-   gain is **real but small** (~0.4% objective); survives full convergence
-   because the repaired point depends on approach direction.
-3. **Nonconvex objective and/or non-Euclidean closed-form correction**
-   (HardNet) → gain is **real and large** (2× objective improvement) and
-   cannot be a convergence artifact (no iterative solver). **But the mechanism
-   is not yet isolated** — it could be the nonconvex `pᵀsin(y)` objective, the
-   non-Euclidean pinv/ReLU correction (HardNet-Aff is NOT the true Euclidean
-   projection), or undertraining. See §5 and the **Recipe** at the end for the
-   controls that would disentangle these; they have not been run.
+1. **Under-converged iterative repair** (FSNet/L-BFGS, DC3/grad-SGD, Πnet/ADMM,
+   convex objectives) → **artifact**. Collapses to noise once the repair
+   converges; fixing the repair budget is 10–20× cheaper. *Most published "free
+   ensemble" results on convex benchmarks live here.*
+2. **Undertrained network** (HardNet at 200 epochs looked like a 2× win) →
+   **artifact**. Training to convergence (1500 ep) collapses the gain
+   101% → 1.1%. Same mechanism as (1) but on the *network* axis: perturbation
+   papers over a not-yet-converged NN. Train longer instead.
+3. **Direction-dependent repair** (Bisection-Projection radial bisection ≈0.4%;
+   HardNet's non-Euclidean pinv/ReLU correction ≈0.5%) → **real but small**;
+   survives convergence because the repaired point depends on approach direction.
+4. **Nonconvex objective** (HardNet `pᵀsin(y)`, ≈0.6% increment at convergence)
+   → **real but tiny** — not the large effect the undertrained run suggested.
 
-A convex objective with a converged Euclidean projection — the most common
-benchmark setup — gets **exactly zero** genuine benefit from perturbation.
+A convex objective with a converged Euclidean projection **and a converged
+network** gets ~zero genuine benefit. The gains that survive full convergence
+(sources 3–4) are order 1%.
+
+> **Correction note.** An earlier draft of this doc claimed HardNet showed a
+> "real, large nonconvex-objective win (2×)." The 1500-epoch controls (§5)
+> showed that was ~95% undertraining. Logged so the error isn't silently
+> overwritten — it's the same class of mistake (mistaking under-convergence for
+> a genuine ensembling effect) that the whole study is about, just on the
+> network instead of the repair.
 
 Frameworks: FSNet (this repo, L-BFGS), DC3 (this repo, grad-SGD), Πnet (Terpin
 et al. 2025, ADMM), Bisection-Projection (Liang et al. 2025, radial bisection),
@@ -214,24 +220,43 @@ of K, so any merit change is **pure objective improvement**:
 | 100 | 0.30 | -4.9517 | 2.2e-15 | -4.9517 |
 | 100 | 1.00 | +8.2872 | 1.4e-14 | +8.2872 (ε too large) |
 
-K=1 → K=100 (ε=0.10) **doubles the objective improvement** (-2.78 → -5.60), with
-feasibility unchanged at machine precision. Clear sweet-spot ε≈0.10. This is a
-**real gain that cannot be a repair-convergence artifact** (no iterative solver).
+At 200 epochs, K=1 → K=100 (ε=0.10) appears to **double the objective
+improvement** (-2.78 → -5.60). This looked like a large nonconvex-objective
+multistart win — **but the controls below show it was overwhelmingly an
+UNDERTRAINING artifact.** (At 200 epochs the valid objective was still dropping
+fast — it reaches -13.99 by epoch 1500, ~5× better. The 200-epoch NN was simply
+nowhere near converged, and perturbation was exploring around a bad point.)
 
-**⚠ Mechanism NOT yet isolated.** Three explanations remain confounded; we
-asserted (a) prematurely and have NOT run the control that distinguishes them:
+### Controls — mechanism RESOLVED (jobs 14696797 / 14696799, 1500 epochs)
 
-- **(a) nonconvex objective** (`pᵀsin(y)`) → multistart finds deeper basins.
-- **(b) direction-dependent correction** (the pinv/ReLU map is not Euclidean —
-  see caveat) → multistart genuinely diversifies the feasible point, à la BP.
-- **(c) undertraining** — at epoch 200 the valid objective was *still* dropping
-  fast (−0.7 → −2.7 over the final 20 epochs). A suboptimal NN point means
-  perturbation just explores around a not-yet-converged prediction.
+| Setting | K=1 | best K=100 | abs gain | rel gain |
+|---------|-----|-----------|----------|----------|
+| 200ep nonconvex (orig)  | -2.7766  | -5.5970  | 2.8204 | **101.6%** |
+| 1500ep nonconvex (ctrl1)| -13.9913 | -14.1493 | 0.1580 | **1.13%** |
+| 1500ep convex (ctrl2)   | -19.7029 | -19.8025 | 0.0996 | **0.51%** |
 
-The control that disentangles them (see **Recipe** below) was not run. Until it
-is, the honest statement is: *HardNet shows a real, large perturbation gain on a
-nonconvex-objective problem; the mechanism is one or more of {nonconvex obj,
-non-Euclidean correction, undertraining} and has not been isolated.*
+Reading the three candidate mechanisms:
+
+- **(c) Undertraining — DOMINANT.** Training to convergence (1500 ep) shrinks
+  the perturbation gain from 101.6% → 1.13% (an 18× drop in absolute terms,
+  2.82 → 0.16). The original "2× win" was ~95% undertraining: perturbation was
+  papering over a not-yet-converged NN, exactly like the under-converged-repair
+  artifact in FSNet/DC3/Πnet but on the *network* side instead of the *repair*
+  side.
+- **(b) Non-Euclidean correction — small, real.** Even with a *convex* objective
+  at convergence, a 0.51% gain remains. The pinv/ReLU correction is not the
+  Euclidean projection, so different perturbed `f` land at slightly different
+  feasible points (same class as BP).
+- **(a) Nonconvex objective — small, real.** The convex→nonconvex increment at
+  convergence is 1.13% − 0.51% ≈ 0.6%. So the genuine nonconvex-objective
+  multistart effect exists but is tiny — nothing like the 100% the undertrained
+  run suggested.
+
+**Corrected conclusion:** HardNet is NOT a clean large nonconvex-objective win.
+At convergence the genuine perturbation gain is ~1% (≈0.5% from the
+non-Euclidean correction + ≈0.6% from the nonconvex objective); the rest of the
+headline 200-epoch number was undertraining. This adds a **fourth** artifact
+source — undertrained network — alongside under-converged repair.
 
 ---
 
@@ -243,38 +268,45 @@ non-Euclidean correction, undertraining} and has not been isolated.*
 | DC3       | momentum-SGD on ineq penalty (iterative) | convex | **Artifact** — under-tuned; `corr_lr=1e-3` matches perturb |
 | Πnet      | Douglas–Rachford ADMM (Euclidean, iterative) | convex | **Artifact** — under-budgeted; `n_iter_test=500+` matches perturb |
 | BP        | radial bisection (non-Euclidean, iterative) | convex | **Real (small)** — repair geometry; ≈0.4% obj, mostly feasibility-tightening |
-| HardNet   | one-shot pinv/ReLU correction (closed-form, *non-Euclidean*) | **nonconvex** | **Real (large), mechanism unconfirmed** — 2× obj; one or more of {nonconvex obj, non-Euclidean correction, undertraining} |
+| HardNet 200ep | one-shot pinv/ReLU correction (closed-form, *non-Euclidean*) | nonconvex | **Mostly artifact** — 101% gain, but ~95% of it was *undertraining* (see controls) |
+| HardNet 1500ep (converged) | same | nonconvex | **Real (small)** — 1.1% total: ≈0.5% non-Euclidean correction + ≈0.6% nonconvex objective |
 
-The "free ensemble" gain has (at least) **three candidate sources**, which must
-be disentangled before claiming an ensembling result:
+The "free ensemble" gain has **four** sources — and only two are genuine, both
+small. The headline lesson is that the two big-looking sources are both
+*under-convergence on different axes*:
 
 1. **Under-converged repair** (FSNet, DC3, Πnet — convex obj + iterative
-   Euclidean projection). The "gain" is an artifact. Fixing the repair budget
-   is 10–20× cheaper and gives the same numbers. *Most published "free
-   ensemble" results on convex problems are here.* — **confirmed** via
-   budget-sweep controls collapsing the gain.
+   Euclidean projection). Artifact. Fixing the repair budget is 10–20× cheaper
+   and reproduces the numbers. **Confirmed** via budget-sweep controls.
 
-2. **Direction-dependent repair** (BP — radial bisection; HardNet's pinv/ReLU
-   correction is also in this class). Genuine but small for BP; survives full
-   convergence because the repaired point depends on approach direction.
+2. **Undertrained network** (HardNet 200ep). Artifact. Training to convergence
+   collapses the gain 101% → 1.1% (18× in absolute terms). Same phenomenon as
+   (1) but on the *network* axis: perturbation explores around a NN that hasn't
+   converged yet. **Confirmed** via the 1500-epoch control.
 
-3. **Nonconvex objective** (HardNet's `pᵀsin(y)`). Classical multi-start global
-   optimization. *Plausible but not isolated from (2)/(undertraining) yet.*
+3. **Direction-dependent repair** (BP radial bisection ≈0.4%; HardNet's
+   pinv/ReLU correction ≈0.5%). Genuine but small; survives full convergence
+   because the repaired point depends on approach direction.
 
-Practical rule for L2O ensembling: **perturbation/ensembling helps iff (a) the
-repair is under-converged [fix the repair instead], (b) the repair is
-direction-dependent, or (c) the objective is nonconvex.** (a) is firmly
-established; (b) is established for BP; (c) is supported by HardNet but the
-HardNet result also admits (b) and undertraining as explanations — see Recipe.
-A convex objective with a *converged Euclidean* projection — the most common
-benchmark setup — gets exactly zero genuine benefit.
+4. **Nonconvex objective** (HardNet `pᵀsin(y)`, ≈0.6% increment). Genuine but
+   tiny — far from the "large multistart win" the undertrained run suggested.
+
+Practical rule for L2O ensembling: **the large perturbation gains reported on
+these benchmarks are convergence artifacts — either under-converged repair
+(fix the repair) or an undertrained network (train longer).** Both are cheaper
+to fix directly than to ensemble around. The *genuine* perturbation gains that
+survive full convergence (direction-dependent repair, nonconvex objective) are
+small — order 1% — and only appear at all when the repair is non-Euclidean or
+the objective is nonconvex. A convex objective with a converged Euclidean
+projection and a converged network gets ~zero genuine benefit.
 
 ---
 
-## Recipe: isolate the HardNet mechanism (not yet run)
+## Recipe: isolating the HardNet mechanism (RUN — results in §5)
 
-Goal: determine whether the HardNet K=100 gain (−2.78 → −5.60) comes from the
-nonconvex objective (c), the non-Euclidean correction (b), or undertraining.
+Goal: determine whether the HardNet 200ep gain (−2.78 → −5.60) came from the
+nonconvex objective, the non-Euclidean correction, or undertraining.
+**Result: ~95% undertraining; residual ~1% split between the other two.**
 
 Three controls, each flipping ONE factor, same seed/arch/epochs, same K×ε grid:
 
