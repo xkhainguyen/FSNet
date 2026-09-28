@@ -1,0 +1,8 @@
+0	952.3	0	-	vanilla	0	5291	-	1e-5
+1	952.3	0	0.5	merit	750	2422	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-125645_MLP_sup_pen_seed0_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_750.pt	1e-5
+2	952.3	1	-	vanilla	0	5291	-	1e-5
+3	952.3	1	0.5	merit	800	2378	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-125645_MLP_sup_pen_seed1_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_800.pt	1e-5
+4	952.3	2	-	vanilla	0	5291	-	1e-5
+5	952.3	2	0.5	merit	500	2644	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-125645_MLP_sup_pen_seed2_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_500.pt	1e-5
+6	952.3	3	-	vanilla	0	5291	-	1e-5
+7	952.3	3	0.5	merit	700	2467	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-125645_MLP_sup_pen_seed3_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_700.pt	1e-5

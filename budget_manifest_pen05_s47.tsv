@@ -1,0 +1,16 @@
+0	1100	4	-	vanilla	0	6111	-
+1	1100	4	0.5	merit	850	3154	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184405_MLP_sup_pen_seed4_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_850.pt
+2	1100	4	0.5	early	100	3821	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184405_MLP_sup_pen_seed4_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_100.pt
+3	1100	4	0.5	conv	950	3065	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184405_MLP_sup_pen_seed4_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_950.pt
+4	1100	5	-	vanilla	0	6111	-
+5	1100	5	0.5	merit	650	3332	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184402_MLP_sup_pen_seed5_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_650.pt
+6	1100	5	0.5	early	100	3821	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184402_MLP_sup_pen_seed5_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_100.pt
+7	1100	5	0.5	conv	950	3065	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184402_MLP_sup_pen_seed5_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_950.pt
+8	1100	6	-	vanilla	0	6111	-
+9	1100	6	0.5	merit	650	3332	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed6_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_650.pt
+10	1100	6	0.5	early	100	3821	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed6_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_100.pt
+11	1100	6	0.5	conv	950	3065	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed6_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_950.pt
+12	1100	7	-	vanilla	0	6111	-
+13	1100	7	0.5	merit	800	3198	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed7_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_800.pt
+14	1100	7	0.5	early	100	3821	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed7_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_100.pt
+15	1100	7	0.5	conv	950	3065	results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20260726-184708_MLP_sup_pen_seed7_nepochs1000_lr0.0001_trainsize800_subopt_3_0.5_obj0.1_eq5.0_ineq5.0_lrschedcosine_etamin1e-06/model_950.pt

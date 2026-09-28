@@ -60,6 +60,20 @@ def create_parser():
     parser.add_argument('--num_epochs', type=int, help='Number of training epochs')
     parser.add_argument('--hidden_dim', type=int, help='Hidden dimension size')
     parser.add_argument('--num_layers', type=int, help='Number of hidden layers')
+    parser.add_argument('--obj_weight', type=float, help='Objective term weight in shared SSL loss')
+    parser.add_argument('--eq_pen_weight', type=float, help='Equality penalty weight in shared SSL loss')
+    parser.add_argument('--ineq_pen_weight', type=float, help='Inequality penalty weight in shared SSL loss')
+    parser.add_argument('--eq_pen_weight_max', type=float, help='Max equality weight (adaptive_penalty)')
+    parser.add_argument('--ineq_pen_weight_max', type=float, help='Max inequality weight (adaptive_penalty)')
+    parser.add_argument('--increasing_rate', type=float, help='Adaptive penalty increase rate')
+    parser.add_argument('--freeze_lr_after_epoch', type=int, default=None,
+                        help='Stop LR schedule after this epoch (hold LR for remaining epochs)')
+    parser.add_argument('--constant_lr', action='store_true',
+                        help='Use constant LR (no warmup/cosine); useful when continuing a checkpoint')
+    parser.add_argument('--lr_schedule', type=str, choices=['cosine', 'step'], default=None,
+                        help='LR schedule: cosine (warmup+cosine) or step (StepLR)')
+    parser.add_argument('--eta_min', type=float, default=None,
+                        help='CosineAnnealingLR eta_min (default 1e-6)')
     
     # Feasibility seeking parameters
     parser.add_argument('--scale', type=float, help='Scale')
@@ -131,6 +145,26 @@ def create_parser():
         config['num_layers'] = args.num_layers
     if args.dropout:
         config['dropout'] = args.dropout
+    if args.obj_weight is not None:
+        config[args.method]['obj_weight'] = args.obj_weight
+    if args.eq_pen_weight is not None:
+        config[args.method]['eq_pen_weight'] = args.eq_pen_weight
+    if args.ineq_pen_weight is not None:
+        config[args.method]['ineq_pen_weight'] = args.ineq_pen_weight
+    if args.eq_pen_weight_max is not None:
+        config[args.method]['eq_pen_weight_max'] = args.eq_pen_weight_max
+    if args.ineq_pen_weight_max is not None:
+        config[args.method]['ineq_pen_weight_max'] = args.ineq_pen_weight_max
+    if args.increasing_rate is not None:
+        config[args.method]['increasing_rate'] = args.increasing_rate
+    if args.freeze_lr_after_epoch is not None:
+        config[args.method]['freeze_lr_after_epoch'] = args.freeze_lr_after_epoch
+    if args.constant_lr:
+        config[args.method]['constant_lr'] = True
+    if args.lr_schedule is not None:
+        config[args.method]['lr_schedule'] = args.lr_schedule
+    if args.eta_min is not None:
+        config[args.method]['eta_min'] = args.eta_min
     
     # Feasibility seeking parameters
     if args.scale:

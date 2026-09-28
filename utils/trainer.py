@@ -102,16 +102,36 @@ def load_instance(config):
         if config['en_subopt'] != 0:
             result_save_dir += f"_subopt_{config['en_subopt']}_{config['subopt_ratio']}"
 
+        # Encode shared SSL loss weights so concurrent sweeps do not collide.
+        method_cfg = config.get(config['method'], {})
+        if 'eq_pen_weight' in method_cfg and 'ineq_pen_weight' in method_cfg:
+            obj_w = method_cfg.get('obj_weight', 1.0)
+            result_save_dir += (
+                f"_obj{obj_w}_eq{method_cfg['eq_pen_weight']}_ineq{method_cfg['ineq_pen_weight']}"
+            )
+        if method_cfg.get('freeze_lr_after_epoch') is not None:
+            result_save_dir += f"_freezelr{int(method_cfg['freeze_lr_after_epoch'])}"
+        if method_cfg.get('constant_lr'):
+            result_save_dir += "_constlr"
+        lr_sched = method_cfg.get('lr_schedule')
+        if lr_sched:
+            result_save_dir += f"_lrsched{lr_sched}"
+        if method_cfg.get('eta_min') is not None and lr_sched != 'step':
+            result_save_dir += f"_etamin{method_cfg['eta_min']}"
+
         if config['checkpoint']:
             # assmume checkpoint path format contains date and other info results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000/20251004-214029_MLP_sup_seed0_dropout0.1/model_580.pt
-            ckpt_date = config['checkpoint'].split('/')[4].split('_')[0]
-            ckpt_method = config['checkpoint'].split('/')[4].split('_')[2]
-            ckpt_seed = config['checkpoint'].split('/')[4].split('_')[3]
-            ckpt_number = config['checkpoint'].split('_')[-1].split('.')[0]
-            result_save_dir += f"_finetune_{ckpt_date}_{ckpt_method}_seed{ckpt_seed}_model_{ckpt_number}"
+            ckpt_path = config['checkpoint']
+            ckpt_dir = os.path.basename(os.path.dirname(ckpt_path))
+            ckpt_file = os.path.basename(ckpt_path)  # model.pt or model_580.pt
+            ckpt_parts = ckpt_dir.split('_')
+            ckpt_date = ckpt_parts[0]
+            ckpt_method = ckpt_parts[2] if len(ckpt_parts) > 2 else 'ckpt'
+            ckpt_seed = ckpt_parts[3] if len(ckpt_parts) > 3 else 'seed'
+            ckpt_number = os.path.splitext(ckpt_file)[0].replace('model_', '').replace('model', 'final')
+            result_save_dir += f"_finetune_{ckpt_date}_{ckpt_method}_{ckpt_seed}_model_{ckpt_number}"
 
-    if not os.path.exists(result_save_dir):
-        os.makedirs(result_save_dir)
+    os.makedirs(result_save_dir, exist_ok=True)
     
     return opt_problem, result_save_dir
 
@@ -591,7 +611,10 @@ class Trainer:
                 epoch_metrics[key] += value
             epoch_metrics['loss'] += loss.mean().item()
         
-        self.scheduler.step()
+        # Optionally freeze LR after a given epoch (e.g. match short-run cosine, then hold).
+        freeze_ep = self.config_method.get('freeze_lr_after_epoch')
+        if freeze_ep is None or epoch < int(freeze_ep):
+            self.scheduler.step()
         
         # Average metrics
         num_batches = len(train_loader)
@@ -679,12 +702,41 @@ class Trainer:
         )
 
         warmup_steps = len(train_loader)
-        total_steps = len(train_loader) * self.config_method['num_epochs']
-        s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
-        s2 = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=total_steps - warmup_steps, eta_min=1e-3)
-        self.scheduler = optim.lr_scheduler.SequentialLR(self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps])
+        freeze_ep = self.config_method.get('freeze_lr_after_epoch')
+        use_constant_lr = bool(self.config_method.get('constant_lr', False))
+        lr_schedule = self.config_method.get('lr_schedule', 'cosine')
+        eta_min = float(self.config_method.get('eta_min', 1e-6))
+        if use_constant_lr:
+            # Hold LR fixed (e.g. continue a finished short run for remaining budget).
+            self.scheduler = optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda _: 1.0)
+            sched_epochs = 0
+        elif lr_schedule == 'step':
+            step_size = int(self.config_method.get('lr_decay_step', 100))
+            gamma = float(self.config_method.get('lr_decay', 0.9))
+            self.scheduler = optim.lr_scheduler.StepLR(
+                self.optimizer, step_size=step_size, gamma=gamma
+            )
+            sched_epochs = self.config_method['num_epochs']
+            print(f"Using StepLR: step_size={step_size}, gamma={gamma}")
+        else:
+            # Cosine horizon: freeze epoch if set (match short-run schedule), else full run.
+            sched_epochs = int(freeze_ep) if freeze_ep is not None else self.config_method['num_epochs']
+            total_steps = len(train_loader) * sched_epochs
+            s1 = optim.lr_scheduler.LinearLR(self.optimizer, start_factor=0.01, total_iters=warmup_steps)
+            s2 = optim.lr_scheduler.CosineAnnealingLR(
+                self.optimizer, T_max=max(total_steps - warmup_steps, 1), eta_min=eta_min
+            )
+            self.scheduler = optim.lr_scheduler.SequentialLR(
+                self.optimizer, schedulers=[s1, s2], milestones=[warmup_steps]
+            )
 
-        print(f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, num_epochs: {self.config_method['num_epochs']}\n")
+        print(
+            f"\nlr: {self.config_method['lr']}, weight_decay: {0.001}, "
+            f"num_epochs: {self.config_method['num_epochs']}, "
+            f"lr_schedule: {lr_schedule}, eta_min: {eta_min}, "
+            f"constant_lr: {use_constant_lr}, "
+            f"freeze_lr_after_epoch: {freeze_ep}, cosine_horizon_epochs: {sched_epochs}\n"
+        )
 
         # Training history
         train_history = []
