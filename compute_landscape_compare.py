@@ -34,7 +34,11 @@ from utils.trainer import create_model
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_default_dtype(torch.float64)
 
-COMPONENTS = ["huber", "pen2", "obj", "viol_l1", "huber_fs", "obj_fs", "viol_l1_fs", "dist_fs"]
+COMPONENTS = ["huber", "pen2", "obj", "viol_l1", "huber_fs", "obj_fs", "viol_l1_fs", "dist_fs", "pen2_gated"]
+# pen2_gated: the FSNet-style gated penalty exactly as in Trainer._sup_pen_fs_loss (pen_gate 1e3):
+# per evaluation batch, squared raw eq + ineq violation, counted only if the batch-mean squared eq
+# or ineq violation is >= GATE; averaged over samples like the other components.
+GATE = 1e3
 
 
 def huber(x, delta=1e-1):
@@ -122,6 +126,9 @@ def eval_components(model, prob, X, Y_label, fs_kwargs, batch_size):
             sums["pen2"] += (eq.square().sum(1) + ineq.square().sum(1)).sum().item()
             sums["obj"] += prob.obj_fn(y).sum().item()
             sums["viol_l1"] += (eq.abs().sum(1) + ineq.abs().sum(1)).sum().item()
+            eq2, in2 = eq.square().sum(1), ineq.square().sum(1)
+            on = bool(eq2.mean() >= GATE or in2.mean() >= GATE)
+            sums["pen2_gated"] += float(on) * (eq2 + in2).sum().item()
         if fs_kwargs is not None:
             y_fs = nondiff_lbfgs_solve(x, y.detach(), prob, **fs_kwargs).detach()
             with torch.no_grad():
@@ -208,13 +215,19 @@ def grouped_nondiff_lbfgs(x, y_init, prob, **fs_kwargs):
 
 def eval_grid_grouped(model, prob, X, Y_label, w0, dx, dy, pts_ab, fs_kwargs, batch_size):
     """Components at several grid points at once (one grouped FS solve). pts_ab: [(a, b), ...]."""
+    setters = [lambda a=a, b=b: set_weights(model, w0, dx, dy, float(a), float(b)) for a, b in pts_ab]
+    return eval_points_grouped(model, prob, X, Y_label, setters, fs_kwargs, batch_size)
+
+
+def eval_points_grouped(model, prob, X, Y_label, setters, fs_kwargs, batch_size):
+    """Components at several weight settings at once; setters[p]() loads the p-th weights into model."""
     xb = [X[s:s + batch_size] for s in range(0, X.shape[0], batch_size)]
     lb = [Y_label[s:s + batch_size] for s in range(0, X.shape[0], batch_size)]
     assert all(len(v) == len(xb[0]) for v in xb), "n_eval must be a multiple of batch_size"
     ys = []
     with torch.no_grad():
-        for a, b in pts_ab:
-            set_weights(model, w0, dx, dy, float(a), float(b))
+        for setter in setters:
+            setter()
             ys.append(torch.stack([prob.scale(model(x)) for x in xb]))  # (nb, B, n)
     Yp = torch.stack(ys)  # (P, nb, B, n)
     P, nb, B, n = Yp.shape
@@ -227,7 +240,10 @@ def eval_grid_grouped(model, prob, X, Y_label, w0, dx, dy, pts_ab, fs_kwargs, ba
         xf, yf, lf = Xg.reshape(P * nb * B, -1), Yg.reshape(-1, n), Lg.reshape(P * nb * B, -1)
         per = lambda v: v.view(P, nb * B).mean(1)  # per-sample mean for each grid point
         eq, ineq = prob.eq_resid(xf, yf), prob.ineq_resid(xf, yf)
+        eq2, in2 = eq.square().sum(1).view(P * nb, B), ineq.square().sum(1).view(P * nb, B)
+        on = ((eq2.mean(1) >= GATE) | (in2.mean(1) >= GATE)).to(eq2.dtype)[:, None]  # per eval batch
         comp = {"huber": per(huber(yf - lf).mean(1)), "pen2": per(eq.square().sum(1) + ineq.square().sum(1)),
+                "pen2_gated": per((on * (eq2 + in2)).reshape(-1)),
                 "obj": per(prob.obj_fn(yf)), "viol_l1": per(eq.abs().sum(1) + ineq.abs().sum(1))}
         if Yfs is not None:
             yfs = Yfs.reshape(-1, n)

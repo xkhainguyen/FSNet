@@ -9,7 +9,8 @@
 #SBATCH -o logs/%x-%A_%a.out
 #SBATCH -e logs/%x-%A_%a.err
 # Train one seed (= array index) of MODEL: M1 (SL rho 10, lr 3e-4), M2 (SL rho 1e5, lr 1e-4),
-# M2m (SL rho 1e5, lr 3e-4: M2 at M1's lr), M4 (SSL rho 10, lr 1e-3). L1 penalty, 3000 epochs.
+# M2m (SL rho 1e5, lr 3e-4: M2 at M1's lr), M4 (SSL rho 10, lr 1e-3), M1r1 (SL rho 1, lr 3e-4: M1 at
+# the hard-FS rho), M4r1 (SSL rho 1, lr 1e-3). L1 penalty, 3000 epochs.
 source ~/.bashrc
 conda activate ml4opt
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}
@@ -19,6 +20,8 @@ case $MODEL in
     M2)  A="--method sup_pen --lr 1e-4 --eq_pen_weight 100000.0 --ineq_pen_weight 100000.0" ;;
     M2m) A="--method sup_pen --lr 3e-4 --eq_pen_weight 100000.0 --ineq_pen_weight 100000.0" ;;
     M4)  A="--method penalty --lr 1e-3 --eq_pen_weight 10.0 --ineq_pen_weight 10.0" ;;
+    M1r1) A="--method sup_pen --lr 3e-4 --eq_pen_weight 1.0 --ineq_pen_weight 1.0" ;;
+    M4r1) A="--method penalty --lr 1e-3 --eq_pen_weight 1.0 --ineq_pen_weight 1.0" ;;
 esac
 python main.py $A --prob_type nonsmooth_nonconvex --prob_name socp --seed $SLURM_ARRAY_TASK_ID \
     --train_size 7000 --num_epochs 3000 --lr_schedule cosine --eta_min 1e-6 --dropout 0.0 --pen_type l1

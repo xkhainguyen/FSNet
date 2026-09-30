@@ -12,6 +12,8 @@ D = "results/nonsmooth_nonconvex/socp/SOCPProblem-100-50-50-10000"
 FIG = "figures/landscape/fig1"
 SPEC = {
     "M1": ("sup_pen", "obj0.1_eq10.0_ineq10.0", "0.0003", 10.0),
+    "M1r1": ("sup_pen", "obj0.1_eq1.0_ineq1.0", "0.0003", 1.0),  # M1 at the hard-FS rho
+    "M4r1": ("penalty", "obj1.0_eq1.0_ineq1.0", "0.001", 1.0),  # M4 at rho 1
     "M2": ("sup_pen", "obj0.1_eq100000.0_ineq100000.0", "0.0001", 1e5),
     "M2m": ("sup_pen", "obj0.1_eq100000.0_ineq100000.0", "0.0003", 1e5),
     "M4": ("penalty", "obj1.0_eq10.0_ineq10.0", "0.001", 10.0),
@@ -42,7 +44,11 @@ def ckpt(m, s):
 def own_loss(m, c):
     """Own training loss from stored per-sample-mean components c (compute_landscape_compare)."""
     meth, rho = SPEC[m][0], SPEC[m][3]
-    if m == "M3f":  # FSNet-style: squared penalty only while pen2 >= 1e3 (sum of eq and ineq here)
+    if m == "M3f":  # FSNet-style: squared raw penalty only while the batch-mean eq or ineq violation >= 1e3
+        if "pen2_gated" in c:  # exact trainer gate (compute_landscape_compare.py, per evaluation batch)
+            return 100 * c["huber_fs"] + 5.0 * c["dist_fs"] + rho * c["pen2_gated"]
+        # older grids store only eq + ineq summed per sample: approximate gate on that sum
         return 100 * c["huber_fs"] + 5.0 * c["dist_fs"] + rho * c["pen2"] * (c["pen2"] >= 1e3)
-    first = {"sup_pen": 100 * c["huber"], "sup_pen_fs": 100 * c["huber_fs"], "penalty": c["obj"]}[meth]
+    first = {"sup_pen": lambda: 100 * c["huber"], "sup_pen_fs": lambda: 100 * c["huber_fs"],
+             "penalty": lambda: c["obj"]}[meth]()
     return first + rho * c["viol_l1"]

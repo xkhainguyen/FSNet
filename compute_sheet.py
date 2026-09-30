@@ -18,7 +18,7 @@ import itertools
 import numpy as np
 import torch
 
-from compute_landscape_compare import load_problem, load_model, eval_components, COMPONENTS
+from compute_landscape_compare import load_problem, load_model, eval_components, eval_points_grouped, COMPONENTS
 
 A_DIR = "figures/landscape/fig1/aligned"
 
@@ -58,6 +58,7 @@ def main():
     ap.add_argument("--fs", action="store_true", help="also compute the FS-layer components (needed for M3)")
     ap.add_argument("--aligned_dir", default=A_DIR, help="aligned checkpoints (align_seeds.py)")
     ap.add_argument("--mids", default=None, help="edge control points from connect_sheet.py (curved sheet)")
+    ap.add_argument("--group", type=int, default=1, help="points per grouped FS solve (1 = original loop)")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -85,25 +86,39 @@ def main():
     ys = np.linspace(pos[:, 1].min() - mg, pos[:, 1].max() + mg, args.n)
     Z = {k: np.full((len(ys), len(xs)), np.nan) for k in COMPONENTS}
     params = list(net.parameters())
+    fs_kw = dict(val_tol=1e-9, memory=30, max_iter=50, scale=1000) if args.fs else None
+
+    def theta_at(p):
+        for t in tris:
+            lam = barycentric(p, *pos[list(t)])
+            if (lam >= -1e-9).all():
+                if mids is None:
+                    return sum(float(l) * thetas[k] for l, k in zip(lam, t))
+                return bezier_point(np.clip(lam, 0, None), t, thetas, mids, eid)
+        return None  # outside the sheet
+
+    cells = [(j, i) for j in range(len(ys)) for i in range(len(xs))
+             if theta_at(np.array([xs[i], ys[j]])) is not None]
     done = 0
-    for j, y in enumerate(ys):
-        for i, x in enumerate(xs):
-            p = np.array([x, y])
-            for t in tris:
-                lam = barycentric(p, *pos[list(t)])
-                if (lam >= -1e-9).all():
-                    if mids is None:
-                        theta = sum(float(l) * thetas[k] for l, k in zip(lam, t))
-                    else:
-                        theta = bezier_point(np.clip(lam, 0, None), t, thetas, mids, eid)
-                    torch.nn.utils.vector_to_parameters(theta, params)
-                    fs_kw = dict(val_tol=1e-9, memory=30, max_iter=50, scale=1000) if args.fs else None
-                    for key, v in eval_components(net, prob, X, Y, fs_kw, 1000).items():
-                        Z[key][j, i] = v
-                    done += 1
-                    break
-        if j % 20 == 0:
-            print(f"row {j + 1}/{len(ys)}, {done} points", flush=True)
+    if args.group > 1:  # grouped FS solves on evaluation batches of 500 (as the planes); much faster on GPU
+        setp = lambda th: torch.nn.utils.vector_to_parameters(th, params)
+        for c0 in range(0, len(cells), args.group):
+            chunk = cells[c0:c0 + args.group]
+            setters = [lambda th=theta_at(np.array([xs[i], ys[j]])): setp(th) for j, i in chunk]
+            for (j, i), comp in zip(chunk, eval_points_grouped(net, prob, X, Y, setters, fs_kw, 500)):
+                for key, v in comp.items():
+                    Z[key][j, i] = v
+            done += len(chunk)
+            if (c0 // args.group) % 20 == 0:
+                print(f"{done}/{len(cells)} points", flush=True)
+    else:
+        for j, i in cells:
+            torch.nn.utils.vector_to_parameters(theta_at(np.array([xs[i], ys[j]])), params)
+            for key, v in eval_components(net, prob, X, Y, fs_kw, 1000).items():
+                Z[key][j, i] = v
+            done += 1
+            if done % 1000 == 0:
+                print(f"{done}/{len(cells)} points", flush=True)
     np.savez(args.out, xs=xs, ys=ys, points=pos, names=np.array([f"s{s}" for s in seeds]),
              tris=np.array(tris), components=np.array(COMPONENTS), layout=args.layout, order=args.order,
              split=args.split, mids=str(args.mids), **{f"plane/{k}": v for k, v in Z.items()})
