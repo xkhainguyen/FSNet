@@ -57,6 +57,7 @@ def main():
     ap.add_argument("--margin", type=float, default=0.15, help="empty plot padding around the lattice")
     ap.add_argument("--fs", action="store_true", help="also compute the FS-layer components (needed for M3)")
     ap.add_argument("--aligned_dir", default=A_DIR, help="aligned checkpoints (align_seeds.py)")
+    ap.add_argument("--mids", default=None, help="edge control points from connect_sheet.py (curved sheet)")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -72,6 +73,13 @@ def main():
     for s in seeds:
         m, _ = load_model(prob, f"{args.aligned_dir}/{args.model}_s{s}.pt")
         thetas.append(torch.nn.utils.parameters_to_vector(m.parameters()).detach())
+    mids = eid = None
+    if args.mids:
+        from connect_sheet import bezier_point
+        mk = torch.load(args.mids, map_location="cpu", weights_only=False)
+        assert mk["layout"] == args.layout and mk["model"] == args.model and args.order == 0
+        mids = mk["mids"].to(thetas[0].device)
+        eid = {tuple(e): k for k, e in enumerate(mk["edges"])}
     mg = args.margin
     xs = np.linspace(pos[:, 0].min() - mg, pos[:, 0].max() + mg, args.n)
     ys = np.linspace(pos[:, 1].min() - mg, pos[:, 1].max() + mg, args.n)
@@ -84,7 +92,10 @@ def main():
             for t in tris:
                 lam = barycentric(p, *pos[list(t)])
                 if (lam >= -1e-9).all():
-                    theta = sum(float(l) * thetas[k] for l, k in zip(lam, t))
+                    if mids is None:
+                        theta = sum(float(l) * thetas[k] for l, k in zip(lam, t))
+                    else:
+                        theta = bezier_point(np.clip(lam, 0, None), t, thetas, mids, eid)
                     torch.nn.utils.vector_to_parameters(theta, params)
                     fs_kw = dict(val_tol=1e-9, memory=30, max_iter=50, scale=1000) if args.fs else None
                     for key, v in eval_components(net, prob, X, Y, fs_kw, 1000).items():
@@ -95,7 +106,7 @@ def main():
             print(f"row {j + 1}/{len(ys)}, {done} points", flush=True)
     np.savez(args.out, xs=xs, ys=ys, points=pos, names=np.array([f"s{s}" for s in seeds]),
              tris=np.array(tris), components=np.array(COMPONENTS), layout=args.layout, order=args.order,
-             split=args.split, **{f"plane/{k}": v for k, v in Z.items()})
+             split=args.split, mids=str(args.mids), **{f"plane/{k}": v for k, v in Z.items()})
     print(f"saved {args.out} ({done} points)")
 
 

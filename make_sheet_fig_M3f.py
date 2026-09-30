@@ -43,7 +43,8 @@ def main():
         idx = [(int(Jg[k]), int(Ig[k])) for k in
                (np.argmin((xs[Ig] - p[0]) ** 2 + (ys[Jg] - p[1]) ** 2) for p in pts)]
         T = np.log10(Z / min(Z[k] for k in idx))
-        Tc = np.where(inside, np.minimum(T, CAP), np.nan)
+        # clip below 0: a curved sheet can dip slightly under the best seed
+        Tc = np.where(inside, np.clip(T, 0, CAP), np.nan)
         X, Y = np.meshgrid(xs, ys)
         ax = fig.add_subplot(gs[0, n], projection="3d")
         ax.plot_surface(X, Y, Tc, cmap=cm.viridis, vmin=0, vmax=CAP, rstride=1, cstride=1,

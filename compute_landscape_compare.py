@@ -28,7 +28,7 @@ import numpy as np
 import torch
 
 from utils.optimization_utils import nonsmooth_nonconvexSOCPProblem
-from utils.lbfgs import nondiff_lbfgs_solve
+from utils.lbfgs import nondiff_lbfgs_solve, LBFGSConfig, compute_gamma, _search_direction
 from utils.trainer import create_model
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -133,10 +133,134 @@ def eval_components(model, prob, X, Y_label, fs_kwargs, batch_size):
     return {k: v / n for k, v in sums.items()}
 
 
-def eval_grid(model, prob, X, Y_label, w0, dx, dy, xs, ys, fs_kwargs, batch_size, tag):
+def grouped_nondiff_lbfgs(x, y_init, prob, **fs_kwargs):
+    """nondiff_lbfgs_solve run on G independent batches at once; x (G, B, dx), y_init (G, B, n).
+
+    Identical to calling nondiff_lbfgs_solve on each group separately: every group has its own
+    batch-mean objective, its own scalar backtracking step and its own stopping test, and a
+    converged group is frozen (the original breaks out of its loop). The L-BFGS direction and
+    gamma are per row in the original, so they are computed on the flattened (G * B, n) rows.
+    """
+    cfg = LBFGSConfig(**fs_kwargs)
+    G, B, n = y_init.shape
+    xf = x.reshape(G * B, -1)
+
+    def obj(y, gidx=None):  # (g, B, n) -> (g,); gidx: which groups y holds (default: all)
+        g_ = y.shape[0]
+        xs_ = xf if gidx is None else x[gidx].reshape(g_ * B, -1)
+        yf = y.reshape(g_ * B, n)
+        eq = (prob.eq_resid(xs_, yf) ** 2).sum(1).view(g_, B).mean(1)
+        ineq = (prob.ineq_resid(xs_, yf) ** 2).sum(1).view(g_, B).mean(1)
+        return cfg.scale * (eq + ineq)
+
+    def f_and_g(y):
+        y = y.detach().requires_grad_(True)
+        f = obj(y)
+        g, = torch.autograd.grad(f.sum(), y)
+        return f.detach(), g.detach()
+
+    y = y_init.detach().clone()
+    f_val, g = f_and_g(y)
+    S_hist = torch.zeros(cfg.memory, G * B, n, device=y.device, dtype=y.dtype)
+    Y_hist = torch.zeros_like(S_hist)
+    hist_len = hist_ptr = 0
+    active = torch.ones(G, dtype=torch.bool, device=y.device)
+    for _ in range(cfg.max_iter):
+        conv = (f_val / cfg.scale < cfg.val_tol) | (g.norm(dim=2) < cfg.grad_tol).all(1)
+        active = active & ~conv
+        if not active.any():
+            break
+        gf = g.reshape(G * B, n)
+        if hist_len > 0:
+            idx = (hist_ptr - hist_len + torch.arange(hist_len, device=y.device)) % cfg.memory
+            S, Yh = S_hist[idx], Y_hist[idx]
+            d = _search_direction(gf, S, Yh, compute_gamma(S, Yh)).view(G, B, n)
+        else:
+            d = -0.1 * g
+        d = torch.where(active[:, None, None], d, torch.zeros_like(d))  # frozen groups do not move
+        # per-group backtracking line search (same rule as utils.lbfgs._backtracking_line_search)
+        dir_deriv = (g * d).sum((1, 2))
+        # Each trial is evaluated only on the groups still backtracking; a group's step is halved
+        # after each failed trial, max_ls_iter trials at most, exactly as in the original.
+        step = torch.ones(G, device=y.device, dtype=y.dtype)
+        todo = torch.nonzero(active).squeeze(1)
+        with torch.no_grad():
+            for _ in range(cfg.max_ls_iter):
+                if todo.numel() == 0:
+                    break
+                st = step[todo]
+                ok = obj(y[todo] + st[:, None, None] * d[todo], todo) <= f_val[todo] + cfg.c * st * dir_deriv[todo]
+                bad = todo[~ok]
+                step[bad] = step[bad] * cfg.rho_ls
+                todo = bad
+        y_next = torch.where(active[:, None, None], y + step[:, None, None] * d, y)
+        f_next, g_next = f_and_g(y_next)
+        S_hist[hist_ptr] = (y_next - y).reshape(G * B, n)
+        Y_hist[hist_ptr] = (g_next - g).reshape(G * B, n)
+        hist_ptr = (hist_ptr + 1) % cfg.memory
+        hist_len = min(hist_len + 1, cfg.memory)
+        keep = active[:, None, None]
+        y = y_next
+        f_val = torch.where(active, f_next, f_val)
+        g = torch.where(keep, g_next, g)
+    return y
+
+
+def eval_grid_grouped(model, prob, X, Y_label, w0, dx, dy, pts_ab, fs_kwargs, batch_size):
+    """Components at several grid points at once (one grouped FS solve). pts_ab: [(a, b), ...]."""
+    xb = [X[s:s + batch_size] for s in range(0, X.shape[0], batch_size)]
+    lb = [Y_label[s:s + batch_size] for s in range(0, X.shape[0], batch_size)]
+    assert all(len(v) == len(xb[0]) for v in xb), "n_eval must be a multiple of batch_size"
+    ys = []
+    with torch.no_grad():
+        for a, b in pts_ab:
+            set_weights(model, w0, dx, dy, float(a), float(b))
+            ys.append(torch.stack([prob.scale(model(x)) for x in xb]))  # (nb, B, n)
+    Yp = torch.stack(ys)  # (P, nb, B, n)
+    P, nb, B, n = Yp.shape
+    Xg = torch.stack(xb)[None].expand(P, -1, -1, -1).reshape(P * nb, B, -1)
+    Lg = torch.stack(lb)[None].expand(P, -1, -1, -1).reshape(P * nb, B, -1)
+    Yg = Yp.reshape(P * nb, B, n)
+    Yfs = grouped_nondiff_lbfgs(Xg, Yg, prob, **fs_kwargs) if fs_kwargs is not None else None
+    out = []
+    with torch.no_grad():
+        xf, yf, lf = Xg.reshape(P * nb * B, -1), Yg.reshape(-1, n), Lg.reshape(P * nb * B, -1)
+        per = lambda v: v.view(P, nb * B).mean(1)  # per-sample mean for each grid point
+        eq, ineq = prob.eq_resid(xf, yf), prob.ineq_resid(xf, yf)
+        comp = {"huber": per(huber(yf - lf).mean(1)), "pen2": per(eq.square().sum(1) + ineq.square().sum(1)),
+                "obj": per(prob.obj_fn(yf)), "viol_l1": per(eq.abs().sum(1) + ineq.abs().sum(1))}
+        if Yfs is not None:
+            yfs = Yfs.reshape(-1, n)
+            eq, ineq = prob.eq_resid(xf, yfs), prob.ineq_resid(xf, yfs)
+            comp.update({"huber_fs": per(huber(yfs - lf).mean(1)), "obj_fs": per(prob.obj_fn(yfs)),
+                         "viol_l1_fs": per(eq.abs().sum(1) + ineq.abs().sum(1)),
+                         "dist_fs": per((yfs - yf).square().sum(1))})
+        for p in range(P):
+            out.append({k: v[p].item() for k, v in comp.items()})
+    return out
+
+
+def eval_grid(model, prob, X, Y_label, w0, dx, dy, xs, ys, fs_kwargs, batch_size, tag, shard=(0, 1), group=1):
+    """shard (k, n): evaluate only rows j with j % n == k (others stay NaN; merge shards afterwards)."""
     Z = {k: np.full((len(ys), len(xs)), np.nan) for k in COMPONENTS}
-    total, k, t0 = len(xs) * len(ys), 0, time.time()
-    for j, b in enumerate(ys):
+    rows = [j for j in range(len(ys)) if j % shard[1] == shard[0]]
+    total, k, t0 = len(xs) * len(rows), 0, time.time()
+    if group > 1:  # several grid points per grouped FS solve (same numbers, much faster)
+        cells = [(j, i) for j in rows for i in range(len(xs))]
+        for c0 in range(0, len(cells), group):
+            chunk = cells[c0:c0 + group]
+            res = eval_grid_grouped(model, prob, X, Y_label, w0, dx, dy, [(xs[i], ys[j]) for j, i in chunk],
+                                    fs_kwargs, batch_size)
+            for (j, i), comp in zip(chunk, res):
+                for key, v in comp.items():
+                    Z[key][j, i] = v
+            k += len(chunk)
+            if (c0 // group) % max(1, total // group // 20) == 0:
+                print(f"[{tag}] {k}/{total}  {time.time() - t0:.0f}s", flush=True)
+        set_weights(model, w0, dx, dy, 0.0, 0.0)
+        return Z
+    for j in rows:
+        b = ys[j]
         for i, a in enumerate(xs):
             set_weights(model, w0, dx, dy, float(a), float(b))
             comp = eval_components(model, prob, X, Y_label, fs_kwargs, batch_size)
@@ -161,6 +285,8 @@ def main():
                     help="random mode: alpha/beta range; plane mode: margin is added around the 3 points")
     ap.add_argument("--plane_margin", type=float, default=0.5)
     ap.add_argument("--dir_seeds", type=int, nargs=2, default=[5, 6])
+    ap.add_argument("--shard", default="0/1", help="k/n: evaluate rows j %% n == k only (plane mode)")
+    ap.add_argument("--group", type=int, default=1, help="grid points per grouped FS solve (1 = original loop)")
     ap.add_argument("--no_fs", action="store_true", help="skip the feasibility layer (much cheaper)")
     ap.add_argument("--dir_vec", default=None, help="random mode: .pt flat vector used as the x direction")
     ap.add_argument("--fs_max_iter", type=int, default=50)
@@ -219,7 +345,8 @@ def main():
         out["xs"], out["ys"], out["points"] = xs, ys, pts
         out["plane_scale"] = scale.item()
         dx, dy = unflat(u * scale, like), unflat(v * scale, like)
-        Z = eval_grid(models[0], prob, X, Y_label, like, dx, dy, xs, ys, fs_kwargs, args.batch_size, "plane")
+        Z = eval_grid(models[0], prob, X, Y_label, like, dx, dy, xs, ys, fs_kwargs, args.batch_size, "plane",
+                       tuple(int(v) for v in args.shard.split("/")), args.group)
         for key, val in Z.items():
             out[f"plane/{key}"] = val
 
