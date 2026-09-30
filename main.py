@@ -65,6 +65,8 @@ def create_parser():
     parser.add_argument('--ineq_pen_weight', type=float, help='Inequality penalty weight in shared SSL loss')
     parser.add_argument('--eq_pen_weight_max', type=float, help='Max equality weight (adaptive_penalty)')
     parser.add_argument('--ineq_pen_weight_max', type=float, help='Max inequality weight (adaptive_penalty)')
+    parser.add_argument('--pen_type', type=str, choices=['l2', 'l1'], default=None,
+                        help='Penalty form for penalty/sup_pen/sup_pen_fs: squared L2 (default) or L1')
     parser.add_argument('--increasing_rate', type=float, help='Adaptive penalty increase rate')
     parser.add_argument('--freeze_lr_after_epoch', type=int, default=None,
                         help='Stop LR schedule after this epoch (hold LR for remaining epochs)')
@@ -79,6 +81,11 @@ def create_parser():
     parser.add_argument('--scale', type=float, help='Scale')
     parser.add_argument('--dist_weight', type=float, help='Distance weight')
     parser.add_argument('--max_diff_iter', type=int, help='Maximum number of iterations for keeping the track of gradient')
+    parser.add_argument('--fs_max_iter', type=int, default=None, help='FS (L-BFGS) iterations for sup_pen_fs')
+    parser.add_argument('--pen_gate', type=float, default=None,
+                        help='sup_pen_fs: apply the raw-output penalty only while mean squared raw violation >= this (FSNet uses 1e3)')
+    parser.add_argument('--pen_warmup_epochs', type=int, default=None,
+                        help='sup_pen_fs: apply the raw-output penalty only for the first N epochs, then 0')
 
     args = parser.parse_args()
     
@@ -143,8 +150,9 @@ def create_parser():
         config['hidden_dim'] = args.hidden_dim
     if args.num_layers:
         config['num_layers'] = args.num_layers
-    if args.dropout:
+    if args.dropout is not None:
         config['dropout'] = args.dropout
+        config['dropout_in_name'] = True
     if args.obj_weight is not None:
         config[args.method]['obj_weight'] = args.obj_weight
     if args.eq_pen_weight is not None:
@@ -155,6 +163,8 @@ def create_parser():
         config[args.method]['eq_pen_weight_max'] = args.eq_pen_weight_max
     if args.ineq_pen_weight_max is not None:
         config[args.method]['ineq_pen_weight_max'] = args.ineq_pen_weight_max
+    if args.pen_type is not None:
+        config[args.method]['pen_type'] = args.pen_type
     if args.increasing_rate is not None:
         config[args.method]['increasing_rate'] = args.increasing_rate
     if args.freeze_lr_after_epoch is not None:
@@ -173,12 +183,21 @@ def create_parser():
         config['semi']['scale'] = args.scale
     if args.dist_weight is not None:
         config['FSNet']['dist_weight'] = args.dist_weight
+        config['sup_pen_fs']['dist_weight'] = args.dist_weight
         config['S3Net']['dist_weight'] = args.dist_weight
         config['semi']['dist_weight'] = args.dist_weight
     if args.max_diff_iter is not None:
         config['FSNet']['max_diff_iter'] = args.max_diff_iter
+        config['sup_pen_fs']['max_diff_iter'] = args.max_diff_iter
         config['S3Net']['max_diff_iter'] = args.max_diff_iter
         config['semi']['max_diff_iter'] = args.max_diff_iter
+
+    if args.fs_max_iter is not None:
+        config['sup_pen_fs']['max_iter'] = args.fs_max_iter
+    if args.pen_gate is not None:
+        config['sup_pen_fs']['pen_gate'] = args.pen_gate
+    if args.pen_warmup_epochs is not None:
+        config['sup_pen_fs']['pen_warmup_epochs'] = args.pen_warmup_epochs
 
     # Ablation study flag
     config['ablation'] = args.ablation

@@ -65,7 +65,7 @@ def load_instance(config):
         f"random{seed_data}_{prob_name}_dataset_var{prob_size[0]}_ineq{prob_size[1]}_eq{prob_size[2]}_ex{prob_size[3]}"
     )
 
-    if method == "sup" or method == "sup_partial" or method == "sup_pen" or method == "S3Net" or method == "semi":
+    if method == "sup" or method == "sup_partial" or method == "sup_pen" or method == "sup_pen_fs" or method == "S3Net" or method == "semi":
         if config['en_subopt'] == 1:
             dataset_filepath = dataset_filepath + f'_subopt_noise{config["subopt_ratio"]}_bias{config["subopt_ratio"]}'
         if config['en_subopt'] == 2:
@@ -109,6 +109,19 @@ def load_instance(config):
             result_save_dir += (
                 f"_obj{obj_w}_eq{method_cfg['eq_pen_weight']}_ineq{method_cfg['ineq_pen_weight']}"
             )
+        if config['method'] == 'sup_pen_fs':
+            if method_cfg.get('pen_warmup_epochs') is not None:
+                result_save_dir += f"_warm{method_cfg['pen_warmup_epochs']}"
+            if method_cfg.get('dist_weight', 0.0):
+                result_save_dir += f"_dist{method_cfg['dist_weight']}"
+            if method_cfg.get('pen_gate') is not None:
+                result_save_dir += f"_gate{method_cfg['pen_gate']}"
+            if method_cfg.get('max_iter', 50) != 50 or method_cfg.get('max_diff_iter', 30) != 30:
+                result_save_dir += f"_fsit{method_cfg['max_iter']}_diff{method_cfg['max_diff_iter']}"
+        if method_cfg.get('pen_type', 'l2') != 'l2':
+            result_save_dir += f"_pen{method_cfg['pen_type']}"
+        if config.get('dropout_in_name'):
+            result_save_dir += f"_dropout{config['dropout']}"
         if method_cfg.get('freeze_lr_after_epoch') is not None:
             result_save_dir += f"_freezelr{int(method_cfg['freeze_lr_after_epoch'])}"
         if method_cfg.get('constant_lr'):
@@ -190,11 +203,21 @@ class Trainer:
             return self._sup_partial_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "sup_pen":
             return self._sup_pen_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
+        elif self.method == "sup_pen_fs":
+            return self._sup_pen_fs_loss(X_batch, Y_pred_scaled, Y_label, metrics, epoch_metrics)
         elif self.method == "DC3": 
             return self._dc3_loss(X_batch, Y_pred_scaled, metrics)            
         elif self.method == "projection":
             return self._projection_loss(X_batch, Y_pred_scaled, metrics)
         
+
+    def _pen_terms(self, X_batch: torch.Tensor, Y: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Per-sample eq/ineq penalty: squared L2 (default) or L1, set by config pen_type."""
+        eq = self.opt_problem.eq_resid(X_batch, Y)
+        ineq = self.opt_problem.ineq_resid(X_batch, Y)
+        if self.config_method.get('pen_type', 'l2') == 'l1':
+            return eq.abs().sum(dim=1), ineq.abs().sum(dim=1)
+        return eq.square().sum(dim=1), ineq.square().sum(dim=1)
 
     def _penalty_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         """Computes the penalty loss."""
@@ -205,9 +228,10 @@ class Trainer:
         eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
         ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).abs().sum(dim=1)
     
+        eq_pen, ineq_pen = self._pen_terms(X_batch, Y_pred_scaled)
         loss = self.config_method['obj_weight'] * obj + \
-               self.config_method['eq_pen_weight'] * eq_violation + \
-               self.config_method['ineq_pen_weight'] * ineq_violation 
+               self.config_method['eq_pen_weight'] * eq_pen + \
+               self.config_method['ineq_pen_weight'] * ineq_pen
 
         metrics.update({
             'obj': obj.mean().item(),
@@ -348,8 +372,7 @@ class Trainer:
         return loss, metrics
     
     def _sup_pen_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
-        pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
-        pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
+        pre_eq_violation, pre_ineq_violation = self._pen_terms(X_batch, Y_pred_scaled)
 
         Y_final = Y_pred_scaled
             
@@ -389,6 +412,58 @@ class Trainer:
         })
         return loss, metrics
     
+    def _sup_pen_fs_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict = None) -> Tuple[torch.Tensor, Dict[str, float]]:
+        """sup_pen with the FSNet feasibility layer: label error on the refined output, penalty on the raw output."""
+        pre_eq_violation, pre_ineq_violation = self._pen_terms(X_batch, Y_pred_scaled)
+
+        Y_final = hybrid_lbfgs_solve(
+            X_batch,
+            Y_pred_scaled,
+            self.opt_problem,
+            val_tol=self.config_method['val_tol'],
+            memory=self.config_method['memory_size'],
+            max_iter=self.config_method['max_iter'],
+            max_diff_iter=self.config_method['max_diff_iter'],
+            scale=self.config_method['scale'],
+        )
+
+        obj = self.opt_problem.obj_fn(Y_final)
+        eq_violation = self.opt_problem.eq_resid(X_batch, Y_final).square().sum(dim=1)
+        ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_final).square().sum(dim=1)
+        eq_violation_l1 = self.opt_problem.eq_resid(X_batch, Y_final).abs().sum(dim=1)
+        ineq_violation_l1 = self.opt_problem.ineq_resid(X_batch, Y_final).abs().sum(dim=1)
+        distance = torch.norm(Y_final - Y_pred_scaled, dim=1).square()
+
+        def huber(x, delta=1e-1):
+            ax = x.abs()
+            return torch.where(ax <= delta, 0.5*x.pow(2)/delta, ax - 0.5*delta)
+
+        sup_weight = 100.0  # same as sup_pen
+        # optional penalty warm-up: raw-output penalty only for the first pen_warmup_epochs, then 0
+        warm = self.config_method.get('pen_warmup_epochs')
+        pen_on = warm is None or (epoch_metrics is not None and epoch_metrics.get('epoch', 0) < warm)
+        # optional FSNet-style gate: penalty only while the batch's mean squared raw violation is large
+        gate = self.config_method.get('pen_gate')
+        if gate is not None:
+            eq_sq = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1).mean()
+            ineq_sq = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1).mean()
+            pen_on = pen_on and bool(eq_sq >= gate or ineq_sq >= gate)
+        pen_scale = 1.0 if pen_on else 0.0
+        loss = sup_weight * huber(Y_final - Y_label).mean(dim=1) \
+            + self.config_method.get('dist_weight', 0.0) * distance \
+            + pen_scale * self.config_method['eq_pen_weight'] * pre_eq_violation \
+            + pen_scale * self.config_method['ineq_pen_weight'] * pre_ineq_violation
+
+        metrics.update({
+            'obj': obj.mean().item(),
+            'eq_violation': eq_violation.mean().item(),
+            'ineq_violation': ineq_violation.mean().item(),
+            'eq_violation_l1': eq_violation_l1.mean().item(),
+            'ineq_violation_l1': ineq_violation_l1.mean().item(),
+            'distance': distance.mean().item(),
+        })
+        return loss, metrics
+
     def _s3net_loss(self, X_batch: torch.Tensor, Y_pred_scaled: torch.Tensor, Y_label: torch.Tensor, metrics: Dict, epoch_metrics: Dict) -> Tuple[torch.Tensor, Dict[str, float]]:
         pre_eq_violation = self.opt_problem.eq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)
         pre_ineq_violation = self.opt_problem.ineq_resid(X_batch, Y_pred_scaled).square().sum(dim=1)

@@ -201,7 +201,7 @@ class Evaluator:
     @torch.enable_grad()
     def _post_process_predictions(self, X_batch, Y_pred_scaled):
         """Apply method-specific post-processing."""
-        if self.method == "FSNet" or self.method == "S3Net" or self.method == 'semi':
+        if self.method in ("FSNet", "S3Net", "semi", "sup_pen_fs"):
             return nondiff_lbfgs_solve(
                 X_batch, Y_pred_scaled, self.opt_problem,
                 val_tol=self.config_method.get('test_val_tol', 1e-6),
